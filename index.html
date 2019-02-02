@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Mahjong - HTML/CSS/JS</title>
+    <link rel="stylesheet" href="test.css">
+  </head>
+  <body>
+    <div class="hidden modal">
+      <div class="panel"></div>
+    </div>
+
+    <div class="sliders">
+      <div>
+        <span class="heading">player bank height </span>
+        <label>1</label>
+        <input id="pslide" type="range" min="1" max="10" step="1" value="4">
+        <label>10</label>
+      </div>
+      <div>
+        <span class="heading">table size </span>
+        <label>1</label>
+        <input id="wslide" type="range" min="1" max="50" step="1" value="45">
+        <label>50</label>
+      </div>
+    </div>
+
+    <div class="board">
+      <div class="player" id="0"></div>
+      <div class="player" id="1"></div>
+      <div class="player" id="2"></div>
+      <div class="player" id="3"></div>
+      <div class="discards">discards</div>
+    </div>
+
+   <h2>The how of Mahjong</h2>
+
+    <div>
+      <p>
+        Mahjong is a four player tile game where players compete
+        to form a winning "hand" of 14 tiles, arranged (in general)
+        as four triplets (either consecutive within the same suit,
+        or genuine triplets with the same tile, three times), and
+        a pair (one tile, twice).
+      </p>
+
+      <p>
+        The traditional game uses 144 tiles, consisting of three
+        numbered suits, two named suits, and two sets of bonus
+        tiles, specifically:
+      </p>
+
+      <ul>
+        <li>numerical tiles 1 through 9 with "dots" (traditionally: 筒, "coin") ornamentation, x4</li>
+        <li>numerical tiles 1 through 9 with "bamboo"/"sticks" (traditionally: 索, "string") ornamentation, x4</li>
+        <li>numerical tiles 1 through 9 with "Chinese character" (traditionally: 萬, "10,000") ornamentation, x4</li>
+        <li>the four cardinal directions (labelled E/S/N/W or 東/南/北/西) x4</li>
+        <li>three "dragons", (labelled F/C/P or 發/中/unlabeled, called "green", "red", and "white" dragon after the colors used for the character on each of these tiles) x4</li>
+      </ul>
+
+      <p>
+        With bonus tiles:
+      </p>
+
+      <ul>
+        <li>the four seasons (spring, summer, fall, winter, or 春, 夏, 秋, 冬), one each</li>
+        <li>the four seasonal flowers (orchid, plum blossom, bamboo, chrysanthenum, or 蘭, 梅, 竹, 菊), one each</li>
+      </ul>
+
+      <p>
+        Core game play is about as simple as it gets: everyone
+        starts with 13 tiles, and players take turns in which they
+        draw a tile from the pile of undealt tiles, check to see
+        if they can form a winning, 14 tile pattern, and if not,
+        discard one of their tiles so they're back at 13, after which
+        it is the next player's turn.
+      </p>
+
+      <p>
+        The "game" rather than "chance" aspect comes in the form of
+        "claims", where players may claim a tile as it is being discarded
+        if they can use that tile to form certain sets. In this case,
+        it immediately becomes their turn, irrespective of whose turn
+        it "should" have been, and rather than drawing a tile from
+        the undealt tiles, they take receive the discarded tile as
+        their 14<sup>th</sup> tile.
+      </p>
+
+      <p>
+        Claim restrictions are as follows:
+      </p>
+
+      <ul>
+        <li>if a player has two identical tiles in their hand, they may claim a third tile when another player discards it.</li>
+        <li>if a player has three identical tiles in their hand, they may claim the fourth tile when another player discards it.</li>
+        <li>if a player is waiting for a specific tile to win, they may claim that winning tile when another player discards it.</li>
+      </ul>
+
+      <p>
+        Tiles may be claimed to form sequences of three numbers
+        within the same suit, however with the restriction that
+        these claims may <em>only</em> made on a discard from the
+        player whose turn is before theirs.
+      </p>
+
+      <p>
+        In the case when a tile has claims by by multiple players, a
+        winning claims trump any other claims, with claims for true
+        sets (meaning the same tile three or four times) trumping
+        claims to form a numerical sequence by the next player.
+      </p>
+
+      <p>
+        Once a tile claim "goes through", the receiving player has
+        to reveal and move all tiles involved in the claim out
+        of their hand, typically by setting them aside, face-up.
+        These tiles are considered locked down, and can no longer be
+        used for anything, with a single exception:
+      </p>
+
+      <p>
+        If a player has a locked, true set of three tiles already
+        on the table, and during a normal turn they draw the fourth
+        tile, they are allowed to add it to their locked set of
+        three to form a locked set of four. If a player elects
+        to do this, they receive a new tile from the undealt set of
+        tiles to compensate for the "loss" of a tile. In normal
+        play, if a player forgets to do this they will not have enough
+        tiles left to win, and may be penalized for playing a hand
+        with the wrong number of tiles.
+      </p>
+
+      <p>
+        A player is <em>not required</em> to declare sets if they do
+        not need to claim a tile for them. If a player has a set of
+        three or four tiles in their hand, due to having started
+        the game with them, or having drawn tiles over a number
+        of turns to end up with them in hand, they are under no
+        obligation to reveal that fact. Winning with unrevealed
+        tiles typically incurs a bonus.
+      </p>
+
+      <p>
+        Note that there are special considerations when a player has
+        four of the same tile in their hand. They may declare this
+        and lock the four tiles as a set that is no longer in their
+        hand, receiving an extra tile to prevent them from having too
+        few tiles to form a winning hand (revealing the tiles
+        depending on the exact rules being played. Some rules do
+        not require this kind of set to be  revealed, meaning
+        other players will not know which tile has become unavailable,
+        and so may try to win on a tile that cannot ever appear
+        during that round of play). They may also elect to keep all
+        four tiles in their hand so that three of the tiles can be
+        used as one set, and the fourth tile can be used to form a
+        numerical set. Note that because a winning hand has to
+        consist of four sets and a pair, a player who wishes to
+        count all four tiles as a single set will <em>have</em> to
+        declare that set, or they will not have enough tiles with
+        which to form the necessary number of sets and pair.
+      </p>
+
+      <h2>Scoring</h2>
+
+      <p>
+        Scoring of hands is entirely dependent on the style of
+        mahjong played, but can be split into two ways to count
+        points:
+      </p>
+
+      <ul>
+        <li>
+          <em>points and doublings</em>, in which players gain points for
+          individual sets, and score doublings for particular
+          combinations of sets. Typically this scoring system has an
+          "upper limit", limiting how many points players can score
+          per hand.</li>
+        <li>
+          <em>faan</em>, in which player's hands are assigned a "hand
+          score" based on specific sets and patterns of sets, and this
+          hand score is then translated into a player score based on a
+          rule-dependent mapping. Typically this scoring system has
+          both an upper limit, to fix how many points players can score
+          per hand, as well as a "lower limit", in which getting a higher
+          hand score does not alter the resulting player score for
+          several steps. E.g. a hand worth 5 or 6 faan may both score
+          as 5 faan, with a hand worth 7 faan assigned a higher score.
+        </li>
+      </ul>
+
+      <p>
+        Additionally, rules typically use one of two "score settling"
+        methods:
+      </p>
+
+      <ul>
+        <li>
+          Winner takes all, in which the winner is paid their
+          player score by the other players. In this system,
+          winning is more important than forming high scoring
+          hand patterns.
+        </li>
+        <li>
+          Everyone pays everyone, in which the winning player
+          is paid their score by the other players, and the
+          other players all pay each other based on the
+          difference in scoring. In this system, forming high
+          scoring hand patterns is more important than just
+          winning.
+        </li>
+      </ul>
+    </div>
+    <script src="mgen.js"></script>
+    <script src="test.js"></script>
+  </body>
+</html>
