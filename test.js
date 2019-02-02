@@ -345,28 +345,21 @@ class BotPlayer extends Player {
 
     // is this tile in the list?
     if (lookout[tile]) {
-      // it is, what do we want it for?
-      console.log(lookout[tile]);
+      let claim = CLAIM.IGNORE;
+      lookout[tile].map(unhash).forEach(set => {
+        let type = set.type;
+        if (type === Constants.PAIR) return;
+        if (type === Constants.CHOW) {
+          if (tile - set.tile === 1) type = CLAIM.CHOW2;
+          if (tile - set.tile === 2) type = CLAIM.CHOW3;
+        }
+        if (type > claim) {
+          claim = type;
+        }
+      });
+      return resolve(claim);
     }
     return resolve(CLAIM.IGNORE);
-
-
-    // Immediately return if we only have 1 tile, and it's the same as the discard,
-    // because our claim will be an "I have won" claim.
-    if (held.length === 1 && held[0].getTileFace() == tile) return resolve(CLAIM.WIN);
-
-    // Can we _win_ on this tile?
-    if (this.isWinningTile(tile)) return resolve(CLAIM.WIN);
-
-    // If we can claim a kong or pung, do so. That's not
-    // always the best course of action, but it'll do for now.
-    let test = this.getDuplicates(tile);
-    if (test.length === 3) return resolve(CLAIM.KONG);
-    if (test.length === 2) return resolve(CLAIM.PUNG);
-
-    // If we can't pung/kong, can we claim a chow?
-    let chowExists = await this.chowExists(pid, tile);
-    resolve(chowExists);
   }
 }
 
