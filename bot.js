@@ -7,9 +7,11 @@ class BotPlayer extends Player {
   constructor(htmlelement, wall) {
     super(htmlelement, wall);
   }
+
   append(tile, concealed=true) {
     super.append(tile, concealed);
   }
+
   determineDiscard(resolve) {
     if (this.has_won) return resolve(undefined);
 
@@ -76,6 +78,10 @@ class BotPlayer extends Player {
     let discard = this.el.querySelector(`.tile[data-tile='${tile}']:not([data-locked]`);
     resolve(discard);
   }
+
+  /**
+   * Automated claim policy, see `tilesNeeded` in `./mgen.js`
+   */
   async determineClaim(pid, discard, resolve, interrupt) {
     // which tile is this?
     let tile = discard.getTileFace();
@@ -86,7 +92,7 @@ class BotPlayer extends Player {
     lookout.forEach( (l,i) => l ? (looking[i] = l) : false);
     this.markWaiting(waiting);
 
-    // is this tile in the list?
+    // is the current discard in the list of tiles we want?
     let claim = CLAIM.IGNORE, wintype;
     if (lookout[tile]) {
       lookout[tile].map(print => unhash(print,tile)).forEach(set => {
@@ -105,6 +111,7 @@ class BotPlayer extends Player {
       });
       return resolve({claimtype: claim, wintype});
     }
+
     return resolve({claimtype: CLAIM.IGNORE});
   }
 }

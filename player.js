@@ -9,6 +9,7 @@ class Player {
     this.id = htmlelement.id;
     this.locked = [];
     this.wall = wall;
+    this.tracker = new TileTracker();
   }
 
   activate() {
@@ -32,8 +33,19 @@ class Player {
 
   append(t, concealed) {
     if (typeof t !== 'object') t = create(t, concealed);
+    this.tracker.seen(t.dataset.tile);
     this.el.appendChild(t);
     this.sortTiles();
+    if (t.dataset.tile > 33) return t;
+  }
+
+  see(tiles, player) {
+    if (player === this) return;
+    if (!tiles.map) tiles = [tiles];
+    tiles.forEach(tile => {
+      if (typeof tile === 'object') tile = tile.dataset.tile;
+      this.tracker.seen(tile);
+    });
   }
 
   getTiles(allTiles) {
@@ -210,7 +222,7 @@ class Player {
         this.getSupplementTile(p);
       }
       this.locked.push(set);
-      return;
+      return set;
     }
 
     // No pair, pung, or kong: must be a chow... but which type of chow?
@@ -236,6 +248,7 @@ class Player {
     });
 
     this.locked.push(set);
+    return set;
   }
 
   getSupplementTile() {

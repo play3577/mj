@@ -2,10 +2,8 @@
  * Set up a game of four players, and begin a game
  */
 function setup() {
-  // Set up the tiles for play.
   let wall = new Wall();
 
-  // Set up and bind four players to the predefined HTML elements.
   let players  = Array.from(document.querySelectorAll(".player")).map(
     (htmlelement, idx) => {
       if (idx===2) return new HumanPlayer(htmlelement, wall);
@@ -34,8 +32,12 @@ function dealTiles(players, wall) {
     let bank = wall.get(13);
     for (let t=0, tile; t<bank.length; t++) {
       tile = bank[t];
-      player.append(tile);
-      if (tile > 33) bank.push(wall.get());
+      let revealed = player.append(tile);
+      if (revealed) {
+        // bonus tile are shown to all other players.
+        players.forEach(p => p.see(revealed, player));
+        bank.push(wall.get());
+      }
       // At this point, a player should be able to decide whether or not to
       // declare any kongs they might have in their hand. While unlikely, it
       // is entirely possible for this to lead to a player declaring four
@@ -64,27 +66,35 @@ function playGame(players, wall) {
       let tile;
       do {
         tile = wall.get();
-        player.append(tile);
+        let revealed = player.append(tile);
+        // bonus tile are shown to all other players.
+        if (revealed) players.forEach(p => p.see(revealed, player));
       } while (tile>33 && !wall.dead);
-    } else player.claim(currentPlayerId, claim, discard);
+    } else {
+      let tiles = player.claim(currentPlayerId, claim, discard);
+      // awarded claims are shown to all other players.
+      players.forEach(p => p.see(tiles, player));
+    }
 
     // "Play one"
     discard = await new Promise(resolve => player.getDiscard(resolve));
 
-    // And that's the core game mechanic covered. Did anyone win?
+    // Aaaand that's the core game mechanic covered!
+
+    // Did anyone win?
     if (!discard) {
       console.log(`Player ${currentPlayerId} wins this round!`);
       console.log(`Revealed tiles ${player.getLockedTileFaces()}`);
       console.log(`Concealed tiles: ${player.getTileFaces()}`);
+      console.log(`Tiles knowledge:`, player.tracker.tiles);
       player.winner();
       return discards.classList.add('winner');
     }
 
-    // They did not. Does someone want to claim this discard?
+    // No winner; does someone want to claim this discard?
     delete discard.dataset.hidden;
     discards.appendChild(discard);
     discard.classList.add('discard');
-
     claim = await getAllClaims(players, currentPlayerId, discard);
     if (claim) {
       currentPlayerId = claim.p;
@@ -92,6 +102,9 @@ function playGame(players, wall) {
       // setTimeout rather than direct recursion!
       return setTimeout(() => play(claim), PLAY_INTERVAL);
     }
+
+    // no claim happened, this tile will no longer be available.
+    players.forEach(p => p.see(discard, player));
 
     if (wall.dead) {
       console.log("OUT OF TILES");
