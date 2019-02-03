@@ -4,42 +4,65 @@
 
 
 class Player {
-  constructor(htmlelement) {
+  constructor(htmlelement, wall) {
     this.el = htmlelement;
     this.id = htmlelement.id;
     this.locked = [];
+    this.wall = wall;
   }
+
   activate() {
     this.el.classList.add('active');
   }
+
   disable() {
     this.el.classList.remove('active');
   }
+
   markWaiting(val) {
     if (val) this.el.classList.add('waiting');
     else this.el.classList.remove('waiting');
   }
+
   winner() {
     this.el.classList.add('winner');
     this.el.classList.remove('active');
+    this.reveal();
   }
+
   append(t, concealed) {
-    this.el.appendChild(create(t, concealed));
+    if (typeof t !== 'object') t = create(t, concealed);
+    this.el.appendChild(t);
+    this.sortTiles();
   }
+
   getTiles(allTiles) {
     return this.el.querySelectorAll(`.tile${allTiles ? ``: `:not([data-locked]`}`);
   }
+
   getTileFaces(allTiles) {
     return Array.from(this.getTiles(allTiles)).map(t => t.getTileFace());
   }
+
+  getLockedTileFaces() {
+    return this.locked.map(set => `[${set.map(v=>v.dataset.tile|0)}]${set[0].dataset.winning?'!':''}`);
+  }
+
   getDuplicates(tile) {
     return this.el.querySelectorAll(".tile[data-tile='"+tile+"']:not([data-locked])");
   }
-  sortTiles() {
-    Array.from(
-      this.el.querySelectorAll('.tile')
-    ).sort(SORT_TILE_FN).forEach(tile => this.el.appendChild(tile));
+
+  reveal() {
+    Array.from(this.el.querySelectorAll(".tile")).forEach(t => {delete t.dataset.hidden;});
   }
+
+  sortTiles() {
+    Array
+    .from(this.el.querySelectorAll('.tile'))
+    .sort(SORT_TILE_FN)
+    .forEach(tile => this.el.appendChild(tile));
+  }
+
   tileValue(faceValue) {
     // This ranking is basically arbitrary, because
     // the real value comes from having an actual
@@ -56,6 +79,7 @@ class Player {
       return 1.0; // honour tile (dragon)
     }
   }
+
   async chowExists(pid, tile)  {
     // If this isn't a numerical tile, no chow can be formed.
     if (tile > 26)  return CLAIM.IGNORE;
@@ -81,13 +105,11 @@ class Player {
     if (c2) return CLAIM.CHOW2;
     return CLAIM.IGNORE;
   }
-  isWinningTile(tile) {
-    // ...code goes here...
-    return false;
-  }
+
   async getDiscard(resolve) {
     return this.determineDiscard(resolve);
   }
+
   determineDiscard(resolve) {
     // players have a way to determine what the discard,
     // but we're not going to specify _how_ to determine
@@ -95,6 +117,7 @@ class Player {
     // player types instead.
     resolve(undefined);
   }
+
   async getClaim(pid, discard, resolve) {
     // in terms of universal behaviour, we want
     // to make sure that we exit early if this is
@@ -129,6 +152,7 @@ class Player {
       }
     }, interrupt);
   }
+
   determineClaim(pid, discard, resolve, interrupt) {
     // Just like determineDiscard, players have a way
     // to determine whether they want a discard, and
@@ -136,6 +160,7 @@ class Player {
     // determine that in this class.
     resolve({ claimtype: CLAIM.IGNORE });
   }
+
   claim(p, claim, discard) {
     let tile = discard.getTileFace();
     let claimtype = claim.claimtype;
@@ -150,11 +175,11 @@ class Player {
 
     // being awared a discard based on a claims, however,
     // is universal: the tiles get locked.
-    this.el.appendChild(discard);
+    this.append(discard);
 
     let locked = 1;
     discard.dataset.locked = 'locked';
-    if(this.has_won) discard.classList.add('winning');
+    if(this.has_won) discard.dataset.winning='winning';
 
     let set = [];
     set.push(discard);
@@ -173,7 +198,7 @@ class Player {
         if (t.getTileFace() == tile) {
           delete t.dataset.hidden;
           t.dataset.locked = 'locked';
-          if(this.has_won) t.classList.add('winning');
+          if(this.has_won) t.dataset.winning='winning';
           set.push(t);
         }
       });
@@ -181,17 +206,15 @@ class Player {
       // if the player locks away a total of 4 tiles, they need a tile from the wall
       // to compensate for the loss of a tile.
       locked += count;
-      if (locked === 4 && wall.length) {
+      if (locked === 4 && !this.wall.dead) {
         this.getSupplementTile(p);
       }
-
       this.locked.push(set);
-
-      return false;
+      return;
     }
 
+    // No pair, pung, or kong: must be a chow... but which type of chow?
     let t1, t2;
-
     if (claimtype === CLAIM.CHOW1) {
       t1 = this.el.querySelector(`.tile[data-tile='${tile - 2}']:not([data-locked]`);
       t2 = this.el.querySelector(`.tile[data-tile='${tile - 1}']:not([data-locked]`);
@@ -208,18 +231,18 @@ class Player {
     [t1, t2].forEach(t => {
       delete t.dataset.hidden;
       t.dataset.locked = 'locked';
-      if(this.has_won) t.classList.add('winning');
+      if(this.has_won) t.dataset.winning='winning';
       set.push(t);
     });
 
     this.locked.push(set);
   }
-  getSupplementTile(p) {
-    let t;
+
+  getSupplementTile() {
+    let wall = this.wall, tile;
     do {
-      t = wall.shift();
-      if (p===2) this.append(t)
-      else this.append(t, CONCEALED);
-    } while (t>33 && wall.length);
+      tile = wall.get();
+      this.append(tile)
+    } while (tile>33 && !wall.dead);
   }
 }

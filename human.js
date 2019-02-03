@@ -6,10 +6,13 @@
  * "for free", and that's great!
  */
 class HumanPlayer extends BotPlayer {
-  constructor(htmlelement) {
-    super(htmlelement);
+  constructor(htmlelement, wall) {
+    super(htmlelement, wall);
     this.mayDiscard = false;
     this.maySendClaim = false;
+  }
+  append(tile, concealed=false) {
+    super.append(tile, concealed);
   }
   determineDiscard(resolve) {
     // Let's ask our "bot" assistant for what it would

@@ -188,7 +188,6 @@ input[type=range] {
 
 .tile.suggestion { box-shadow: 0 0 3px 0 var(--prp); }
 .tile.discard { box-shadow: 0 0 3px 0 var(--cream); }
-.tile.winning { border-width: 5px 1px 1px 1px; border-top-color: #00ff42; }
 .tile + .tile { margin-left: 1px; }
 
 .tile[data-tile="0"]  { content:'bamboo-1'; background-image: url('https://pomax.github.io/MJJS/public/tiles/0.jpg'); }
@@ -242,6 +241,7 @@ input[type=range] {
 
 .tile[data-bonus] { transform: scale(0.8, 0.8); border: 1px solid red; }
 
+.tile[data-winning] { border-width: 5px 1px 1px 1px; border-top-color: #00ff42; }
 
 /*
 .tile[data-hidden] { background: url('https://pomax.github.io/MJJS/public/tiles/concealed.jpg'); }

@@ -4,8 +4,11 @@
  * and simply do what the code says to do.
  */
 class BotPlayer extends Player {
-  constructor(htmlelement) {
-    super(htmlelement);
+  constructor(htmlelement, wall) {
+    super(htmlelement, wall);
+  }
+  append(tile, concealed=true) {
+    super.append(tile, concealed);
   }
   determineDiscard(resolve) {
     if (this.has_won) return resolve(undefined);
