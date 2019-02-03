@@ -244,10 +244,11 @@ input[type=range] {
 
 .tile[data-winning] { border-width: 5px 1px 1px 1px; border-top-color: #00ff42; }
 
-.tile[data-hidden] { background: url('https://pomax.github.io/MJJS/public/tiles/concealed.jpg'); }
 /*
+.tile[data-hidden] { background: url('https://pomax.github.io/MJJS/public/tiles/concealed.jpg'); }
 .tile[data-hidden] { opacity: 0.5; }
 */
+.tile[data-hidden] { opacity: 0.5; }
 
 .player .tile { margin-top: calc(calc(var(--ph) / 6)); }
 .tile[data-locked] { margin-top: calc(0em - calc(var(--ph) / 6)); }

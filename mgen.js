@@ -19,7 +19,7 @@ function unhash(print, tile) {
 }
 
 class Pattern {
-  constructor(tiles=[]) {
+  constructor(tiles=[], canChow=false) {
     this.keys = [];
     this.tiles = {};
     tiles.slice().sort((a,b)=>a-b).forEach(v => {
@@ -29,9 +29,10 @@ class Pattern {
       this.tiles[v]++;
       this.keys.push(v);
     });
+    this.canChow = canChow;
   }
   copy() {
-    let p = new Pattern();
+    let p = new Pattern([], this.canChow);
     p.keys = this.keys.slice();
     p.keys.forEach(k => (p.tiles[k] = this.tiles[k]));
     return p;
@@ -61,6 +62,7 @@ class Pattern {
     return { t1, t2, suit};
   }
   checkForChow(tile, result) {
+    if (!this.canChow) return;
     if (tile > 26) return;
     let {t1, t2, suit} = this.getChowInformation(tile);
     if (t1 || t2) {
@@ -182,8 +184,8 @@ class Pattern {
   }
 }
 
-function tilesNeeded(tiles, locked=[]) {
-  let p = new Pattern(tiles);
+function tilesNeeded(tiles, locked=[], canChow) {
+  let p = new Pattern(tiles, canChow);
   let lookout = p.copy().expand();
   let checkwin = p.copy().determineWin([], [], [], locked);
   let waiting = (checkwin.length > 0);
