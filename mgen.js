@@ -1,20 +1,21 @@
-const Constants = { PAIR: 0, CHOW: 1, PUNG: 4, KONG: 8, WIN: 16 };
-
 function hash(set) {
   let s = `${set.type}`;
-  if (set.subtype) { s = `${s}s(${set.subtype})`; }
-  if (set.type===Constants.PAIR || set.type===Constants.CHOW) { s = `${s}t(${set.tile})`; }
+  if (set.subtype) { s = `${s}s${set.subtype}`; }
+  if (set.type===Constants.PAIR || set.type===Constants.CHOW) { s = `${s}t${set.tile}`; }
+  //console.log("hash", set, s);
   return s;
 }
 
-function unhash(print) {
-  let re = /(\d+)(s\((\d+)\))?(t\((\d+)\))?/;
+function unhash(print, tile) {
+  let re = /(\d+)(s(-?\d+))?(t(\d+))?/;
   let m = print.match(re);
-  return {
-    type: m[1] ? parseInt(m[1]) : undefined,
-    subtype: m[3] ? parseInt(m[3]) : undefined,
-    tile: m[5] ? parseInt(m[5]) : undefined
-  };
+  let type = parseInt(m[1]);
+  let subtype = m[3] ? parseInt(m[3]) : undefined;
+  let required = tile;
+  if (type===Constants.CHOW) tile -= subtype;
+  let obj = { required, type, subtype, tile };
+  //console.log("unhash", print, obj);
+  return obj;
 }
 
 class Pattern {
@@ -45,46 +46,54 @@ class Pattern {
       }
     });
   }
+  getSuit(tile) {
+    return ((tile/9)|0);
+  }
+  matchSuit(tile, suit) {
+    return this.getSuit(tile) === suit;
+  }
+  getChowInformation(tile) {
+    let suit = (tile / 9)|0;
+    let t1 = this.tiles[tile+1];
+    if (t1 !== undefined && !this.matchSuit(tile + 1, suit)) t1 = undefined;
+    let t2 = this.tiles[tile+2];
+    if (t2 !== undefined && !this.matchSuit(tile + 2, suit)) t2 = undefined;
+    return { t1, t2, suit};
+  }
+  checkForChow(tile, result) {
+    if (tile > 26) return;
+    let {t1, t2, suit} = this.getChowInformation(tile);
+    if (t1 || t2) {
+      let set = [], remove;
+      if (t1 && t2) { // this is already a chow!
+        set.push({ required: false, type: Constants.CHOW, tile });
+        remove = [tile, tile+1, tile+2];
+      }
+      else if (t1) { // connected pair, we need either a first or last tile.
+        if (this.matchSuit(tile - 1, suit)) set.push({ required: tile-1, type: Constants.CHOW3, tile });
+        if (this.matchSuit(tile + 2, suit)) set.push({ required: tile+2, type: Constants.CHOW1, tile });
+        remove = [tile, tile + 1];
+      }
+      else if (t2) { // gapped pair, we need the middle tile.
+        set.push({ required: tile+1, type: Constants.CHOW2, tile });
+        remove = [tile, tile + 2];
+      }
+      this.recurse(remove, set, result);
+    }
+  }
   recurse(processed, set, result) {
     set.forEach(s => {
       if (s.required) {
-        s.required.forEach(tile => {
-          if (!result[tile]) result[tile] = [];
-          let print = hash(s);
-          let list = result[tile];
-          if (list.indexOf(print) === -1) list.push(print);
-        });
+        let tile = s.required
+        if (!result[tile]) result[tile] = [];
+        let print = hash(s);
+        let list = result[tile];
+        if (list.indexOf(print) === -1) list.push(print);
       }
     });
     let downstream = this.copy();
     downstream.remove(processed);
     if (downstream.keys.length > 0) downstream.expand(result);
-  }
-  getChowInformation(tile) {
-    let suit = (tile / 9)|0;
-    let t1 = this.tiles[tile+1];
-    if (t1 !== undefined && (((tile+1)/9)|0)!==suit) t1 = undefined;
-    let t2 = this.tiles[tile+2];
-    if (t2 !== undefined && (((tile+2)/9)|0)!==suit) t2 = undefined;
-    return { t1, t2};
-  }
-  checkForChow(tile, result) {
-    if (tile > 26) return;
-    let {t1, t2} = this.getChowInformation(tile);
-    if (t1 || t2) {
-      if (t1 && t2) { // this is already a chow!
-        let set = [{ required: false, type: Constants.CHOW, tile }];
-        this.recurse([tile, tile+1, tile+2], set, result);
-      }
-      else if (t1) { // connected pair, we just need the last tile
-        let set = [{ required: [tile+2], type: Constants.CHOW, subtype: 2, tile }];
-        this.recurse([tile, tile+1], set, result);
-      }
-      else if (t2) { // gapped pair, we just need the middle tile
-        let set = [{ required: [tile+1], type: Constants.CHOW, subtype: 1, tile }];
-        this.recurse([tile, tile+2], set, result);
-      }
-    }
   }
   expand(result=[]) {
     let tile = this.keys[0]|0;
@@ -99,13 +108,17 @@ class Pattern {
     } else {
       this.checkForChow(tile, result);
       if (count===1) {
-        let set = [{ required: [tile], type: Constants.PAIR, tile }];
-        this.recurse([tile], set, result);
+        // We cannot claim pairs "normally", so we do not record it.
+        // But, in crazy rulesets where we could claim pairs, the
+        // following code would be required:
+        //
+        // let set = [{ required: tile, type: Constants.PAIR, tile }];
+        // this.recurse([tile], set, result);
       }
       if (count===2) {
         let set = [
           { required: false, type: Constants.PAIR, tile },
-          { required: [tile], type: Constants.PUNG, tile }
+          { required: tile, type: Constants.PUNG, tile }
         ];
         this.recurse([tile, tile], set, result);
       }
@@ -113,7 +126,7 @@ class Pattern {
         let set = [
           { required: false, type: Constants.PAIR, tile },
           { required: false, type: Constants.PUNG, tile },
-          { required: [tile], type: Constants.KONG, tile }
+          { required: tile, type: Constants.KONG, tile }
         ];
         this.recurse([tile, tile, tile], set, result);
       }
@@ -140,15 +153,15 @@ class Pattern {
       }
       else if (set.length===3 && pair.length===1 && single.length===2) {
         if (single[1] < 27 && single[0] + 1 === single[1]) {
-          let t1 = single[0]-1, s1 = (t1/9)|0,
-              b0 = single[0],   s2 = (b0/9)|0,
-              b1 = single[1],   s3 = (b1/9)|0,
-              t2 = single[1]+1, s4 = (t2/9)|0;
-          if(s1 === s2 && s1 === s3) this.markWin(results, t1, Constants.CHOW);
-          if(s4 === s2 && s4 === s3) this.markWin(results, t2, Constants.CHOW);
+          let t1 = single[0]-1, s1 = this.getSuit(t1),
+              b0 = single[0],   s2 = this.getSuit(b0),
+              b1 = single[1],   s3 = this.getSuit(b1),
+              t2 = single[1]+1, s4 = this.getSuit(t2);
+          if(s1 === s2 && s1 === s3) this.markWin(results, t1, Constants.CHOW3);
+          if(s4 === s2 && s4 === s3) this.markWin(results, t2, Constants.CHOW1);
         }
         else if (single[1] < 27 && single[0] + 2 === single[1]) {
-          this.markWin(results, single[0]+1, Constants.CHOW);
+          this.markWin(results, single[0]+1, Constants.CHOW2);
         }
       }
     }
@@ -169,22 +182,33 @@ class Pattern {
   }
 }
 
-function tilesNeeded(tiles) {
+function tilesNeeded(tiles, locked=[]) {
   let p = new Pattern(tiles);
   let lookout = p.copy().expand();
-  let checkwin = p.copy().determineWin();
+  let checkwin = p.copy().determineWin([], [], [], locked);
+  let waiting = (checkwin.length > 0);
   checkwin.forEach((l,idx) => lookout[idx] = l);
-  return lookout;
+  return { lookout, waiting };
 };
 
+if (typeof process !== "undefined" && process.argv) {
+  // set up a global:
+  Constants = require('./constants.js').Constants;
 
-if (false) {
+  // open tiles:
   let hand = [1,1,3,4,6,12,13,15,15,15,26,28,30];
   // hand = [1,1,1,6,6,6,9,9,9,14,14,14,27];
   // hand = [1,2,3, 6,6,6, 10,11,12, 26,26,26, 27];
   // hand = [1,2,3, 6,6,6, 10,11,12, 26,26, 27,27];
   // hand = [1,1,1, 1,2,3, 3,3,3, 4,5,6, 7];
+  hand = [31,31,31, 33];
+
+  // locked tiles:
+  let single = [];
+  let pair = [];
+  let set = ['k19','c12','p30'];
+
   console.log("current hand:", hand);
   console.log("discards we want to be on the lookout for:");
-  console.log(tilesNeeded(hand));
+  console.log(tilesNeeded(hand,single,pair,set));
 }

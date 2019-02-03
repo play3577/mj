@@ -88,13 +88,10 @@ input[type=range] {
   background-color: var(--cream);
 }
 
-.player.winner {
-  background: gold;
-}
+.player.waiting { background: rgb(248, 235, 144); }
+.player.winner { background: gold; }
 
-.player.active::before {
-  background: var(--blue);
-}
+.player.active::before { background: var(--blue); }
 .player::before {
   content: attr(id);
   margin: 0.5em;
@@ -190,69 +187,59 @@ input[type=range] {
 
 .tile.suggestion { box-shadow: 0 0 3px 0 var(--prp); }
 .tile.discard { box-shadow: 0 0 3px 0 var(--cream); }
+.tile.winning { border-width: 5px 1px 1px 1px; border-top-color: #00ff42; }
+.tile + .tile { margin-left: 1px; }
 
-.tile + .tile {
-  margin-left: 1px;
-}
+.tile[data-tile="0"]  { content:'bamboo-1'; background-image: url('https://pomax.github.io/MJJS/public/tiles/0.jpg'); }
+.tile[data-tile="1"]  { content:'bamboo-2'; background-image: url('https://pomax.github.io/MJJS/public/tiles/1.jpg'); }
+.tile[data-tile="2"]  { content:'bamboo-3'; background-image: url('https://pomax.github.io/MJJS/public/tiles/2.jpg'); }
+.tile[data-tile="3"]  { content:'bamboo-4'; background-image: url('https://pomax.github.io/MJJS/public/tiles/3.jpg'); }
+.tile[data-tile="4"]  { content:'bamboo-5'; background-image: url('https://pomax.github.io/MJJS/public/tiles/4.jpg'); }
+.tile[data-tile="5"]  { content:'bamboo-6'; background-image: url('https://pomax.github.io/MJJS/public/tiles/5.jpg'); }
+.tile[data-tile="6"]  { content:'bamboo-7'; background-image: url('https://pomax.github.io/MJJS/public/tiles/6.jpg'); }
+.tile[data-tile="7"]  { content:'bamboo-8'; background-image: url('https://pomax.github.io/MJJS/public/tiles/7.jpg'); }
+.tile[data-tile="8"]  { content:'bamboo-9'; background-image: url('https://pomax.github.io/MJJS/public/tiles/8.jpg'); }
 
-/* bamboo */
-.tile[data-tile="0"]  { background-image: url('https://pomax.github.io/MJJS/public/tiles/0.jpg'); }
-.tile[data-tile="1"]  { background-image: url('https://pomax.github.io/MJJS/public/tiles/1.jpg'); }
-.tile[data-tile="2"]  { background-image: url('https://pomax.github.io/MJJS/public/tiles/2.jpg'); }
-.tile[data-tile="3"]  { background-image: url('https://pomax.github.io/MJJS/public/tiles/3.jpg'); }
-.tile[data-tile="4"]  { background-image: url('https://pomax.github.io/MJJS/public/tiles/4.jpg'); }
-.tile[data-tile="5"]  { background-image: url('https://pomax.github.io/MJJS/public/tiles/5.jpg'); }
-.tile[data-tile="6"]  { background-image: url('https://pomax.github.io/MJJS/public/tiles/6.jpg'); }
-.tile[data-tile="7"]  { background-image: url('https://pomax.github.io/MJJS/public/tiles/7.jpg'); }
-.tile[data-tile="8"]  { background-image: url('https://pomax.github.io/MJJS/public/tiles/8.jpg'); }
+.tile[data-tile="9"]  { content:'characters-1'; background-image: url('https://pomax.github.io/MJJS/public/tiles/9.jpg'); }
+.tile[data-tile="10"] { content:'characters-2'; background-image: url('https://pomax.github.io/MJJS/public/tiles/10.jpg'); }
+.tile[data-tile="11"] { content:'characters-3'; background-image: url('https://pomax.github.io/MJJS/public/tiles/11.jpg'); }
+.tile[data-tile="12"] { content:'characters-4'; background-image: url('https://pomax.github.io/MJJS/public/tiles/12.jpg'); }
+.tile[data-tile="13"] { content:'characters-5'; background-image: url('https://pomax.github.io/MJJS/public/tiles/13.jpg'); }
+.tile[data-tile="14"] { content:'characters-6'; background-image: url('https://pomax.github.io/MJJS/public/tiles/14.jpg'); }
+.tile[data-tile="15"] { content:'characters-7'; background-image: url('https://pomax.github.io/MJJS/public/tiles/15.jpg'); }
+.tile[data-tile="16"] { content:'characters-8'; background-image: url('https://pomax.github.io/MJJS/public/tiles/16.jpg'); }
+.tile[data-tile="17"] { content:'characters-9'; background-image: url('https://pomax.github.io/MJJS/public/tiles/17.jpg'); }
 
-/* characters */
-.tile[data-tile="9"]  { background-image: url('https://pomax.github.io/MJJS/public/tiles/9.jpg'); }
-.tile[data-tile="10"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/10.jpg'); }
-.tile[data-tile="11"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/11.jpg'); }
-.tile[data-tile="12"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/12.jpg'); }
-.tile[data-tile="13"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/13.jpg'); }
-.tile[data-tile="14"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/14.jpg'); }
-.tile[data-tile="15"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/15.jpg'); }
-.tile[data-tile="16"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/16.jpg'); }
-.tile[data-tile="17"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/17.jpg'); }
+.tile[data-tile="18"] { content:'dots-1'; background-image: url('https://pomax.github.io/MJJS/public/tiles/18.jpg'); }
+.tile[data-tile="19"] { content:'dots-2'; background-image: url('https://pomax.github.io/MJJS/public/tiles/19.jpg'); }
+.tile[data-tile="20"] { content:'dots-3'; background-image: url('https://pomax.github.io/MJJS/public/tiles/20.jpg'); }
+.tile[data-tile="21"] { content:'dots-4'; background-image: url('https://pomax.github.io/MJJS/public/tiles/21.jpg'); }
+.tile[data-tile="22"] { content:'dots-5'; background-image: url('https://pomax.github.io/MJJS/public/tiles/22.jpg'); }
+.tile[data-tile="23"] { content:'dots-6'; background-image: url('https://pomax.github.io/MJJS/public/tiles/23.jpg'); }
+.tile[data-tile="24"] { content:'dots-7'; background-image: url('https://pomax.github.io/MJJS/public/tiles/24.jpg'); }
+.tile[data-tile="25"] { content:'dots-8'; background-image: url('https://pomax.github.io/MJJS/public/tiles/25.jpg'); }
+.tile[data-tile="26"] { content:'dots-9'; background-image: url('https://pomax.github.io/MJJS/public/tiles/26.jpg'); }
 
-/* dots */
-.tile[data-tile="18"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/18.jpg'); }
-.tile[data-tile="19"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/19.jpg'); }
-.tile[data-tile="20"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/20.jpg'); }
-.tile[data-tile="21"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/21.jpg'); }
-.tile[data-tile="22"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/22.jpg'); }
-.tile[data-tile="23"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/23.jpg'); }
-.tile[data-tile="24"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/24.jpg'); }
-.tile[data-tile="25"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/25.jpg'); }
-.tile[data-tile="26"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/26.jpg'); }
+.tile[data-tile="27"] { content:'E'; background-image: url('https://pomax.github.io/MJJS/public/tiles/27.jpg'); }
+.tile[data-tile="28"] { content:'S'; background-image: url('https://pomax.github.io/MJJS/public/tiles/28.jpg'); }
+.tile[data-tile="29"] { content:'W'; background-image: url('https://pomax.github.io/MJJS/public/tiles/29.jpg'); }
+.tile[data-tile="30"] { content:'N'; background-image: url('https://pomax.github.io/MJJS/public/tiles/30.jpg'); }
 
-/* winds */
-.tile[data-tile="27"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/27.jpg'); }
-.tile[data-tile="28"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/28.jpg'); }
-.tile[data-tile="29"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/29.jpg'); }
-.tile[data-tile="30"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/30.jpg'); }
+.tile[data-tile="31"] { content:'F'; background-image: url('https://pomax.github.io/MJJS/public/tiles/31.jpg'); }
+.tile[data-tile="32"] { content:'C'; background-image: url('https://pomax.github.io/MJJS/public/tiles/32.jpg'); }
+.tile[data-tile="33"] { content:'P'; background-image: url('https://pomax.github.io/MJJS/public/tiles/33.jpg'); }
 
-/* dragons */
-.tile[data-tile="31"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/31.jpg'); }
-.tile[data-tile="32"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/32.jpg'); }
-.tile[data-tile="33"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/33.jpg'); }
+.tile[data-tile="38"] { content:'spring'; background-image: url('https://pomax.github.io/MJJS/public/tiles/38.jpg'); }
+.tile[data-tile="39"] { content:'summer'; background-image: url('https://pomax.github.io/MJJS/public/tiles/39.jpg'); }
+.tile[data-tile="40"] { content:'fall';   background-image: url('https://pomax.github.io/MJJS/public/tiles/40.jpg'); }
+.tile[data-tile="41"] { content:'winter'; background-image: url('https://pomax.github.io/MJJS/public/tiles/41.jpg'); }
 
-/* bonus tiles */
-.tile[data-tile="34"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/34.jpg'); }
-.tile[data-tile="35"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/35.jpg'); }
-.tile[data-tile="36"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/36.jpg'); }
-.tile[data-tile="37"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/37.jpg'); }
-.tile[data-tile="38"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/38.jpg'); }
-.tile[data-tile="39"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/39.jpg'); }
-.tile[data-tile="40"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/40.jpg'); }
-.tile[data-tile="41"] { background-image: url('https://pomax.github.io/MJJS/public/tiles/41.jpg'); }
+.tile[data-tile="34"] { content:'orchid';        background-image: url('https://pomax.github.io/MJJS/public/tiles/34.jpg'); }
+.tile[data-tile="35"] { content:'plum';          background-image: url('https://pomax.github.io/MJJS/public/tiles/35.jpg'); }
+.tile[data-tile="36"] { content:'chrysanthemum'; background-image: url('https://pomax.github.io/MJJS/public/tiles/36.jpg'); }
+.tile[data-tile="37"] { content:'bamboo';        background-image: url('https://pomax.github.io/MJJS/public/tiles/37.jpg'); }
 
-.tile[data-bonus] {
-  transform: scale(0.8, 0.8);
-  border: 1px solid red;
-}
+.tile[data-bonus] { transform: scale(0.8, 0.8); border: 1px solid red; }
 
 
 /*
