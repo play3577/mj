@@ -9,5 +9,32 @@ class TileTracker {
   }
   seen(tile) {
     this.tiles[tile]--;
+    if (this.counts) {
+      let e = this.counts[tile].shift();
+      try {
+        e.parentNode.removeChild(e);
+      } catch(error) {
+        console.log(`Can't remove ${tile}, because there aren't any left to remove..?`);
+        throw error;
+      }
+    }
+  }
+  bindTo(htmlElement) {
+    this.el = htmlElement;
+    this.counts = {};
+    Object.keys(this.tiles).forEach(tile => {
+      let count = this.tiles[tile];
+      let div = document.createElement('div');
+      div.classList.add('tile-count');
+      if (tile>33) div.classList.add('hidden');
+      this.el.appendChild(div)
+      this.counts[tile] = [];
+      while(count--) {
+        let e = document.createElement('span');
+        e.dataset.tile = tile;
+        this.counts[tile].push(e);
+        div.appendChild(e);
+      }
+    })
   }
 }

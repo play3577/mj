@@ -9,7 +9,7 @@ class BotPlayer extends Player {
   }
 
   append(tile, concealed=true) {
-    super.append(tile, concealed);
+    return super.append(tile, concealed);
   }
 
   determineDiscard(resolve) {

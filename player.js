@@ -32,19 +32,28 @@ class Player {
   }
 
   append(t, concealed) {
-    if (typeof t !== 'object') t = create(t, concealed);
+    let revealed;
+    if (typeof t !== 'object') {
+      if (t > 33) revealed = t;
+      t = create(t, concealed);
+    }
     this.tracker.seen(t.dataset.tile);
     this.el.appendChild(t);
     this.sortTiles();
-    if (t.dataset.tile > 33) return t;
+    return revealed;
   }
 
   see(tiles, player) {
     if (player === this) return;
     if (!tiles.map) tiles = [tiles];
     tiles.forEach(tile => {
-      if (typeof tile === 'object') tile = tile.dataset.tile;
-      this.tracker.seen(tile);
+      let ignore = false;
+      if (typeof tile === 'object') {
+        let from = tile.dataset.from;
+        if (from && from == this.id) ignore = true;
+        tile = tile.dataset.tile;
+      }
+      if (!ignore) this.tracker.seen(tile);
     });
   }
 

@@ -10,9 +10,11 @@ class HumanPlayer extends BotPlayer {
     super(htmlelement, wall);
     this.mayDiscard = false;
     this.maySendClaim = false;
+    // we will see the "knowledge" panel with our tracker
+    this.tracker.bindTo(document.querySelector(".knowledge"));
   }
   append(tile, concealed=false) {
-    super.append(tile, concealed);
+    return super.append(tile, concealed);
   }
   determineDiscard(resolve) {
     // Let's ask our "bot" assistant for what it would

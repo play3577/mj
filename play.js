@@ -19,6 +19,7 @@ function setup() {
  * and then starting play.
  */
 function playHand(players, wall) {
+  PLAY_START = Date.now();
   dealTiles(players, wall);
   playGame(players, wall);
 }
@@ -72,7 +73,10 @@ function playGame(players, wall) {
       } while (tile>33 && !wall.dead);
     } else {
       let tiles = player.claim(currentPlayerId, claim, discard);
-      // awarded claims are shown to all other players.
+      // Awarded claims are shown to all other players. However,
+      // the player whose discard this was should make sure to
+      // ignore marking the tile they discarded as "seen" a
+      // second time: they already saw it when they drew it.
       players.forEach(p => p.see(tiles, player));
     }
 
@@ -83,18 +87,22 @@ function playGame(players, wall) {
 
     // Did anyone win?
     if (!discard) {
+      let play_length = (Date.now() - PLAY_START);
       console.log(`Player ${currentPlayerId} wins this round!`);
       console.log(`Revealed tiles ${player.getLockedTileFaces()}`);
       console.log(`Concealed tiles: ${player.getTileFaces()}`);
-      console.log(`Tiles knowledge:`, player.tracker.tiles);
+      console.log(`(game took ${play_length}ms)`);
       player.winner();
       return discards.classList.add('winner');
     }
 
-    // No winner; does someone want to claim this discard?
+    // No winner - process the discard.
     delete discard.dataset.hidden;
     discards.appendChild(discard);
     discard.classList.add('discard');
+    discard.dataset.from = currentPlayerId;
+
+    // Does someone want to claim this discard?
     claim = await getAllClaims(players, currentPlayerId, discard);
     if (claim) {
       currentPlayerId = claim.p;

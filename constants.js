@@ -4,8 +4,8 @@ const PRNG = new Random(SEED);
 const BOT_PLAY = true;
 const CONCEALED = true;
 const CLAIM_INTERVAL = 5000;
-const PLAY_INTERVAL = 20;
-const ARTIFICIAL_HUMAN_DELAY = 1;
+const PLAY_INTERVAL = 120;
+const ARTIFICIAL_HUMAN_DELAY = 0;
 
 const LOW_TO_HIGH = (a,b) => { a = a.score; b = b.score; return a - b; };
 const SORT_TILE_FN = (a,b) => a.getTileFace() - b.getTileFace();
