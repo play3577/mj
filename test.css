@@ -90,6 +90,7 @@ input[type=range] {
 
 .player.waiting { background: rgb(248, 235, 144); }
 .player.winner { background: gold; }
+.player.winner:before { content: '✧'; }
 
 .player.active::before { background: var(--blue); }
 .player::before {
