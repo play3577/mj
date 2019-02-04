@@ -193,8 +193,7 @@ function tilesNeeded(tiles, locked=[], canChow) {
   return { lookout, waiting };
 };
 
-if (typeof process !== "undefined" && process.argv) {
-  // set up a global:
+if (typeof process !== "undefined" && process.argv.indexOf('mgen.js') !== -1) { 
   Constants = require('./constants.js').Constants;
 
   // open tiles:
@@ -210,6 +209,7 @@ if (typeof process !== "undefined" && process.argv) {
   let pair = [];
   let set = ['k19','c12','p30'];
 
+  // see what happens:
   console.log("current hand:", hand);
   console.log("discards we want to be on the lookout for:");
   console.log(tilesNeeded(hand,single,pair,set));
