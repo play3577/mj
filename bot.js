@@ -89,8 +89,6 @@ class BotPlayer extends Player {
     // build a quick list of what we might actually be interested in
     let canChow = ((pid+1)%4 == this.id);
     let {lookout, waiting} = window.tilesNeeded(this.getTileFaces(), this.locked, canChow);
-    let looking = {};
-    lookout.forEach( (l,i) => l ? (looking[i] = l) : false);
     this.markWaiting(waiting);
 
     // is the current discard in the list of tiles we want?
