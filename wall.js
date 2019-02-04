@@ -3,6 +3,9 @@ const BASE = base.concat(base).concat(base).concat(base).concat([34,35,36,37,38,
 
 class Wall {
   constructor() {
+    this.reset();
+  }
+  reset() {
     let tiles = BASE.slice();
     this.tiles = [];
     while (tiles.length) {

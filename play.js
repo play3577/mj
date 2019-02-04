@@ -1,3 +1,4 @@
+
 /**
  * Set up a game of four players, and begin a game
  */
@@ -11,17 +12,35 @@ function setup() {
     }
   );
 
-  return { play() { playHand(players, wall) }};
+  let turn = 0;
+
+  const next = (result) => {
+    if (result) {
+      console.log(result);
+      if (!result.draw && turn === 16) {
+        console.log("full game played.");
+        return;
+      }
+    }
+    turn++;
+    console.log(`Starting turn ${turn}.`);
+    players.forEach(player => player.reset());
+    discards.innerHTML = '';
+    discards.setAttribute('class', 'discards');
+    playHand(turn, players, wall, next);
+  };
+
+  return { play() { next(); }};
 }
 
 /**
  * A single hand in a game consists of "dealing tiles"
  * and then starting play.
  */
-function playHand(players, wall) {
+function playHand(turn, players, wall, next) {
   PLAY_START = Date.now();
   dealTiles(players, wall);
-  playGame(players, wall);
+  playGame(turn, players, wall, next);
 }
 
 /**
@@ -29,6 +48,7 @@ function playHand(players, wall) {
  * with any bonus tiles replaced by normal tiles.
  */
 function dealTiles(players, wall) {
+  wall.reset();
   players.forEach((player, p) => {
     let bank = wall.get(13);
     for (let t=0, tile; t<bank.length; t++) {
@@ -52,7 +72,7 @@ function dealTiles(players, wall) {
 /**
  * The game loop function.
  */
-function playGame(players, wall) {
+function playGame(turn, players, wall, next) {
   let currentPlayerId = 2;
   let discard = undefined;
 
@@ -88,12 +108,13 @@ function playGame(players, wall) {
     // Did anyone win?
     if (!discard) {
       let play_length = (Date.now() - PLAY_START);
-      console.log(`Player ${currentPlayerId} wins this round!`);
+      console.log(`Player ${currentPlayerId} wins round ${turn}!`);
       console.log(`Revealed tiles ${player.getLockedTileFaces()}`);
       console.log(`Concealed tiles: ${player.getTileFaces()}`);
       console.log(`(game took ${play_length}ms)`);
       player.winner();
-      return discards.classList.add('winner');
+      discards.classList.add('winner');
+      return setTimeout(() => next({ winner: player }), PLAY_INTERVAL);
     }
 
     // No winner - process the discard.
@@ -115,14 +136,16 @@ function playGame(players, wall) {
     players.forEach(p => p.see(discard, player));
 
     if (wall.dead) {
-      console.log("OUT OF TILES");
-      return discards.classList.add('exhausted');
+      console.log("Turn ${turn} is a draw.");
+      discards.classList.add('exhausted');
+      return setTimeout(() => next({ draw: true }), PLAY_INTERVAL);
     }
 
     // We have tiles left to play with, so move on to the next player:
     currentPlayerId = (currentPlayerId + 1) % 4;
     return setTimeout(() => {player.disable(); play();}, PLAY_INTERVAL);
   };
+
   play();
 }
 

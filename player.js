@@ -7,9 +7,17 @@ class Player {
   constructor(htmlelement, wall) {
     this.el = htmlelement;
     this.id = htmlelement.id;
-    this.locked = [];
-    this.wall = wall;
+    this.wall = wall; // <-- Now, this is bad: players should NOT have access to the actual wall! We'll fix this one we go message-based.
     this.tracker = new TileTracker();
+    this.reset();
+  }
+
+  reset() {
+    this.el.setAttribute("class", "player");
+    this.el.innerHTML = '';
+    this.has_won = false;
+    this.locked = [];
+    this.tracker.reset();
   }
 
   activate() {
@@ -23,6 +31,11 @@ class Player {
   markWaiting(val) {
     if (val) this.el.classList.add('waiting');
     else this.el.classList.remove('waiting');
+  }
+
+  markWinner() {
+    this.has_won = true;
+    this.el.dataset.wincount = parseInt( this.el.dataset.wincount || 0 ) + 1;
   }
 
   winner() {
@@ -187,7 +200,7 @@ class Player {
     let claimtype = claim.claimtype;
 
     if (claimtype === CLAIM.WIN) {
-      this.has_won = true;
+      this.markWinner();
       claimtype = claim.wintype;
       if (claimtype === CLAIM.CHOW) {
         claimtype = convertSubtypeToClaim(claimtype);

@@ -6,6 +6,10 @@ class TileTracker {
     let tiles = (new Array(34)).fill(4);
     tiles.push(1,1,1,1,1,1,1,1);
     this.tiles = Object.assign({}, tiles);
+    if (this.el) this.bindTo(this.el);
+  }
+  get(tile) {
+    return this.tiles[tile];
   }
   seen(tile) {
     this.tiles[tile]--;
@@ -21,6 +25,7 @@ class TileTracker {
   }
   bindTo(htmlElement) {
     this.el = htmlElement;
+    this.el.innerHTML = '';
     this.counts = {};
     Object.keys(this.tiles).forEach(tile => {
       let count = this.tiles[tile];

@@ -108,6 +108,15 @@ input[type=range] {
   z-index: 2;
 }
 
+.player::after {
+  content: attr(data-wincount);
+  background: var(--prp);
+  box-shadow: 0 0 4px 0 var(--prp);
+  padding: 2px 5px;
+  position: absolute;
+  right: var(--sep);
+}
+
 .player:nth-child(1) {
   --xp: calc(var(--ph) - var(--w));
   transform: rotate(var(--p1)) translate(var(--xp), 0);
