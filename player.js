@@ -18,6 +18,16 @@ class Player {
     this.has_won = false;
     this.locked = [];
     this.tracker.reset();
+    this.wind = false;
+    this.windOfTheRound = false;
+  }
+
+  markTurn(turn) {
+    // 0=east, 1=south, 2=west, 3=north
+    this.wind = (turn + (this.id|0)) % 4;
+    this.el.dataset.wind = ['東','南','西','北'][this.wind];
+    this.windOfTheRound = (turn/4)|0;
+
   }
 
   activate() {

@@ -95,7 +95,12 @@ input[type=range] {
 
 .player.active::before { background: var(--blue); }
 .player::before {
+  /*
+  content: attr(id) '\A' attr(data-wind);
+  */
   content: attr(id);
+  white-space: pre;
+  font-weight: 400;
   margin: 0.5em;
   border: 1px solid var(--prp);
   border-radius: 25%;

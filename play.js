@@ -12,18 +12,28 @@ function setup() {
     }
   );
 
+  // A simple turn counter. Note that we do not
+  // advance this counter on a draw.
   let turn = 0;
 
+  // A function that triggers the next turn's play,
+  // unless the game is over because we've played
+  // enough rounds to rotate the winds fully.
   const next = (result) => {
+    let pre = 'S';
+
     if (result) {
-      console.log(result);
+      pre = result.draw ? 'Res' : pre;
+      if (result.winner) {
+        let shuffles = rotateWinds();
+        if (turn !== shuffles) turn = shuffles;
+      }
       if (!result.draw && turn === 16) {
-        console.log("full game played.");
-        return;
+        return console.log("\nfull game played.");
       }
     }
-    turn++;
-    console.log(`Starting turn ${turn}.`);
+
+    console.log(`\n${pre}tarting turn ${turn}.`);
     players.forEach(player => player.reset());
     discards.innerHTML = '';
     discards.setAttribute('class', 'discards');
@@ -39,7 +49,7 @@ function setup() {
  */
 function playHand(turn, players, wall, next) {
   PLAY_START = Date.now();
-  dealTiles(players, wall);
+  dealTiles(turn, players, wall);
   playGame(turn, players, wall, next);
 }
 
@@ -47,9 +57,10 @@ function playHand(turn, players, wall, next) {
  * Dealing tiles means getting each player 13 play tiles,
  * with any bonus tiles replaced by normal tiles.
  */
-function dealTiles(players, wall) {
+function dealTiles(turn, players, wall) {
   wall.reset();
   players.forEach((player, p) => {
+    player.markTurn(turn);
     let bank = wall.get(13);
     for (let t=0, tile; t<bank.length; t++) {
       tile = bank[t];
