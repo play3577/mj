@@ -15,7 +15,7 @@ class HumanPlayer extends BotPlayer {
     this.tracker.bindTo(document.querySelector(".knowledge"));
 
     // humans need a UI to play mahjong.
-    this.ui = new ClientUI(this.id);
+    this.tilebank = new ClientUI(this.id);
   }
 
   append(tile, concealed=false) {
@@ -44,7 +44,7 @@ class HumanPlayer extends BotPlayer {
       // And start listening for clicks. Even though this may
       // take an hour or more, play will resume on a click occurs.
       //
-      // TODO: this.ui.listenForDiscard();
+      // TODO: this.tilebank.listenForDiscard();
       //
     });
   }

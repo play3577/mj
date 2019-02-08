@@ -4,9 +4,9 @@
  * interaction (human overrides for bots, or just plain
  * human input for... well, humans)
  */
-class ClientUI {
+class ClientUI extends TileBank {
   constructor(id) {
-    this.id = id;
+    super(id);
     this.discards = document.querySelector(".discards");
     this.playerbanks = document.querySelectorAll(".player");
     this.el = this.playerbanks[2];
@@ -14,6 +14,8 @@ class ClientUI {
   }
 
   reset() {
+    if(!this.el) return;
+
     this.el.setAttribute("class", "player");
     this.playerbanks.forEach(b => {
       b.innerHTML = '';
@@ -66,8 +68,9 @@ class ClientUI {
     this.el.dataset.wind = ['東','南','西','北'][wind];
   }
 
-  activate() {
-    this.el.classList.add('active');
+  activate(id) {
+    this.playerbanks.forEach(b => b.classList.remove('active'));
+    this.playerbanks[id].classList.add('active');
   }
 
   disable() {
@@ -79,12 +82,8 @@ class ClientUI {
     else this.el.classList.remove('waiting');
   }
 
-  markWinner() {
-    this.el.dataset.wincount = parseInt( this.el.dataset.wincount || 0 ) + 1;
-  }
-
-  getWinCount() {
-    return this.el.dataset.wincount;
+  markWinner(wincount) {
+    this.el.dataset.wincount = wincount;
   }
 
   winner() {

@@ -96,7 +96,7 @@ function playGame(turn, players, wall, next) {
     if (discard) discard.classList.remove('discard');
 
     let player = players[currentPlayerId];
-    player.activate();
+    players.forEach(p => p.activate(player.id));
 
     // "Draw one"
     if (!claim) {

@@ -6,7 +6,6 @@
 class TileBank {
   constructor(id) {
     this.id = id;
-    this.wincount = 0;
     this.reset();
   }
 
@@ -27,7 +26,7 @@ class TileBank {
     // bots do nothing with this signal
   }
 
-  activate() {
+  activate(id) {
     // bots do nothing with this signal
   }
 
@@ -39,12 +38,8 @@ class TileBank {
     // bots do nothing with this signal
   }
 
-  markWinner() {
-    this.wincount++;
-  }
-
-  getWinCount() {
-    return this.wincount;
+  markWinner(wincount) {
+    // bots do nothing on this signal.
   }
 
   winner() {
