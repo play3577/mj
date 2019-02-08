@@ -4,8 +4,8 @@ const PRNG = new Random(SEED);
 const BOT_PLAY = true;
 const CONCEALED = true;
 const CLAIM_INTERVAL = 5000;
-const PLAY_INTERVAL = 0;
-const TURN_INTERVAL = 1000;
+const PLAY_INTERVAL = 100;
+const TURN_INTERVAL = 5000;
 const ARTIFICIAL_HUMAN_DELAY = 0;
 
 const LOW_TO_HIGH = (a,b) => { a = a.score; b = b.score; return a - b; };
