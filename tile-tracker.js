@@ -1,5 +1,6 @@
 class TileTracker {
-  constructor() {
+  constructor(id) {
+    this.id = id;
     this.reset();
   }
   reset() {
@@ -12,14 +13,17 @@ class TileTracker {
     return this.tiles[tile];
   }
   seen(tile) {
+    if (this.id == 2) {
+      Logger.debug(`Player ${this.id} removing ${tile} from available tiles.`);
+    }
     this.tiles[tile]--;
     if (this.counts) {
       let e = this.counts[tile].shift();
       try {
         e.parentNode.removeChild(e);
       } catch(error) {
-        console.log(`Can't remove ${tile}, because there aren't any left to remove..?`);
-        console.trace();
+        Logger.debug(`Player ${this.id} can't remove ${tile}, because there aren't any left to remove..?`);
+        Logger.trace();
         throw error;
       }
     }

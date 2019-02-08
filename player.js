@@ -9,7 +9,7 @@ class Player {
     this.el.id = id;
     this.id = id;
     this.wall = proxyWall;
-    this.tracker = new TileTracker();
+    this.tracker = new TileTracker(this.id);
     this.tilebank = new TileBank(this.id);
     this.wincount = 0;
     this.reset();
@@ -255,7 +255,7 @@ class Player {
       }
     }
 
-    console.log(`claim awared, ${this.id} to form ${claimtype} using ${this.tilebank.getTileFaces()}`);
+    Logger.debug(`claim awarded, ${this.id} to form ${claimtype} using ${this.tilebank.getTileFaces()}`);
 
     // being awared a discard based on a claims, however,
     // is universal: the tiles get locked.
