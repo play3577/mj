@@ -7,6 +7,7 @@
 class ClientUI {
   constructor(id) {
     this.id = id;
+    this.discards = document.querySelector(".discards");
     this.playerbanks = document.querySelectorAll(".player");
     this.el = this.playerbanks[2];
     this.reset();
@@ -19,6 +20,10 @@ class ClientUI {
       b.classList.remove('winner');
     });
     this.el.innerHTML = '';
+
+    let discards = this.discards;
+    discards.innerHTML = '';
+    discards.setAttribute('class', 'discards');
   }
 
   handWillStart() {
@@ -44,7 +49,10 @@ class ClientUI {
         if (!s[0].dataset.winning) return;
         s.forEach(t => bank.querySelector(`[data-locked][data-tile="${t.dataset.tile}"]:not([data-winning])`).dataset.winning = 'winning');
       });
-      if (res.winner) bank.classList.add('winner');
+      if (res.winner) {
+        this.discards.classList.add('winner');
+        bank.classList.add('winner');
+      }
       bank.dataset.wincount = res.wincount;
     });
   }

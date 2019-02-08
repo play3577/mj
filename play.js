@@ -41,8 +41,6 @@ function setup() {
     console.log(`\n${pre}tarting turn ${turn}.`); // Starting turn / Restarting turn
 
     players.forEach(player => player.reset());
-    discards.innerHTML = '';
-    discards.setAttribute('class', 'discards');
     playHand(turn, players, wall, next);
   };
 
@@ -131,7 +129,6 @@ function playGame(turn, players, wall, next) {
       console.log(`Concealed tiles: ${player.getTileFaces()}`);
       console.log(`(game took ${play_length}ms)`);
       player.winner();
-      discards.classList.add('winner');
 
       // Let everyone know what everyone had. It's the nice thing to do.
       let disclosure = players.map(p => p.getDisclosure());
