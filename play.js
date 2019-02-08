@@ -119,6 +119,10 @@ function playGame(turn, players, wall, next) {
     // "Play one"
     discard = await new Promise(resolve => player.getDiscard(resolve));
 
+    if (discard) {
+      console.log(`player ${player.id} discarded ${discard.dataset.tile}`);
+    }
+
     // Aaaand that's the core game mechanic covered!
 
     // Did anyone win?
@@ -145,6 +149,7 @@ function playGame(turn, players, wall, next) {
     // Does someone want to claim this discard?
     claim = await getAllClaims(players, currentPlayerId, discard);
     if (claim) {
+      console.log(`${claim.p} wants ${discard.dataset.tile} for ${claim.claimtype}`);
       currentPlayerId = claim.p;
       player.disable();
       // setTimeout rather than direct recursion!

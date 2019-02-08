@@ -19,6 +19,7 @@ class TileTracker {
         e.parentNode.removeChild(e);
       } catch(error) {
         console.log(`Can't remove ${tile}, because there aren't any left to remove..?`);
+        console.trace();
         throw error;
       }
     }

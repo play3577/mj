@@ -97,15 +97,19 @@ class ClientUI {
     this.sortTiles();
   }
 
-  removeDiscard(discard) {
+  remove(discard) {
     this.el.removeChild(discard);
   }
 
-  see(tile, player, discard, locked) {
+  lock(tiles) {
+    // visual set locking is handled by see()/4 instead for human players.
+  }
+
+  see(tile, player, discard, locked=true) {
     let bank = this.playerbanks[player.id];
     if (!discard) {
       let e = create(tile);
-      if (locked !== false) e.dataset.locked = 'locked';
+      if (locked === true) e.dataset.locked = 'locked';
       if (tile < 34) {
         let blank = bank.querySelector('[data-tile="-1"]');
         if (blank) bank.replaceChild(e, blank);

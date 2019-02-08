@@ -10,6 +10,7 @@ class Player {
     this.id = id;
     this.wall = proxyWall;
     this.tracker = new TileTracker();
+    this.ui = new TileBank(this.id);
     this.reset();
   }
 
@@ -102,7 +103,7 @@ class Player {
   }
 
   removeDiscard(discard) {
-    if (this.ui) this.ui.removeDiscard(discard);
+    if (this.ui) this.ui.remove(discard);
     else this.el.removeChild(discard);
   }
 
@@ -116,7 +117,7 @@ class Player {
         if (from && from == this.id) ignore = true;
         tile = tile.dataset.tile;
       }
-      if (!ignore) this.tracker.seen(tile);
+      if (!ignore) { this.tracker.seen(tile); }
       if (this.ui) this.ui.see(tile, player, discard);
     });
   }
@@ -274,6 +275,8 @@ class Player {
       }
     }
 
+    console.log(`claim awared, ${this.id} to form ${claimtype} using ${this.ui.getTileFaces()}`);
+
     // being awared a discard based on a claims, however,
     // is universal: the tiles get locked.
     this.append(discard);
@@ -311,6 +314,8 @@ class Player {
         this.getSupplementTile(p);
       }
       this.locked.push(set);
+
+      if (this.ui) this.ui.lock(set);
       return set;
     }
 
@@ -337,6 +342,9 @@ class Player {
     });
 
     this.locked.push(set);
+
+    if (this.ui) this.ui.lock(set);
+
     return set;
   }
 
