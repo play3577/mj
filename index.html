@@ -4,7 +4,7 @@
     <meta name="viewport" content="width=device-width">
     <meta charset="utf-8">
     <title>Mahjong - HTML/CSS/JS</title>
-    <link rel="stylesheet" href="client.css">
+    <link rel="stylesheet" href="src/css/client.css">
   </head>
   <body>
     <div class="hidden modal">
@@ -19,7 +19,7 @@
       <div class="discards">discards</div>
       <div class="knowledge"></div>
       <div class="windicator">
-          <link rel="stylesheet" href="rotator.css">
+          <link rel="stylesheet" href="src/css/rotator.css">
           <div class="player-wind tc e">東</div>
           <div class="player-wind rc">南</div>
           <div class="player-wind bc">西</div>
@@ -211,21 +211,21 @@
 
     <section id="scripts">
       <!-- prerequisites -->
-      <script src="logger.js"></script>
-      <script src="prng.js"></script>
-      <script src="constants.js"></script>
-      <script src="utils.js"></script>
-      <script src="tile-tracker.js"></script>
-      <script src="tile-bank.js"></script>
-      <script src="client-ui.js"></script>
-      <script src="rotator.js"></script>
-      <script src="player.js"></script>
-      <script src="wall.js"></script>
-      <script src="bot.js"></script>
-      <script src="human.js"></script>
-      <script src="mgen.js"></script> <!-- contains tilesNeeded() -->
-      <script src="modal.js"></script>
-      <script src="play.js"></script>
+      <script src="src/js/logger.js"></script>
+      <script src="src/js/prng.js"></script>
+      <script src="src/constants.js"></script>
+      <script src="src/js/utils.js"></script>
+      <script src="src/js/core/players/tracking/tile-tracker.js"></script>
+      <script src="src/js/core/players/tracking/tile-bank.js"></script>
+      <script src="src/js/core/players/tracking/client-ui.js"></script>
+      <script src="src/js/rotator.js"></script>
+      <script src="src/js/core/players/player.js"></script>
+      <script src="src/js/core/wall.js"></script>
+      <script src="src/js/core/players/bot.js"></script>
+      <script src="src/js/core/players/human.js"></script>
+      <script src="src/js/core/mgen.js"></script> <!-- contains tilesNeeded() -->
+      <script src="src/js/modal.js"></script>
+      <script src="src/js/core/play.js"></script>
 
       <!-- twitter the sparrows! -->
       <script>setup().play();</script>

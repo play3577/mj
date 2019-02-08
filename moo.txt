@@ -1,4 +1,0 @@
-current hand: [ 31, 31, 31, 33 ]
-discards we want to be on the lookout for:
-{ lookout: [ <31 empty items>, [ '8' ], <1 empty item>, [ '16' ] ],
-  waiting: true }
