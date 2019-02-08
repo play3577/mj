@@ -1,1 +1,2 @@
-nex up: replace this.el for bot players with a tile bank object. Human players get their HTML client, but bots really don't need one. At all.
+Next up: replace this.el for bot players with a tile bank object. Human players get their HTML client, but bots really don't need one. At all.
+Also: can players win on a self-drawn tile? What happens? Is there a way to detect self-drawn?

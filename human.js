@@ -15,7 +15,11 @@ class HumanPlayer extends BotPlayer {
     this.tracker.bindTo(document.querySelector(".knowledge"));
 
     // humans need a UI to play mahjong.
-    this.ui = new ClientUI();
+    this.ui = new ClientUI(this.id);
+  }
+
+  append(tile, concealed=false) {
+    return super.append(tile, concealed);
   }
 
   determineDiscard(resolve) {

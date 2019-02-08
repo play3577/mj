@@ -205,6 +205,8 @@ input[type=range] {
 .tile.discard { box-shadow: 0 0 3px 0 var(--cream); }
 .tile + .tile { margin-left: 1px; }
 
+[data-tile="-1"]  { content:'unknown'; background-image: url('https://pomax.github.io/MJJS/public/tiles/concealed.jpg'); }
+
 [data-tile="0"]  { content:'bamboo-1'; background-image: url('https://pomax.github.io/MJJS/public/tiles/0.jpg'); }
 [data-tile="1"]  { content:'bamboo-2'; background-image: url('https://pomax.github.io/MJJS/public/tiles/1.jpg'); }
 [data-tile="2"]  { content:'bamboo-3'; background-image: url('https://pomax.github.io/MJJS/public/tiles/2.jpg'); }
@@ -254,21 +256,10 @@ input[type=range] {
 [data-tile="36"] { content:'chrysanthemum'; background-image: url('https://pomax.github.io/MJJS/public/tiles/36.jpg'); }
 [data-tile="37"] { content:'bamboo';        background-image: url('https://pomax.github.io/MJJS/public/tiles/37.jpg'); }
 
-.tile[data-bonus] { transform: scale(0.8, 0.8); border: 1px solid red; }
-
-.tile[data-winning] { border-width: 5px 1px 1px 1px; border-top-color: #00ff42; }
-
-/*
-.tile[data-hidden] { background: url('https://pomax.github.io/MJJS/public/tiles/concealed.jpg'); }
-.tile[data-hidden] { opacity: 0.5; }
-*/
-.tile[data-hidden] { opacity: 0.5; }
-
 .player .tile { margin-top: calc(calc(var(--ph) / 6)); }
-.tile[data-locked] { margin-top: calc(0em - calc(var(--ph) / 6)); }
-
-
-
+.tile[data-locked]  { margin-top: calc(0em - calc(var(--ph) / 6)); }
+.tile[data-bonus]   { transform: scale(0.8, 0.8); border: 1px solid red; }
+.tile[data-winning] { border-width: 5px 1px 1px 1px; border-top-color: #00ff42; }
 
 .knowledge {
   background: var(--green);

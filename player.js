@@ -24,8 +24,23 @@ class Player {
     if (this.ui) this.ui.reset();
   }
 
-  gameWillStart() {
-    // console.log(`${this.id} has ui:`, this.ui);
+  handWillStart() {
+    if (this.ui) this.ui.handWillStart();
+  }
+
+  getDisclosure() {
+    let hand = this.getTileFaces();
+    return {
+      locked: this.locked,
+      concealed: hand.filter(v => v<34),
+      bonus: hand.filter(v => v>33),
+      winner: this.has_won,
+      wincount: this.getWinCount()
+    };
+  }
+
+  endOfHand(disclosure) {
+    if (this.ui) this.ui.endOfHand(disclosure);
   }
 
   markTurn(turn) {
@@ -86,17 +101,18 @@ class Player {
     return revealed;
   }
 
-  see(tiles, player) {
+  see(tiles, player, discard) {
     if (player === this) return;
     if (!tiles.map) tiles = [tiles];
     tiles.forEach(tile => {
-      let ignore = false;
+      let ignore = false, from;
       if (typeof tile === 'object') {
-        let from = tile.dataset.from;
+        from = tile.dataset.from;
         if (from && from == this.id) ignore = true;
         tile = tile.dataset.tile;
       }
       if (!ignore) this.tracker.seen(tile);
+      if (this.ui) this.ui.see(tile, player, discard);
     });
   }
 

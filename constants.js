@@ -4,11 +4,18 @@ const PRNG = new Random(SEED);
 const BOT_PLAY = true;
 const CONCEALED = true;
 const CLAIM_INTERVAL = 5000;
-const PLAY_INTERVAL = 1;
+const PLAY_INTERVAL = 0;
+const TURN_INTERVAL = 1000;
 const ARTIFICIAL_HUMAN_DELAY = 0;
 
 const LOW_TO_HIGH = (a,b) => { a = a.score; b = b.score; return a - b; };
-const SORT_TILE_FN = (a,b) => a.getTileFace() - b.getTileFace();
+const SORT_TILE_FN = (a,b) => {
+    a = a.getTileFace();
+    b = b.getTileFace();
+    if (a===-1) return 1;
+    if (b===-1) return -1;
+    return a - b;
+}
 
 const CLAIM = {
     IGNORE: 0,

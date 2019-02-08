@@ -38,7 +38,7 @@ function setup() {
       }
     }
 
-    console.log(`\n${pre}tarting turn ${turn}.`);
+    console.log(`\n${pre}tarting turn ${turn}.`); // Starting turn / Restarting turn
 
     players.forEach(player => player.reset());
     discards.innerHTML = '';
@@ -56,7 +56,7 @@ function setup() {
 function playHand(turn, players, wall, next) {
   PLAY_START = Date.now();
   dealTiles(turn, players, wall);
-  players.forEach(p => p.gameWillStart());
+  players.forEach(p => p.handWillStart());
   playGame(turn, players, wall, next);
 }
 
@@ -81,10 +81,10 @@ function dealTiles(turn, players, wall) {
       // declare any kongs they might have in their hand. While unlikely, it
       // is entirely possible for this to lead to a player declaring four
       // kongs before play has even started. We will add this in later.
+      //
+      // Note that this also affects client-ui.js!
     }
   });
-  // purely cosmetic, but worth doing:
-  players.forEach(player => player.sortTiles());
 }
 
 /**
@@ -132,7 +132,13 @@ function playGame(turn, players, wall, next) {
       console.log(`(game took ${play_length}ms)`);
       player.winner();
       discards.classList.add('winner');
-      return setTimeout(() => next({ winner: player }), PLAY_INTERVAL);
+
+      // Let everyone know what everyone had. It's the nice thing to do.
+      let disclosure = players.map(p => p.getDisclosure());
+      players.forEach(p => p.endOfHand(disclosure));
+
+      // On to the next hand!
+      return setTimeout(() => next({ winner: player }), TURN_INTERVAL);
     }
 
     // No winner - process the discard.
@@ -151,7 +157,7 @@ function playGame(turn, players, wall, next) {
     }
 
     // no claim happened, this tile will no longer be available.
-    players.forEach(p => p.see(discard, player));
+    players.forEach(p => p.see(discard, player, true));
 
     if (wall.dead) {
       console.log("Turn ${turn} is a draw.");

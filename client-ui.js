@@ -5,15 +5,48 @@
  * human input for... well, humans)
  */
 class ClientUI {
-  constructor() {
-    let players = document.querySelectorAll(".player");
-    this.el = players[2];
+  constructor(id) {
+    this.id = id;
+    this.playerbanks = document.querySelectorAll(".player");
+    this.el = this.playerbanks[2];
     this.reset();
   }
 
   reset() {
     this.el.setAttribute("class", "player");
+    this.playerbanks.forEach(b => {
+      b.innerHTML = '';
+      b.classList.remove('winner');
+    });
     this.el.innerHTML = '';
+  }
+
+  handWillStart() {
+    // when the game starts, we know one thing about all
+    // players: they have 13 tiles.
+    this.playerbanks.forEach((b,i) => {
+      if (b === this.el) return;
+      for(let i=0; i<13; i++) {
+        b.appendChild(create(-1));
+      }
+    });
+    // NOTE: THIS IS NOT TRUE IF SOMEONE DECLARED A KONG
+    // IMMEDIATELY but then again we haven't add that
+    // logic in yet so let's not worry about that right now.
+  }
+
+  endOfHand(disclosure) {
+    disclosure.forEach( (res,id) => {
+      if (id == this.id) return;
+      let bank = this.playerbanks[id];
+      res.concealed.forEach(t => this.see(t, {id}, false, false));
+      res.locked.forEach(s => {
+        if (!s[0].dataset.winning) return;
+        s.forEach(t => bank.querySelector(`[data-locked][data-tile="${t.dataset.tile}"]:not([data-winning])`).dataset.winning = 'winning');
+      });
+      if (res.winner) bank.classList.add('winner');
+      bank.dataset.wincount = res.wincount;
+    });
   }
 
   markTurn(turn, wind) {
@@ -51,11 +84,27 @@ class ClientUI {
     this.sortTiles();
   }
 
-  sortTiles() {
+  see(tile, player, discard, locked) {
+    let bank = this.playerbanks[player.id];
+    if (!discard) {
+      let e = create(tile);
+      if (locked !== false) e.dataset.locked = 'locked';
+      if (tile < 34) {
+        let blank = bank.querySelector('[data-tile="-1"]');
+        if (blank) bank.replaceChild(e, blank);
+        else bank.appendChild(e);
+      }
+      else bank.appendChild(e);
+    }
+    this.sortTiles(bank);
+  }
+
+  sortTiles(e) {
+    e = e || this.el;
     Array
-    .from(this.el.querySelectorAll('.tile'))
+    .from(e.querySelectorAll('.tile'))
     .sort(SORT_TILE_FN)
-    .forEach(tile => this.el.appendChild(tile));
+    .forEach(tile => e.appendChild(tile));
   }
 
   getAvailableTiles() {
