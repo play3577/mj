@@ -41,6 +41,11 @@ class ClientUI {
   }
 
   endOfHand(disclosure) {
+    if (!disclosure) {
+      discards.classList.add('exhausted');
+      return;
+    }
+
     disclosure.forEach( (res,id) => {
       if (id == this.id) return;
       let bank = this.playerbanks[id];
@@ -92,6 +97,10 @@ class ClientUI {
     this.sortTiles();
   }
 
+  removeDiscard(discard) {
+    this.el.removeChild(discard);
+  }
+
   see(tile, player, discard, locked) {
     let bank = this.playerbanks[player.id];
     if (!discard) {
@@ -103,7 +112,12 @@ class ClientUI {
         else bank.appendChild(e);
       }
       else bank.appendChild(e);
-    }
+    } else {
+      discard = create(tile);
+      discard.classList.add('discard');
+      discard.dataset.from = player.id;
+      this.discards.appendChild(discard);
+      }
     this.sortTiles(bank);
   }
 

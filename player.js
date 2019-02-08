@@ -101,6 +101,11 @@ class Player {
     return revealed;
   }
 
+  removeDiscard(discard) {
+    if (this.ui) this.ui.removeDiscard(discard);
+    else this.el.removeChild(discard);
+  }
+
   see(tiles, player, discard) {
     if (player === this) return;
     if (!tiles.map) tiles = [tiles];

@@ -139,10 +139,8 @@ function playGame(turn, players, wall, next) {
     }
 
     // No winner - process the discard.
+    player.removeDiscard(discard);
     delete discard.dataset.hidden;
-    discards.appendChild(discard);
-    discard.classList.add('discard');
-    discard.dataset.from = currentPlayerId;
 
     // Does someone want to claim this discard?
     claim = await getAllClaims(players, currentPlayerId, discard);
@@ -158,7 +156,7 @@ function playGame(turn, players, wall, next) {
 
     if (wall.dead) {
       console.log("Turn ${turn} is a draw.");
-      discards.classList.add('exhausted');
+      players.forEach(p => p.endOfHand());
       return setTimeout(() => next({ draw: true }), PLAY_INTERVAL);
     }
 
