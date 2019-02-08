@@ -1,0 +1,1 @@
+nex up: replace this.el for bot players with a tile bank object. Human players get their HTML client, but bots really don't need one. At all.

@@ -19,4 +19,10 @@ class Wall {
     if (howmany===1) return this.tiles.shift();
     return this.tiles.splice(0, howmany);
   }
+  getProxy() {
+    return {
+      get: () => this.get(),
+      dead: () => this.dead
+    };
+  }
 }

@@ -4,8 +4,17 @@
  * and simply do what the code says to do.
  */
 class BotPlayer extends Player {
-  constructor(htmlelement, wall) {
-    super(htmlelement, wall);
+  constructor(id, proxyWall) {
+    super(id, proxyWall);
+
+  }
+
+  setupUI(fromHuman) {
+    if (!fromHuman) {
+      let players = document.querySelectorAll(".player");
+      this.el = players[id];
+      this.ui = false;
+    }
   }
 
   append(tile, concealed=true) {
@@ -18,7 +27,7 @@ class BotPlayer extends Player {
     // we only consider tiles that we can legally play with, meaning
     // (obvious) not bonus tiles, and not any tile already involved
     // in a play-claim earlier.
-    let tiles = this.el.querySelectorAll('.tile:not([data-bonus]):not([data-locked]');
+    let tiles = this.getAvailableTiles();
 
     // if we have no concealed tiles, that means it became our turn by
     // declaring a win off of a discard. So... don't discard!
@@ -75,7 +84,7 @@ class BotPlayer extends Player {
     let l = Number.MAX_VALUE;
     tileValues.forEach((value,pos) => { if (value < l) { l = value; tile = pos; }});
 
-    let discard = this.el.querySelector(`.tile[data-tile='${tile}']:not([data-locked]`);
+    let discard = this.getSingleTileFromHand(tile);
     resolve(discard);
   }
 

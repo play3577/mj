@@ -2,55 +2,75 @@
 //        Let's define a Player class!
 // =========================================
 
-
 class Player {
-  constructor(htmlelement, wall) {
-    this.el = htmlelement;
-    this.id = htmlelement.id;
-    this.wall = wall; // <-- Now, this is bad: players should NOT have access to the actual wall! We'll fix this one we go message-based.
+  constructor(id, proxyWall) {
+    this.el = document.createElement('div');
+    this.el.setAttribute('class', 'player');
+    this.el.id = id;
+    this.id = id;
+    this.wall = proxyWall;
     this.tracker = new TileTracker();
     this.reset();
   }
 
   reset() {
-    this.el.setAttribute("class", "player");
-    this.el.innerHTML = '';
-    this.has_won = false;
     this.locked = [];
-    this.tracker.reset();
     this.wind = false;
     this.windOfTheRound = false;
+    this.has_won = false;
+    this.tracker.reset();
+    this.el.innerHTML = '';
+    this.el.classList.remove('winner');
+    if (this.ui) this.ui.reset();
+  }
+
+  gameWillStart() {
+    // console.log(`${this.id} has ui:`, this.ui);
   }
 
   markTurn(turn) {
-    // 0=east, 1=south, 2=west, 3=north
     this.wind = (turn + (this.id|0)) % 4;
-    this.el.dataset.wind = ['東','南','西','北'][this.wind];
     this.windOfTheRound = (turn/4)|0;
 
+    if (this.ui) this.ui.markTurn(turn, this.wind);
+    else this.el.dataset.wind = ['東','南','西','北'][this.wind];
   }
 
   activate() {
-    this.el.classList.add('active');
+    if (this.ui) this.ui.activate();
+    else this.el.classList.add('active');
   }
 
   disable() {
-    this.el.classList.remove('active');
+    if (this.ui) this.ui.disable();
+    else this.el.classList.remove('active');
   }
 
   markWaiting(val) {
-    if (val) this.el.classList.add('waiting');
-    else this.el.classList.remove('waiting');
+    if (this.ui) this.ui.markWaiting(val)
+    else {
+      if (val) this.el.classList.add('waiting');
+      else this.el.classList.remove('waiting');
+    }
   }
 
   markWinner() {
     this.has_won = true;
-    this.el.dataset.wincount = parseInt( this.el.dataset.wincount || 0 ) + 1;
+    if (this.ui) this.ui.markWinner();
+    else this.el.dataset.wincount = parseInt( this.el.dataset.wincount || 0 ) + 1;
+  }
+
+  getWinCount() {
+    if (this.ui) return this.ui.getWinCount();
+    return this.el.dataset.wincount;
   }
 
   winner() {
-    this.el.classList.add('winner');
-    this.el.classList.remove('active');
+    if (this.ui) this.ui.winner();
+    else {
+      this.el.classList.add('winner');
+      this.el.classList.remove('active');
+    }
     this.reveal();
   }
 
@@ -61,8 +81,8 @@ class Player {
       t = create(t, concealed);
     }
     this.tracker.seen(t.dataset.tile);
-    this.el.appendChild(t);
-    this.sortTiles();
+    if (this.ui) this.ui.append(t);
+    else this.el.appendChild(t);
     return revealed;
   }
 
@@ -80,11 +100,28 @@ class Player {
     });
   }
 
+  getAvailableTiles() {
+    if (this.ui) return this.ui.getAvailableTiles();
+    return this.el.querySelectorAll('.tile:not([data-bonus]):not([data-locked]');
+  }
+
+  getSingleTileFromHand(tile) {
+    if (this.ui) return this.ui.getSingleTileFromHand(tile);
+    return this.el.querySelector(`.tile[data-tile='${tile}']:not([data-locked]`);
+  }
+
+  getAllTilesInHand(tile) {
+    if (this.ui) return this.ui.getAllTilesInHand(tile);
+    return this.el.querySelectorAll(`.tile[data-tile='${tile}']:not([data-locked]`);
+  }
+
   getTiles(allTiles) {
+    if (this.ui) return this.ui.getTiles(allTiles);
     return this.el.querySelectorAll(`.tile${allTiles ? ``: `:not([data-locked]`}`);
   }
 
   getTileFaces(allTiles) {
+    if (this.ui) return this.ui.getTileFaces(allTiles);
     return Array.from(this.getTiles(allTiles)).map(t => t.getTileFace());
   }
 
@@ -93,18 +130,17 @@ class Player {
   }
 
   getDuplicates(tile) {
+    if (this.ui) return this.ui.getDuplicates(tile);
     return this.el.querySelectorAll(".tile[data-tile='"+tile+"']:not([data-locked])");
   }
 
   reveal() {
+    if (this.ui) this.ui.reveal();
     Array.from(this.el.querySelectorAll(".tile")).forEach(t => {delete t.dataset.hidden;});
   }
 
   sortTiles() {
-    Array
-    .from(this.el.querySelectorAll('.tile'))
-    .sort(SORT_TILE_FN)
-    .forEach(tile => this.el.appendChild(tile));
+    if (this.ui) this.ui.sortTiles();
   }
 
   tileValue(faceValue) {
@@ -205,7 +241,7 @@ class Player {
     resolve({ claimtype: CLAIM.IGNORE });
   }
 
-  claim(p, claim, discard) {
+  awardClaim(p, claim, discard) {
     let tile = discard.getTileFace();
     let claimtype = claim.claimtype;
 
@@ -235,7 +271,7 @@ class Player {
       if (claimtype === CLAIM.PUNG) count = 2;
       if (claimtype === CLAIM.KONG) count = 3;
 
-      let tiles = this.el.querySelectorAll(`.tile[data-tile='${tile}']:not([data-locked]`);
+      let tiles = this.getAllTilesInHand(tile);
       tiles = Array.from(tiles).slice(0,count);
 
       Array.from(tiles).forEach(t => {
@@ -250,7 +286,7 @@ class Player {
       // if the player locks away a total of 4 tiles, they need a tile from the wall
       // to compensate for the loss of a tile.
       locked += count;
-      if (locked === 4 && !this.wall.dead) {
+      if (locked === 4 && !this.wall.dead()) {
         this.getSupplementTile(p);
       }
       this.locked.push(set);
@@ -260,16 +296,16 @@ class Player {
     // No pair, pung, or kong: must be a chow... but which type of chow?
     let t1, t2;
     if (claimtype === CLAIM.CHOW1) {
-      t1 = this.el.querySelector(`.tile[data-tile='${tile - 2}']:not([data-locked]`);
-      t2 = this.el.querySelector(`.tile[data-tile='${tile - 1}']:not([data-locked]`);
+      t1 = this.getSingleTileFromHand(tile - 2); // this.el.querySelector(`.tile[data-tile='${tile - 2}']:not([data-locked]`);
+      t2 = this.getSingleTileFromHand(tile - 1); // this.el.querySelector(`.tile[data-tile='${tile - 1}']:not([data-locked]`);
     }
     else if (claimtype === CLAIM.CHOW2) {
-      t1 = this.el.querySelector(`.tile[data-tile='${tile - 1}']:not([data-locked]`);
-      t2 = this.el.querySelector(`.tile[data-tile='${tile + 1}']:not([data-locked]`);
+      t1 = this.getSingleTileFromHand(tile - 1); // this.el.querySelector(`.tile[data-tile='${tile - 1}']:not([data-locked]`);
+      t2 = this.getSingleTileFromHand(tile + 1); // this.el.querySelector(`.tile[data-tile='${tile + 1}']:not([data-locked]`);
     }
     else if (claimtype === CLAIM.CHOW3) {
-      t1 = this.el.querySelector(`.tile[data-tile='${tile + 1}']:not([data-locked]`);
-      t2 = this.el.querySelector(`.tile[data-tile='${tile + 2}']:not([data-locked]`);
+      t1 = this.getSingleTileFromHand(tile + 1); // this.el.querySelector(`.tile[data-tile='${tile + 1}']:not([data-locked]`);
+      t2 = this.getSingleTileFromHand(tile + 2); // this.el.querySelector(`.tile[data-tile='${tile + 2}']:not([data-locked]`);
     }
 
     [t1, t2].forEach(t => {
@@ -284,10 +320,10 @@ class Player {
   }
 
   getSupplementTile() {
-    let wall = this.wall, tile;
+    let tile;
     do {
-      tile = wall.get();
+      tile = this.wall.get();
       this.append(tile)
-    } while (tile>33 && !wall.dead);
+    } while (tile>33 && !this.wall.dead());
   }
 }

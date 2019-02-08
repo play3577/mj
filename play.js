@@ -4,20 +4,21 @@
  */
 function setup() {
   let wall = new Wall();
+  let proxy = wall.getProxy();
 
-  let players  = Array.from(document.querySelectorAll(".player")).map(
-    (htmlelement, idx) => {
-      if (idx===2) return new HumanPlayer(htmlelement, wall);
-      return new BotPlayer(htmlelement, wall);
-    }
-  );
+  let players  = [
+    new BotPlayer(0,proxy),
+    new BotPlayer(1, proxy),
+    new HumanPlayer(2, proxy),
+    new BotPlayer(3, proxy),
+  ];
 
   // A simple turn counter. Note that we do not
   // advance this counter on a draw.
   let turn = 0;
 
-  // A function that triggers the next turn's play,
-  // unless the game is over because we've played
+  // A function that triggers the next turn's play.
+  // Unless the game is over because we've played
   // enough rounds to rotate the winds fully.
   const next = (result) => {
     let pre = 'S';
@@ -29,11 +30,16 @@ function setup() {
         if (turn !== shuffles) turn = shuffles;
       }
       if (!result.draw && turn === 16) {
-        return console.log("\nfull game played.");
+        console.log("\nfull game played.");
+        players.forEach(p => {
+          console.log(`Player ${p.id} won ${p.getWinCount()} hands.`);
+        })
+        return;
       }
     }
 
     console.log(`\n${pre}tarting turn ${turn}.`);
+
     players.forEach(player => player.reset());
     discards.innerHTML = '';
     discards.setAttribute('class', 'discards');
@@ -50,6 +56,7 @@ function setup() {
 function playHand(turn, players, wall, next) {
   PLAY_START = Date.now();
   dealTiles(turn, players, wall);
+  players.forEach(p => p.gameWillStart());
   playGame(turn, players, wall, next);
 }
 
@@ -103,7 +110,7 @@ function playGame(turn, players, wall, next) {
         if (revealed) players.forEach(p => p.see(revealed, player));
       } while (tile>33 && !wall.dead);
     } else {
-      let tiles = player.claim(currentPlayerId, claim, discard);
+      let tiles = player.awardClaim(currentPlayerId, claim, discard);
       // Awarded claims are shown to all other players. However,
       // the player whose discard this was should make sure to
       // ignore marking the tile they discarded as "seen" a
