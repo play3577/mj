@@ -138,7 +138,7 @@ function playGame(turn, players, wall, next) {
       players.forEach(p => p.endOfHand(disclosure));
 
       // calculate scores!
-      let scores = players.map(p => scoreTiles(p));
+      let scores = disclosure.map(d => scoreTiles(d));
       Logger.log(`Sending scores: ${scores}`);
       players.forEach(p => p.recordScores(scores));
 

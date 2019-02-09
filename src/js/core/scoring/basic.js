@@ -36,11 +36,12 @@ function getBasicTileScore(scorePattern) {
 /**
  *
  */
-function scoreTiles(player) {
+function scoreTiles(disclosure) {
   // Let's get the administrative data:
-  let winner = player.has_won;
-  let tiles = player.getTileFaces();
-  let locked = player.locked;
+  let winner = disclosure.winner;
+  let tiles = disclosure.concealed;
+  let locked = disclosure.locked;
+  let bonus = disclosure.bonus;
 
   // And then let's see what our tile-examining
   // algorithm has to say about the tiles we have.
@@ -67,5 +68,5 @@ function scoreTiles(player) {
     return score + (winner?10:0);
   });
 
-  return possibleScores.sort().slice(-1)[0];
+  return possibleScores.sort().slice(-1)[0] + (bonus.length * 4);
 }

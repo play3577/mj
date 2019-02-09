@@ -18,6 +18,7 @@ class Player {
 
   reset() {
     this.locked = [];
+    this.bonus = [];
     this.wind = false;
     this.windOfTheRound = false;
     this.has_won = false;
@@ -35,8 +36,8 @@ class Player {
     let hand = this.getTileFaces();
     return {
       locked: this.locked,
-      concealed: hand.filter(v => v<34),
-      bonus: hand.filter(v => v>33),
+      concealed: hand.filter(v => v < 34),
+      bonus: this.bonus,
       winner: this.has_won,
       wincount: this.getWinCount()
     };
@@ -96,7 +97,10 @@ class Player {
   append(t, concealed) {
     let revealed;
     if (typeof t !== 'object') {
-      if (t > 33) revealed = t;
+      if (t > 33) {
+        revealed = t;
+        this.bonus.push(t);
+      }
       t = create(t, concealed);
     }
     this.tracker.seen(t.dataset.tile);
