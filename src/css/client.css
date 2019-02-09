@@ -92,6 +92,7 @@ input[type=range] {
 .player.waiting { background: rgb(248, 235, 144); }
 .player.winner { background: gold; }
 .player.winner:before { content: '✧'; }
+.player.game-winner { border: 4px solid gold; background: indigo; }
 
 .player.active::before { background: var(--blue); }
 .player::before {
@@ -122,7 +123,6 @@ input[type=range] {
   position: absolute;
   right: var(--sep);
 }
-
 .player:nth-child(1) {
   --xp: calc(var(--ph) - var(--w));
   transform: rotate(var(--p1)) translate(var(--xp), 0);

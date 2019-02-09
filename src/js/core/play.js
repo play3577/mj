@@ -31,9 +31,8 @@ function setup() {
       }
       if (!result.draw && turn === 16) {
         Logger.log("\nfull game played.");
-        players.forEach(p => {
-          Logger.log(`Player ${p.id} won ${p.getWinCount()} hands.`);
-        })
+        let scores = players.map(p => p.getScore());
+        players.forEach(p => p.endOfGame(scores));
         return;
       }
     }

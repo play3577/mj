@@ -1,3 +1,4 @@
 - disentangle the wind rotation from the "rotator" UI, which should be part of the client-ui instead.
 - can players win on a self-drawn tile? What happens? Is there a way to detect self-drawn?
+- try to reduce the number of places where sets can be either [int, ...] or [<span data-tile="int">, ...]
 - add a scoring system

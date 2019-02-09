@@ -64,6 +64,16 @@ class ClientUI extends TileBank {
     });
   }
 
+  endOfGame(scores) {
+    let v=0, b=-1;
+    scores.forEach( (score,id) => { if (score>v) { v = score; b = id; }});
+    this.playerbanks.forEach( (e,id) => {
+      e.classList.remove('waiting');
+      e.classList.remove('winner');
+      if (id===b) e.classList.add('game-winner');
+    });
+  }
+
   recordScores(scores) {
     scores.forEach((score, b) => {
       let d = this.playerbanks[b].dataset;

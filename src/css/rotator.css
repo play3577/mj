@@ -1,7 +1,7 @@
 html {
   --wi: 1.5em;
   --slide: 0em;
-  --speed: 0.1s;
+  --speed: 0.3s;
   --fade-speed: 0.5s;
   --wotr-dim: 8em;
   --inner-dim: calc(var(--wotr-dim) / 6);

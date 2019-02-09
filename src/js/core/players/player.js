@@ -10,7 +10,7 @@ class Player {
     this.id = id;
     this.wall = proxyWall;
     this.tracker = new TileTracker(this.id);
-    this.tilebank = new TileBank(this.id);
+    this.ui = new TileBank(this.id);
     this.wincount = 0;
     this._score = 0;
     this.reset();
@@ -24,11 +24,11 @@ class Player {
     this.tracker.reset();
     this.el.innerHTML = '';
     this.el.classList.remove('winner');
-    this.tilebank.reset();
+    this.ui.reset();
   }
 
   handWillStart() {
-    this.tilebank.handWillStart();
+    this.ui.handWillStart();
   }
 
   getDisclosure() {
@@ -43,37 +43,45 @@ class Player {
   }
 
   endOfHand(disclosure) {
-    this.tilebank.endOfHand(disclosure);
+    this.ui.endOfHand(disclosure);
+  }
+
+  endOfGame(scores) {
+    this.ui.endOfGame(scores);
   }
 
   recordScores(values) {
     this._score += values[this.id];
-    this.tilebank.recordScores(values);
+    this.ui.recordScores(values);
+  }
+
+  getScore() {
+    return this._score;
   }
 
   markTurn(turn) {
     this.wind = (turn + (this.id|0)) % 4;
     this.windOfTheRound = (turn/4)|0;
 
-    this.tilebank.markTurn(turn, this.wind);
+    this.ui.markTurn(turn, this.wind);
   }
 
   activate(id) {
-    this.tilebank.activate(id);
+    this.ui.activate(id);
   }
 
   disable() {
-    this.tilebank.disable();
+    this.ui.disable();
   }
 
   markWaiting(val) {
-    this.tilebank.markWaiting(val)
+    this.ui.markWaiting(val)
   }
 
   markWinner() {
     this.has_won = true;
     this.wincount++;
-    this.tilebank.markWinner(this.wincount);
+    this.ui.markWinner(this.wincount);
   }
 
   getWinCount() {
@@ -81,7 +89,7 @@ class Player {
   }
 
   winner() {
-    this.tilebank.winner();
+    this.ui.winner();
     this.reveal();
   }
 
@@ -92,12 +100,12 @@ class Player {
       t = create(t, concealed);
     }
     this.tracker.seen(t.dataset.tile);
-    this.tilebank.append(t);
+    this.ui.append(t);
     return revealed;
   }
 
   removeDiscard(discard) {
-    this.tilebank.remove(discard);
+    this.ui.remove(discard);
   }
 
   see(tiles, player, discard) {
@@ -111,28 +119,28 @@ class Player {
         tile = tile.dataset.tile;
       }
       if (!ignore) { this.tracker.seen(tile); }
-      this.tilebank.see(tile, player, discard);
+      this.ui.see(tile, player, discard);
     });
   }
 
   getAvailableTiles() {
-    return this.tilebank.getAvailableTiles();
+    return this.ui.getAvailableTiles();
   }
 
   getSingleTileFromHand(tile) {
-    return this.tilebank.getSingleTileFromHand(tile);
+    return this.ui.getSingleTileFromHand(tile);
   }
 
   getAllTilesInHand(tile) {
-    return this.tilebank.getAllTilesInHand(tile);
+    return this.ui.getAllTilesInHand(tile);
   }
 
   getTiles(allTiles) {
-    return this.tilebank.getTiles(allTiles);
+    return this.ui.getTiles(allTiles);
   }
 
   getTileFaces(allTiles) {
-    return this.tilebank.getTileFaces(allTiles);
+    return this.ui.getTileFaces(allTiles);
   }
 
   getLockedTileFaces() {
@@ -140,15 +148,15 @@ class Player {
   }
 
   getDuplicates(tile) {
-    return this.tilebank.getDuplicates(tile);
+    return this.ui.getDuplicates(tile);
   }
 
   reveal() {
-    this.tilebank.reveal();
+    this.ui.reveal();
   }
 
   sortTiles() {
-    this.tilebank.sortTiles();
+    this.ui.sortTiles();
   }
 
   tileValue(faceValue) {
@@ -261,7 +269,7 @@ class Player {
       }
     }
 
-    Logger.debug(`claim awarded, ${this.id} to form ${claimtype} using ${this.tilebank.getTileFaces()}`);
+    Logger.debug(`claim awarded, ${this.id} to form ${claimtype} using ${this.ui.getTileFaces()}`);
 
     // being awared a discard based on a claims, however,
     // is universal: the tiles get locked.
@@ -273,6 +281,7 @@ class Player {
 
     let set = [];
     set.push(discard);
+    set.locked = true;
 
     // lock related tiles if this was a pung/kong
     if (claimtype === CLAIM.PAIR || claimtype === CLAIM.PUNG || claimtype === CLAIM.KONG) {
@@ -301,7 +310,7 @@ class Player {
       }
 
       this.locked.push(set);
-      this.tilebank.lock(set);
+      this.ui.lock(set);
 
       return set;
     }
@@ -329,7 +338,7 @@ class Player {
     });
 
     this.locked.push(set);
-    this.tilebank.lock(set);
+    this.ui.lock(set);
 
     return set;
   }

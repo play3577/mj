@@ -22,6 +22,10 @@ class TileBank {
     // bots do nothing with this signal
   }
 
+  endOfGame(scores) {
+    // bots do nothing with this signal
+  }
+
   recordScores(scores) {
     // bots do nothing with this signal
   }
