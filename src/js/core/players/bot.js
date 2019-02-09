@@ -6,15 +6,6 @@
 class BotPlayer extends Player {
   constructor(id, proxyWall) {
     super(id, proxyWall);
-
-  }
-
-  setupUI(fromHuman) {
-    if (!fromHuman) {
-      let players = document.querySelectorAll(".player");
-      this.el = players[id];
-      this.ui = false;
-    }
   }
 
   append(tile, concealed=true) {

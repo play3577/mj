@@ -13,6 +13,7 @@ class Wall {
       this.tiles.push( tiles.splice(pos,1)[0] );
     }
     this.dead = false;
+    Logger.debug(`using wall:\n[${this.tiles}]`);
   }
   get(howmany=1) {
     this.dead = (this.tiles.length - howmany <= 0);

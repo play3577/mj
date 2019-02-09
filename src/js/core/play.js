@@ -30,19 +30,16 @@ function setup() {
         if (turn !== shuffles) turn = shuffles;
       }
       if (!result.draw && turn === 16) {
-        console.log("\nfull game played.");
-        players.forEach(p => {
-          console.log(`Player ${p.id} won ${p.getWinCount()} hands.`);
-        })
+        Logger.log("\nfull game played.");
+        let scores = players.map(p => p.getScore());
+        players.forEach(p => p.endOfGame(scores));
         return;
       }
     }
 
-    console.log(`\n${pre}tarting turn ${turn}.`); // Starting turn / Restarting turn
+    Logger.log(`\n${pre}tarting turn ${turn}.`); // Starting turn / Restarting turn
 
     players.forEach(player => player.reset());
-    discards.innerHTML = '';
-    discards.setAttribute('class', 'discards');
     playHand(turn, players, wall, next);
   };
 
@@ -98,13 +95,14 @@ function playGame(turn, players, wall, next) {
     if (discard) discard.classList.remove('discard');
 
     let player = players[currentPlayerId];
-    player.activate();
+    players.forEach(p => p.activate(player.id));
 
     // "Draw one"
     if (!claim) {
       let tile;
       do {
         tile = wall.get();
+        Logger.debug(`${player.id} was dealt a tile ${tile}`);
         let revealed = player.append(tile);
         // bonus tile are shown to all other players.
         if (revealed) players.forEach(p => p.see(revealed, player));
@@ -121,38 +119,46 @@ function playGame(turn, players, wall, next) {
     // "Play one"
     discard = await new Promise(resolve => player.getDiscard(resolve));
 
+    if (discard) {
+      Logger.debug(`player ${player.id} discarded ${discard.dataset.tile} from ${player.getTileFaces()}`);
+    }
+
     // Aaaand that's the core game mechanic covered!
 
     // Did anyone win?
     if (!discard) {
       let play_length = (Date.now() - PLAY_START);
-      console.log(`Player ${currentPlayerId} wins round ${turn}!`);
-      console.log(`Revealed tiles ${player.getLockedTileFaces()}`);
-      console.log(`Concealed tiles: ${player.getTileFaces()}`);
-      console.log(`(game took ${play_length}ms)`);
+      Logger.log(`Player ${currentPlayerId} wins round ${turn}!`);
+      Logger.log(`Revealed tiles ${player.getLockedTileFaces()}`);
+      Logger.log(`Concealed tiles: ${player.getTileFaces()}`);
       player.winner();
-      discards.classList.add('winner');
 
       // Let everyone know what everyone had. It's the nice thing to do.
       let disclosure = players.map(p => p.getDisclosure());
       players.forEach(p => p.endOfHand(disclosure));
 
+      // calculate scores!
+      let scores = players.map(p => scoreTiles(p));
+      Logger.log(`Sending scores: ${scores}`);
+      players.forEach(p => p.recordScores(scores));
+
       // On to the next hand!
+      Logger.log(`(game took ${play_length}ms)`);
       return setTimeout(() => next({ winner: player }), TURN_INTERVAL);
     }
 
     // No winner - process the discard.
+    player.removeDiscard(discard);
+    discard.dataset.from = player.id;
     delete discard.dataset.hidden;
-    discards.appendChild(discard);
-    discard.classList.add('discard');
-    discard.dataset.from = currentPlayerId;
 
     // Does someone want to claim this discard?
     claim = await getAllClaims(players, currentPlayerId, discard);
     if (claim) {
+      Logger.debug(`${claim.p} wants ${discard.dataset.tile} for ${claim.claimtype}`);
       currentPlayerId = claim.p;
       player.disable();
-      // setTimeout rather than direct recursion!
+      // and recurse, but using setTimeout rather than direct recursion.
       return setTimeout(() => play(claim), PLAY_INTERVAL);
     }
 
@@ -160,8 +166,8 @@ function playGame(turn, players, wall, next) {
     players.forEach(p => p.see(discard, player, true));
 
     if (wall.dead) {
-      console.log("Turn ${turn} is a draw.");
-      discards.classList.add('exhausted');
+      Logger.log("Turn ${turn} is a draw.");
+      players.forEach(p => p.endOfHand());
       return setTimeout(() => next({ draw: true }), PLAY_INTERVAL);
     }
 

@@ -42,8 +42,10 @@ class HumanPlayer extends BotPlayer {
       };
 
       // And start listening for clicks. Even though this may
-      // take an hour or more, play will resume
-      this.getTiles().forEach(tile => tile.addEventListener("click", fn));
+      // take an hour or more, play will resume on a click occurs.
+      //
+      // TODO: this.ui.listenForDiscard();
+      //
     });
   }
 

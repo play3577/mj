@@ -9,7 +9,10 @@ class Player {
     this.el.id = id;
     this.id = id;
     this.wall = proxyWall;
-    this.tracker = new TileTracker();
+    this.tracker = new TileTracker(this.id);
+    this.ui = new TileBank(this.id);
+    this.wincount = 0;
+    this._score = 0;
     this.reset();
   }
 
@@ -21,11 +24,11 @@ class Player {
     this.tracker.reset();
     this.el.innerHTML = '';
     this.el.classList.remove('winner');
-    if (this.ui) this.ui.reset();
+    this.ui.reset();
   }
 
   handWillStart() {
-    if (this.ui) this.ui.handWillStart();
+    this.ui.handWillStart();
   }
 
   getDisclosure() {
@@ -40,52 +43,53 @@ class Player {
   }
 
   endOfHand(disclosure) {
-    if (this.ui) this.ui.endOfHand(disclosure);
+    this.ui.endOfHand(disclosure);
+  }
+
+  endOfGame(scores) {
+    this.ui.endOfGame(scores);
+  }
+
+  recordScores(values) {
+    this._score += values[this.id];
+    this.ui.recordScores(values);
+  }
+
+  getScore() {
+    return this._score;
   }
 
   markTurn(turn) {
     this.wind = (turn + (this.id|0)) % 4;
     this.windOfTheRound = (turn/4)|0;
 
-    if (this.ui) this.ui.markTurn(turn, this.wind);
-    else this.el.dataset.wind = ['東','南','西','北'][this.wind];
+    this.ui.markTurn(turn, this.wind);
   }
 
-  activate() {
-    if (this.ui) this.ui.activate();
-    else this.el.classList.add('active');
+  activate(id) {
+    this.ui.activate(id);
   }
 
   disable() {
-    if (this.ui) this.ui.disable();
-    else this.el.classList.remove('active');
+    this.ui.disable();
   }
 
   markWaiting(val) {
-    if (this.ui) this.ui.markWaiting(val)
-    else {
-      if (val) this.el.classList.add('waiting');
-      else this.el.classList.remove('waiting');
-    }
+    this.ui.markWaiting(val)
   }
 
   markWinner() {
     this.has_won = true;
-    if (this.ui) this.ui.markWinner();
-    else this.el.dataset.wincount = parseInt( this.el.dataset.wincount || 0 ) + 1;
+    this.wincount++;
+    this.ui.markWinner(this.wincount);
   }
 
   getWinCount() {
-    if (this.ui) return this.ui.getWinCount();
-    return this.el.dataset.wincount;
+    return this.wincount;
   }
 
   winner() {
-    if (this.ui) this.ui.winner();
-    else {
-      this.el.classList.add('winner');
-      this.el.classList.remove('active');
-    }
+    this.ui.winner();
     this.reveal();
   }
 
@@ -96,9 +100,12 @@ class Player {
       t = create(t, concealed);
     }
     this.tracker.seen(t.dataset.tile);
-    if (this.ui) this.ui.append(t);
-    else this.el.appendChild(t);
+    this.ui.append(t);
     return revealed;
+  }
+
+  removeDiscard(discard) {
+    this.ui.remove(discard);
   }
 
   see(tiles, player, discard) {
@@ -111,34 +118,29 @@ class Player {
         if (from && from == this.id) ignore = true;
         tile = tile.dataset.tile;
       }
-      if (!ignore) this.tracker.seen(tile);
-      if (this.ui) this.ui.see(tile, player, discard);
+      if (!ignore) { this.tracker.seen(tile); }
+      this.ui.see(tile, player, discard);
     });
   }
 
   getAvailableTiles() {
-    if (this.ui) return this.ui.getAvailableTiles();
-    return this.el.querySelectorAll('.tile:not([data-bonus]):not([data-locked]');
+    return this.ui.getAvailableTiles();
   }
 
   getSingleTileFromHand(tile) {
-    if (this.ui) return this.ui.getSingleTileFromHand(tile);
-    return this.el.querySelector(`.tile[data-tile='${tile}']:not([data-locked]`);
+    return this.ui.getSingleTileFromHand(tile);
   }
 
   getAllTilesInHand(tile) {
-    if (this.ui) return this.ui.getAllTilesInHand(tile);
-    return this.el.querySelectorAll(`.tile[data-tile='${tile}']:not([data-locked]`);
+    return this.ui.getAllTilesInHand(tile);
   }
 
   getTiles(allTiles) {
-    if (this.ui) return this.ui.getTiles(allTiles);
-    return this.el.querySelectorAll(`.tile${allTiles ? ``: `:not([data-locked]`}`);
+    return this.ui.getTiles(allTiles);
   }
 
   getTileFaces(allTiles) {
-    if (this.ui) return this.ui.getTileFaces(allTiles);
-    return Array.from(this.getTiles(allTiles)).map(t => t.getTileFace());
+    return this.ui.getTileFaces(allTiles);
   }
 
   getLockedTileFaces() {
@@ -146,17 +148,15 @@ class Player {
   }
 
   getDuplicates(tile) {
-    if (this.ui) return this.ui.getDuplicates(tile);
-    return this.el.querySelectorAll(".tile[data-tile='"+tile+"']:not([data-locked])");
+    return this.ui.getDuplicates(tile);
   }
 
   reveal() {
-    if (this.ui) this.ui.reveal();
-    Array.from(this.el.querySelectorAll(".tile")).forEach(t => {delete t.dataset.hidden;});
+    this.ui.reveal();
   }
 
   sortTiles() {
-    if (this.ui) this.ui.sortTiles();
+    this.ui.sortTiles();
   }
 
   tileValue(faceValue) {
@@ -269,6 +269,8 @@ class Player {
       }
     }
 
+    Logger.debug(`claim awarded, ${this.id} to form ${claimtype} using ${this.ui.getTileFaces()}`);
+
     // being awared a discard based on a claims, however,
     // is universal: the tiles get locked.
     this.append(discard);
@@ -279,6 +281,7 @@ class Player {
 
     let set = [];
     set.push(discard);
+    set.locked = true;
 
     // lock related tiles if this was a pung/kong
     if (claimtype === CLAIM.PAIR || claimtype === CLAIM.PUNG || claimtype === CLAIM.KONG) {
@@ -305,7 +308,10 @@ class Player {
       if (locked === 4 && !this.wall.dead()) {
         this.getSupplementTile(p);
       }
+
       this.locked.push(set);
+      this.ui.lock(set);
+
       return set;
     }
 
@@ -332,6 +338,8 @@ class Player {
     });
 
     this.locked.push(set);
+    this.ui.lock(set);
+
     return set;
   }
 

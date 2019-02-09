@@ -1,3 +1,4 @@
+const html = document.querySelector('html');
 const winds = Array.from(document.querySelectorAll('.player-wind'));
 const indicator = document.querySelector('.windicator');
 
