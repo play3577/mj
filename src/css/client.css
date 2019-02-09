@@ -114,7 +114,8 @@ input[type=range] {
 }
 
 .player::after {
-  content: attr(data-wincount);
+  /* content: attr(data-wincount); */
+  content: attr(data-score);
   background: var(--prp);
   box-shadow: 0 0 4px 0 var(--prp);
   padding: 2px 5px;

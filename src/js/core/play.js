@@ -132,14 +132,19 @@ function playGame(turn, players, wall, next) {
       Logger.log(`Player ${currentPlayerId} wins round ${turn}!`);
       Logger.log(`Revealed tiles ${player.getLockedTileFaces()}`);
       Logger.log(`Concealed tiles: ${player.getTileFaces()}`);
-      Logger.log(`(game took ${play_length}ms)`);
       player.winner();
 
       // Let everyone know what everyone had. It's the nice thing to do.
       let disclosure = players.map(p => p.getDisclosure());
       players.forEach(p => p.endOfHand(disclosure));
 
+      // calculate scores!
+      let scores = players.map(p => scoreTiles(p));
+      Logger.log(`Sending scores: ${scores}`);
+      players.forEach(p => p.recordScores(scores));
+
       // On to the next hand!
+      Logger.log(`(game took ${play_length}ms)`);
       return setTimeout(() => next({ winner: player }), TURN_INTERVAL);
     }
 
@@ -154,7 +159,7 @@ function playGame(turn, players, wall, next) {
       Logger.debug(`${claim.p} wants ${discard.dataset.tile} for ${claim.claimtype}`);
       currentPlayerId = claim.p;
       player.disable();
-      // setTimeout rather than direct recursion!
+      // and recurse, but using setTimeout rather than direct recursion.
       return setTimeout(() => play(claim), PLAY_INTERVAL);
     }
 

@@ -140,11 +140,11 @@ class Pattern {
     let print = hash({type: Constants.WIN, tile, subtype});
     if (results[tile].indexOf(print) === -1) results[tile].push(print);
   }
-  recurseForWin(processed, results, single, pair, set) {
+  recurseForWin(composed, processed, results, single, pair, set) {
     let downstream = this.copy();
     downstream.remove(processed);
     if (downstream.keys.length > 0) {
-      downstream.determineWin(results, single, pair, set);
+      downstream.determineWin(composed, results, single, pair, set);
     } else {
       if (set.length===4 && pair.length===0 && single.length===1) {
         this.markWin(results, single[0], Constants.PAIR);
@@ -168,49 +168,67 @@ class Pattern {
       }
     }
   }
-  determineWin(results=[], single=[], pair=[], set=[]) {
+  determineWin(composed=[], results=[], single=[], pair=[], set=[]) {
     let tile = this.keys[0]|0;
     let count = this.tiles[tile];
+    let chain = [];
 
-    if (count>3) this.recurseForWin([tile, tile, tile, tile], results, single, pair, set.concat([`k${tile}`]));
-    if (count>2) this.recurseForWin([tile, tile, tile], results, single, pair, set.concat([`p${tile}`]));
-    if (count>1) this.recurseForWin([tile, tile], results, single, pair.concat([tile]), set);
-    if (count===1) this.recurseForWin([tile], results, single.concat([tile]), pair, set);
+    if (count>3) { chain=[`4k-${tile}`]; composed.push(chain); this.recurseForWin(chain, [tile, tile, tile, tile], results, single, pair, set.concat([`k${tile}`])); }
+    if (count>2) { chain=[`3p-${tile}`]; composed.push(chain); this.recurseForWin(chain, [tile, tile, tile], results, single, pair, set.concat([`p${tile}`])); }
+    if (count>1) { chain=[`2p-${tile}`]; composed.push(chain); this.recurseForWin(chain, [tile, tile], results, single, pair.concat([tile]), set); }
+    if (count===1) this.recurseForWin(composed, [tile], results, single.concat([tile]), pair, set);
+    if (tile > 26) return { results, composed };
 
-    if (tile > 26) return results;
     let {t1, t2} = this.getChowInformation(tile);
-    if (t1 && t2) this.recurseForWin([tile, tile+1, tile+2], results, single, pair, set.concat([`c${tile}`]));
-    return results;
+    if (t1 && t2) { chain=[`3c-${tile}`]; composed.push(chain); this.recurseForWin(chain, [tile, tile+1, tile+2], results, single, pair, set.concat([`c${tile}`])); }
+    return { results, composed };
   }
 }
+
+
+function unroll(list, seen=[], result=[]) {
+  list = list.slice();
+  seen.push(list.shift());
+  if (!list.length) result.push(seen);
+  else list.forEach(tail => unroll(tail, seen.slice(), result));
+  return result;
+}
+
 
 function tilesNeeded(tiles, locked=[], canChow) {
   let p = new Pattern(tiles, canChow);
   let lookout = p.copy().expand();
-  let checkwin = p.copy().determineWin([], [], [], locked);
-  let waiting = (checkwin.length > 0);
-  checkwin.forEach((l,idx) => lookout[idx] = l);
-  return { lookout, waiting };
+  let checkwin = p.copy().determineWin([], [], [], [], locked);
+  let waiting = (checkwin.results.length > 0);
+  checkwin.results.forEach((l,idx) => lookout[idx] = l);
+  console.log(JSON.stringify(checkwin.composed, false, 2));
+  // form all compositional paths, but remove any path that consists of fewer tiles than we started with
+  let composed = unroll(checkwin.composed[0]).filter(l => l.reduce((t,v)=>t+parseInt(v), 0) === tiles.length);
+  return { lookout, waiting, composed };
 };
 
-if (typeof process !== "undefined" && process.argv.indexOf('mgen.js') !== -1) {
-  Constants = require('./constants.js').Constants;
+if (typeof process !== "undefined") {
+  Constants = require('../../constants.js').Constants;
 
-  // open tiles:
-  let hand = [1,1,3,4,6,12,13,15,15,15,26,28,30];
-  // hand = [1,1,1,6,6,6,9,9,9,14,14,14,27];
-  // hand = [1,2,3, 6,6,6, 10,11,12, 26,26,26, 27];
-  // hand = [1,2,3, 6,6,6, 10,11,12, 26,26, 27,27];
-  // hand = [1,1,1, 1,2,3, 3,3,3, 4,5,6, 7];
-  hand = [31,31,31, 33];
+  // // open tiles:
+  // let hand = [1,1,3,4,6,12,13,15,15,15,26,28,30];
+  // // hand = [1,1,1,6,6,6,9,9,9,14,14,14,27];
+  // // hand = [1,2,3, 6,6,6, 10,11,12, 26,26,26, 27];
+  // // hand = [1,2,3, 6,6,6, 10,11,12, 26,26, 27,27];
+  // // hand = [1,1,1, 1,2,3, 3,3,3, 4,5,6, 7];
+  // hand = [31,31,31, 33];
 
-  // locked tiles:
-  let single = [];
-  let pair = [];
-  let set = ['k19','c12','p30'];
+  // // locked tiles:
+  // let single = [];
+  // let pair = [];
+  // let set = ['k19','c12','p30'];
 
-  // see what happens:
-  Logger.log("current hand:", hand);
-  Logger.log("discards we want to be on the lookout for:");
-  Logger.log(tilesNeeded(hand,single,pair,set));
+  // // see what happens:
+  // if (typeof Logger !== "undefined") {
+  //   Logger.log("current hand:", hand);
+  //   Logger.log("discards we want to be on the lookout for:");
+  //   Logger.log(tilesNeeded(,hand,single,pair,set));
+  // }
+
+  module.exports = tilesNeeded;
 }

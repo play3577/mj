@@ -12,6 +12,7 @@ class Player {
     this.tracker = new TileTracker(this.id);
     this.tilebank = new TileBank(this.id);
     this.wincount = 0;
+    this._score = 0;
     this.reset();
   }
 
@@ -43,6 +44,11 @@ class Player {
 
   endOfHand(disclosure) {
     this.tilebank.endOfHand(disclosure);
+  }
+
+  recordScores(values) {
+    this._score += values[this.id];
+    this.tilebank.recordScores(values);
   }
 
   markTurn(turn) {

@@ -64,6 +64,14 @@ class ClientUI extends TileBank {
     });
   }
 
+  recordScores(scores) {
+    scores.forEach((score, b) => {
+      let d = this.playerbanks[b].dataset;
+      if (!d.score) d.score = 0;
+      d.score = parseInt(d.score) + score;
+    });
+  }
+
   markTurn(turn, wind) {
     this.el.dataset.wind = ['東','南','西','北'][wind];
   }

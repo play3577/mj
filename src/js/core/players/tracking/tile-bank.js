@@ -22,6 +22,10 @@ class TileBank {
     // bots do nothing with this signal
   }
 
+  recordScores(scores) {
+    // bots do nothing with this signal
+  }
+
   markTurn(turn, wind) {
     // bots do nothing with this signal
   }

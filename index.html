@@ -12,10 +12,10 @@
     </div>
 
     <div class="board">
-      <div class="player" id="0"></div>
-      <div class="player" id="1"></div>
-      <div class="player" id="2"></div>
-      <div class="player" id="3"></div>
+      <div class="player" id="0" data-wincount="0" data-score="0"></div>
+      <div class="player" id="1" data-wincount="0" data-score="0"></div>
+      <div class="player" id="2" data-wincount="0" data-score="0"></div>
+      <div class="player" id="3" data-wincount="0" data-score="0"></div>
       <div class="discards">discards</div>
       <div class="knowledge"></div>
       <div class="windicator">
@@ -211,10 +211,10 @@
 
     <section id="scripts">
       <!-- prerequisites -->
+      <script src="src/js/utils.js"></script>
       <script src="src/js/logger.js"></script>
       <script src="src/js/prng.js"></script>
       <script src="src/constants.js"></script>
-      <script src="src/js/utils.js"></script>
       <script src="src/js/core/players/tracking/tile-tracker.js"></script>
       <script src="src/js/core/players/tracking/tile-bank.js"></script>
       <script src="src/js/core/players/tracking/client-ui.js"></script>
@@ -225,6 +225,8 @@
       <script src="src/js/core/players/human.js"></script>
       <script src="src/js/core/mgen.js"></script> <!-- contains tilesNeeded() -->
       <script src="src/js/modal.js"></script>
+
+      <script src="src/js/core/scoring/basic.js"></script>
       <script src="src/js/core/play.js"></script>
 
       <!-- twitter the sparrows! -->

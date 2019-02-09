@@ -14,7 +14,7 @@
   */
 function Random(seed) {
   this._seed = seed ? seed % 2147483647 : (Math.random()*2147483647)|0;
-  Logger.log(`using random seed ${this._seed}`);
+  console.log(`using random seed ${this._seed}`);
   if (this._seed <= 0) this._seed += 2147483646;
 }
 
@@ -38,3 +38,7 @@ Random.prototype.nextFloat = function (opt_minOrMax, opt_max) {
   // We know that result of next() will be 1 to 2147483646 (inclusive).
   return (this.next() - 1) / 2147483646;
 };
+
+if(typeof process !== "undefined") {
+  module.exports = Random;
+}
