@@ -1,5 +1,5 @@
 /**
- *
+ * What's that? Just generate some basic numbers? You got it!
  */
 function _tile_score(set) {
   let locked = set.locked;
