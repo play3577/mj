@@ -3,7 +3,7 @@
  */
 function _tile_score(set) {
   let locked = set.locked;
-  set = set.map(s => s.dataset ? parseInt(s.dataset.tile) : s);
+  if (set[0].dataset) set = set.map(s => parseInt(s.dataset.tile));
   let tile = set[0];
 
   let score = 0;
