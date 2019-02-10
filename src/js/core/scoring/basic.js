@@ -49,11 +49,14 @@ function scoreTiles(disclosure) {
 
   // If there is nothing to be formed with the tiles in hand,
   // then we need to create an empty path, so that we at
-  // least still compute the based on just the locked tiles.
+  // least still compute score based on just the locked tiles.
   if (openCompositions.length === 0) {
     openCompositions.push([]);
   }
 
+  // Run through each possible interpetation of in-hand
+  // tiles, and see how much they would score, based on
+  // the getBasicTileScore() function up above.
   let possibleScores = openCompositions.map(chain => {
     let scorePattern = chain.map(s => {
       let terms = s.split('-');
@@ -68,11 +71,15 @@ function scoreTiles(disclosure) {
     return score + (winner?10:0);
   });
 
+  // And then make sure we award each player the highest
+  // score they're elligible for.
   return possibleScores.sort().slice(-1)[0] + (bonus.length * 4);
 }
 
 /**
- *
+ * Turn basic tilescores into score adjustments, by running
+ * the "how much does the winner get" and "how much do the
+ * losers end up paying" calculations.
  */
 function settleScores(scores, winningplayer) {
   let adjustments = [0,0,0,0];
