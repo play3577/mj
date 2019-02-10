@@ -34,7 +34,13 @@ function getBasicTileScore(scorePattern) {
 }
 
 /**
+ * Scoring tiles means first seeing how many different 
+ * things can be formed with the not-revelead tiles,
+ * and then for each of those things, calculate the
+ * total hand score by adding in the locked tiles.
  *
+ * Whichever combination of pattersn scores highest
+ * is the score the player will be assigned.
  */
 function scoreTiles(disclosure) {
   // Let's get the administrative data:
