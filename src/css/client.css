@@ -37,12 +37,13 @@
 .modal .panel {
   background: white;
   padding: 1em;
+  display: inline-block;
 }
 
 .modal .panel button {
   display: block;
-  width: 7em;
-  margin: auto;
+  width: 100%;
+  white-space: nowrap;
 }
 
 .board {

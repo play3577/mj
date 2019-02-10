@@ -7,10 +7,6 @@
     <link rel="stylesheet" href="src/css/page.css">
   </head>
   <body>
-    <div class="hidden modal">
-      <div class="panel"></div>
-    </div>
-
     <div class="board">
       <div class="player" id="0" data-wincount="0" data-score="0"></div>
       <div class="player" id="1" data-wincount="0" data-score="0"></div>
@@ -26,6 +22,10 @@
           <div class="player-wind lc">北</div>
           <div class="wind-of-the-round">東　南　西　北　</div>
         </div>
+      </div>
+
+      <div class="hidden modal">
+        <div class="panel"></div>
       </div>
     </div>
 
@@ -234,7 +234,7 @@
       <script src="src/js/core/play.js"></script>
 
       <!-- twitter the sparrows! -->
-      <script>setup().play();</script>
+      <script src="src/js/play-or-watch.js"></script>
     </section>
 
     <footer>

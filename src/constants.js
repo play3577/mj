@@ -5,7 +5,8 @@ if(typeof process !== "undefined") {
 const SEED = 0; //790579740; //28238738; //1822967933; //28238738;
 const PRNG = new Random(SEED);
 
-const BOT_PLAY = false;
+var BOT_PLAY = false; // can be changed at page start!
+
 const CLAIM_INTERVAL = 5000;
 const PLAY_INTERVAL = 100;
 const TURN_INTERVAL = 3000;
