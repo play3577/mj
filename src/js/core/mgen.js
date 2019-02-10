@@ -100,8 +100,8 @@ class Pattern {
         remove = [tile, tile+1, tile+2];
       }
       else if (t1) { // connected pair, we need either a first or last tile.
-        if (this.matchSuit(tile - 1, suit)) set.push({ required: tile-1, type: Constants.CHOW3, tile });
-        if (this.matchSuit(tile + 2, suit)) set.push({ required: tile+2, type: Constants.CHOW1, tile });
+        if (this.matchSuit(tile - 1, suit)) set.push({ required: tile-1, type: Constants.CHOW1, tile });
+        if (this.matchSuit(tile + 2, suit)) set.push({ required: tile+2, type: Constants.CHOW3, tile });
         remove = [tile, tile + 1];
       }
       else if (t2) { // gapped pair, we need the middle tile.
@@ -212,8 +212,8 @@ class Pattern {
               b0 = single[0],   s2 = this.getSuit(b0),
               b1 = single[1],   s3 = this.getSuit(b1),
               t2 = single[1]+1, s4 = this.getSuit(t2);
-          if(s1 === s2 && s1 === s3) this.markWin(results, t1, Constants.CHOW3);
-          if(s4 === s2 && s4 === s3) this.markWin(results, t2, Constants.CHOW1);
+          if(s1 === s2 && s1 === s3) this.markWin(results, t1, Constants.CHOW1);
+          if(s4 === s2 && s4 === s3) this.markWin(results, t2, Constants.CHOW3);
         }
         else if (single[1] < 27 && single[0] + 2 === single[1]) {
           this.markWin(results, single[0]+1, Constants.CHOW2);

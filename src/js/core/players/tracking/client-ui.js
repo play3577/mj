@@ -42,6 +42,70 @@ class ClientUI extends TileBank {
     // logic in yet so let's not worry about that right now.
   }
 
+  listenForDiscard(resolve, suggestion) {
+    let tiles = [];
+
+    let stile = this.getSingleTileFromHand(suggestion.dataset.tile);
+    stile.classList.add('suggestion');
+
+    let fn = e => {
+      stile.classList.remove('suggestion');
+      tiles.forEach(tile => {
+        tile.classList.remove('selectable');
+        tile.removeEventListener("click", fn);
+      });
+      resolve(e.target);
+    };
+
+    tiles = this.getAvailableTiles();
+    tiles.forEach(tile => {
+      tile.classList.add('selectable');
+      tile.addEventListener("click", fn);
+    });
+  }
+
+  removeLastDiscard() {
+    this.discards.removeChild(this.discards.lastChild);
+  }
+
+  listenForClaim(pid, discard, resolve, interrupt) {
+    let tile = this.discards.lastChild;
+
+    let fn = e => {
+      interrupt();
+
+      // let's spawn a little modal to see what the user actually wanted to do here.
+      modal.setContent("What kind of claim are you making?", [
+        { label: "Cancel", value: CLAIM.IGNORE },
+        { label: "Chow (X**)", value: CLAIM.CHOW1 },
+        { label: "Chow (*X*)", value: CLAIM.CHOW2 },
+        { label: "Chow (**X)", value: CLAIM.CHOW3 },
+        { label: "Pung", value: CLAIM.PUNG },
+        { label: "Kong", value: CLAIM.KONG },
+        { label: "Win", value: CLAIM.WIN },
+      ], result => {
+        tile.removeEventListener("click", fn);
+        if (result === CLAIM.WIN) {
+          modal.setContent("How does this tile make you win?", [
+            { label: "Cancel", value: CLAIM.IGNORE },
+            { label: "Pair", value: CLAIM.PAIR },
+            { label: "Chow (X**)", value: CLAIM.CHOW1 },
+            { label: "Chow (*X*)", value: CLAIM.CHOW2 },
+            { label: "Chow (**X)", value: CLAIM.CHOW3 },
+            { label: "Pung", value: CLAIM.PUNG }
+          ], result => {
+            if (result === CLAIM.IGNORE) resolve({ claimtype: CLAIM.IGNORE });
+            else resolve({ claimtype: CLAIM.WIN, wintype: result });
+          });
+          return;
+        }
+        resolve({ claimtype: result });
+      });
+    }
+
+    tile.addEventListener("click", fn);
+  }
+
   endOfHand(disclosure) {
     if (!disclosure) {
       this.discards.classList.add('exhausted');
@@ -138,7 +202,7 @@ class ClientUI extends TileBank {
       discard.classList.add('discard');
       discard.dataset.from = player.id;
       this.discards.appendChild(discard);
-      }
+    }
     this.sortTiles(bank);
   }
 
@@ -155,6 +219,7 @@ class ClientUI extends TileBank {
   }
 
   getSingleTileFromHand(tile) {
+    Logger.debug('searching for',tile,'in hand');
     return this.el.querySelector(`.tile[data-tile='${tile}']:not([data-locked]`);
   }
 

@@ -39,31 +39,10 @@
   padding: 1em;
 }
 
-.sliders {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  display: none;
-}
-
-.sliders .heading {
-  font-family: Verdana;
-  font-variant: small-caps;
-  margin-right: 1em;
-}
-
-.sliders label {
-  color: var(--prp);
-  font-family: Arial;
-}
-
-
-input[type=range] {
-  display: inline-block;
-  width: 20em;
-  border: 1px solid black;
-  vertical-align: -50%;
+.modal .panel button {
+  display: block;
+  width: 7em;
+  margin: auto;
 }
 
 .board {
@@ -202,6 +181,7 @@ input[type=range] {
   background-repeat: no-repeat;
 }
 
+.tile.selectable:hover { box-shadow: 0 0 3px 3px lime; position: relative; z-index: 999; }
 .tile.suggestion { box-shadow: 0 0 3px 0 var(--prp); }
 .tile.discard { box-shadow: 0 0 3px 0 var(--cream); }
 .tile + .tile { margin-left: 1px; }

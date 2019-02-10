@@ -113,7 +113,7 @@ function playGame(turn, players, wall, next) {
       // the player whose discard this was should make sure to
       // ignore marking the tile they discarded as "seen" a
       // second time: they already saw it when they drew it.
-      players.forEach(p => p.see(tiles, player));
+      players.forEach(p => p.seeClaim(tiles, player, claim));
     }
 
     // "Play one"
@@ -163,9 +163,6 @@ function playGame(turn, players, wall, next) {
       // and recurse, but using setTimeout rather than direct recursion.
       return setTimeout(() => play(claim), PLAY_INTERVAL);
     }
-
-    // no claim happened, this tile will no longer be available.
-    players.forEach(p => p.see(discard, player, true));
 
     if (wall.dead) {
       Logger.log(`Turn ${turn} is a draw.`);

@@ -2,3 +2,4 @@
 - can players win on a self-drawn tile? What happens? Is there a way to detect self-drawn?
 - try to reduce the number of places where sets can be either [int, ...] or [<span data-tile="int">, ...]
 - score breakdowns?
+- Add in logic to client-ui's listenForClaim() so it does not offer options for sets the player cannot form.

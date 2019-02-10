@@ -127,6 +127,11 @@ class Player {
     });
   }
 
+  seeClaim(tiles, player, claim) {
+    this.ui.removeLastDiscard();
+    this.see(tiles, player);
+  }
+
   getAvailableTiles() {
     return this.ui.getAvailableTiles();
   }
@@ -219,6 +224,8 @@ class Player {
   }
 
   async getClaim(pid, discard, resolve) {
+    this.ui.see(discard.dataset.tile, {id: pid}, true);
+
     // in terms of universal behaviour, we want
     // to make sure that we exit early if this is
     // "our own" discard. No bidding on that please.
@@ -273,7 +280,7 @@ class Player {
       }
     }
 
-    Logger.debug(`claim awarded, ${this.id} to form ${claimtype} using ${this.ui.getTileFaces()}`);
+    Logger.debug(`claim awarded, ${this.id} to form ${claimtype} using tile ${tile} and hand ${this.ui.getTileFaces()}`);
 
     // being awared a discard based on a claims, however,
     // is universal: the tiles get locked.
@@ -322,16 +329,16 @@ class Player {
     // No pair, pung, or kong: must be a chow... but which type of chow?
     let t1, t2;
     if (claimtype === CLAIM.CHOW1) {
-      t1 = this.getSingleTileFromHand(tile - 2); // this.el.querySelector(`.tile[data-tile='${tile - 2}']:not([data-locked]`);
-      t2 = this.getSingleTileFromHand(tile - 1); // this.el.querySelector(`.tile[data-tile='${tile - 1}']:not([data-locked]`);
+      t1 = this.getSingleTileFromHand(tile + 2);
+      t2 = this.getSingleTileFromHand(tile + 1);
     }
     else if (claimtype === CLAIM.CHOW2) {
-      t1 = this.getSingleTileFromHand(tile - 1); // this.el.querySelector(`.tile[data-tile='${tile - 1}']:not([data-locked]`);
-      t2 = this.getSingleTileFromHand(tile + 1); // this.el.querySelector(`.tile[data-tile='${tile + 1}']:not([data-locked]`);
+      t1 = this.getSingleTileFromHand(tile + 1);
+      t2 = this.getSingleTileFromHand(tile - 1);
     }
     else if (claimtype === CLAIM.CHOW3) {
-      t1 = this.getSingleTileFromHand(tile + 1); // this.el.querySelector(`.tile[data-tile='${tile + 1}']:not([data-locked]`);
-      t2 = this.getSingleTileFromHand(tile + 2); // this.el.querySelector(`.tile[data-tile='${tile + 2}']:not([data-locked]`);
+      t1 = this.getSingleTileFromHand(tile - 1);
+      t2 = this.getSingleTileFromHand(tile - 2);
     }
 
     [t1, t2].forEach(t => {

@@ -18,6 +18,10 @@ class TileBank {
     // bots do nothing on this signal.
   }
 
+  removeLastDiscard() {
+    // bots do nothing on this signal.
+  }
+
   endOfHand(disclosure) {
     // bots do nothing with this signal
   }

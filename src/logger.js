@@ -5,6 +5,7 @@ const LOG_LEVELS = {
     DEBUG: 3
 }
 
+//const LOG_LEVEL = LOG_LEVELS.DEBUG;
 const LOG_LEVEL = LOG_LEVELS.LOG;
 
 const Logger = {

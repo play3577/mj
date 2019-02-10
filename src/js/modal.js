@@ -8,9 +8,11 @@ modal.setContent = (label, options, resolve) => {
     let btn = document.createElement("button");
     btn.textContent = data.label;
     btn.addEventListener("click", e => {
-      resolve(data.value);
       modal.classList.add("hidden");
+      resolve(data.value);
     });
     panel.appendChild(btn);
   });
+
+  modal.classList.remove("hidden");
 }
