@@ -1,21 +1,20 @@
 /**
- *
+ * What's that? Just generate some basic numbers? You got it!
  */
 function _tile_score(set) {
   let locked = set.locked;
-  set = set.map(s => s.dataset ? parseInt(s.dataset.tile) : s);
+  if (set[0].dataset) set = set.map(s => parseInt(s.dataset.tile));
   let tile = set[0];
-
   let score = 0;
 
   // Only pairs of dragons score points.
   if (set.length === 2 && tile > 30) score = 2;
 
-  // Triples means either a chow or a pung,
-  // but only pungs score points.
+  // Triples means either a chow or a pung, but only pungs score points.
   if (set.length === 3) {
     let s1 = set[1];
     s1 = s1.dataset ? parseInt(s1.dataset.tile) : s1;
+    // honours score more than numbers.
     if (s1 === tile) score = (tile < 27) ? 2 : 4;
   }
 
@@ -34,7 +33,13 @@ function getBasicTileScore(scorePattern) {
 }
 
 /**
+ * Scoring tiles means first seeing how many different 
+ * things can be formed with the not-revelead tiles,
+ * and then for each of those things, calculate the
+ * total hand score by adding in the locked tiles.
  *
+ * Whichever combination of pattersn scores highest
+ * is the score the player will be assigned.
  */
 function scoreTiles(disclosure) {
   // Let's get the administrative data:
@@ -49,11 +54,12 @@ function scoreTiles(disclosure) {
 
   // If there is nothing to be formed with the tiles in hand,
   // then we need to create an empty path, so that we at
-  // least still compute the based on just the locked tiles.
-  if (openCompositions.length === 0) {
-    openCompositions.push([]);
-  }
+  // least still compute score based on just the locked tiles.
+  if (openCompositions.length === 0) openCompositions.push([]);
 
+  // Run through each possible interpetation of in-hand
+  // tiles, and see how much they would score, based on
+  // the getBasicTileScore() function up above.
   let possibleScores = openCompositions.map(chain => {
     let scorePattern = chain.map(s => {
       let terms = s.split('-');
@@ -68,11 +74,15 @@ function scoreTiles(disclosure) {
     return score + (winner?10:0);
   });
 
+  // And then make sure we award each player the highest
+  // score they're elligible for.
   return possibleScores.sort().slice(-1)[0] + (bonus.length * 4);
 }
 
 /**
- *
+ * Turn basic tilescores into score adjustments, by running
+ * the "how much does the winner get" and "how much do the
+ * losers end up paying" calculations.
  */
 function settleScores(scores, winningplayer) {
   let adjustments = [0,0,0,0];
@@ -89,7 +99,8 @@ function settleScores(scores, winningplayer) {
 
     if(!LOSERS_SETTLE_SCORES) continue;
 
-    // and then they settle their scores amongst themselves
+    // If losers should settle their scores amongst
+    // themselves, make that happen right here:
     for(let j=0; j<scores.length; j++) {
       if (j===i) continue;
       if (j===winningplayer) continue;
