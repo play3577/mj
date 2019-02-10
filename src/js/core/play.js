@@ -171,6 +171,7 @@ function playGame(turn, players, wall, next) {
     }
 
     // We have tiles left to play with, so move on to the next player:
+    players.forEach(p => p.nextPlayer());
     currentPlayerId = (currentPlayerId + 1) % 4;
     return setTimeout(() => {player.disable(); play();}, PLAY_INTERVAL);
   };

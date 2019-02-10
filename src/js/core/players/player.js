@@ -132,6 +132,10 @@ class Player {
     this.see(tiles, player);
   }
 
+  nextPlayer() {
+    this.ui.nextPlayer();
+  }
+
   getAvailableTiles() {
     return this.ui.getAvailableTiles();
   }

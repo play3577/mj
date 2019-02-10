@@ -68,6 +68,10 @@ class ClientUI extends TileBank {
     this.discards.removeChild(this.discards.lastChild);
   }
 
+  nextPlayer() {
+    this.discards.lastChild.classList.remove('selectable');
+  }
+
   listenForClaim(pid, discard, resolve, interrupt) {
     let tile = this.discards.lastChild;
 
@@ -84,6 +88,7 @@ class ClientUI extends TileBank {
         { label: "Kong", value: CLAIM.KONG },
         { label: "Win", value: CLAIM.WIN },
       ], result => {
+        tile.classList.remove('selectable');
         tile.removeEventListener("click", fn);
         if (result === CLAIM.WIN) {
           modal.setContent("How does this tile make you win?", [
@@ -103,6 +108,7 @@ class ClientUI extends TileBank {
       });
     }
 
+    tile.classList.add('selectable');
     tile.addEventListener("click", fn);
   }
 

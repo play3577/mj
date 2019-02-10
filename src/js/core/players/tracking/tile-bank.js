@@ -15,11 +15,15 @@ class TileBank {
   }
 
   handWillStart() {
-    // bots do nothing on this signal.
+    // bots do nothing with this signal.
   }
 
   removeLastDiscard() {
-    // bots do nothing on this signal.
+    // bots do nothing with this signal.
+  }
+
+  nextPlayer() {
+    // bots do nothing with this signal.
   }
 
   endOfHand(disclosure) {
@@ -51,7 +55,7 @@ class TileBank {
   }
 
   markWinner(wincount) {
-    // bots do nothing on this signal.
+    // bots do nothing with this signal.
   }
 
   winner() {
