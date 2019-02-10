@@ -150,6 +150,10 @@ class Player {
     });
   }
 
+  receivedTile(player) {
+    this.ui.receivedTile(player);
+  }
+
   seeClaim(tiles, player, claim) {
     this.ui.removeLastDiscard();
     this.see(tiles, player);

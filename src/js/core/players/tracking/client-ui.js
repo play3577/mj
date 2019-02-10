@@ -10,6 +10,7 @@ class ClientUI extends TileBank {
     this.discards = document.querySelector(".discards");
     this.playerbanks = document.querySelectorAll(".player");
     this.el = this.playerbanks[2];
+    this.timeouts = [];
     this.reset();
   }
 
@@ -26,20 +27,29 @@ class ClientUI extends TileBank {
     let discards = this.discards;
     discards.innerHTML = '';
     discards.setAttribute('class', 'discards');
+
+    this.bar = document.createElement('div');
+    this.bar.classList.add('countdown-bar');
+    this.discards.appendChild(this.bar);
+
+    this.clearTimeouts();
+  }
+
+  clearTimeouts() {
+    this.timeouts.forEach(t => clearTimeout(t));
   }
 
   handWillStart() {
-    // when the game starts, we know one thing about all
-    // players: they have 13 tiles.
-    this.playerbanks.forEach((b,i) => {
-      if (b === this.el) return;
-      for(let i=0; i<13; i++) {
-        b.appendChild(create(-1));
-      }
-    });
-    // NOTE: THIS IS NOT TRUE IF SOMEONE DECLARED A KONG
-    // IMMEDIATELY but then again we haven't add that
-    // logic in yet so let's not worry about that right now.
+    // not doing anything here for now.
+  }
+
+  startCountDown(ms) {
+    let update = fraction => (this.bar.style.width = `${100 - 100 * fraction}%`);
+    for (let i=0, fraction, e=10; i<=e; i++) {
+      fraction = i/e;
+      this.timeouts.push(setTimeout(() => update(fraction), ms*fraction));
+    }
+    this.timeouts.push(setTimeout(() => update(1), ms + 10));
   }
 
   listenForDiscard(resolve, suggestion) {
@@ -77,6 +87,7 @@ class ClientUI extends TileBank {
 
     let fn = e => {
       interrupt();
+      this.clearTimeouts();
 
       // let's spawn a little modal to see what the user actually wanted to do here.
       modal.setContent("What kind of claim are you making?", [
@@ -194,25 +205,32 @@ class ClientUI extends TileBank {
 
   see(tile, player, discard, locked=true, concealed=false) {
     let bank = this.playerbanks[player.id];
+
+    // remove a blank (for not-us banks)
+    if (player.id !== this.id) {
+      let blank = bank.querySelector(`[data-tile="-1"]`);
+      if (blank) bank.removeChild(blank);
+    }
+
     if (!discard) {
       let e = create(tile);
       if (concealed) e.dataset.hidden = 'hidden';
       if (locked === true) e.dataset.locked = 'locked';
-      if (tile < 34) {
-        // reveal this tile, and remove a "blank" tile
-        let blank = bank.querySelector(`[data-tile="-1"]`);
-        if (blank) bank.replaceChild(e, blank);
-        else bank.appendChild(e);
-        e = blank ? blank : e;
-      }
-      // bonus tiles don't replace anything.
-      else bank.appendChild(e);
+      bank.appendChild(e);
     } else {
       discard = create(tile);
       discard.classList.add('discard');
       discard.dataset.from = player.id;
       this.discards.appendChild(discard);
+      if (!BOT_PLAY) this.startCountDown(CLAIM_INTERVAL);
     }
+    this.sortTiles(bank);
+  }
+
+  receivedTile(player) {
+    if (player.id === this.id) return;
+    let bank = this.playerbanks[player.id];
+    bank.append(create(-1));
     this.sortTiles(bank);
   }
 

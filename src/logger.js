@@ -5,9 +5,6 @@ const LOG_LEVELS = {
     DEBUG: 3
 }
 
-//const LOG_LEVEL = LOG_LEVELS.DEBUG;
-const LOG_LEVEL = LOG_LEVELS.LOG;
-
 const Logger = {
   log:   (...args) => { if(LOG_LEVEL >= LOG_LEVELS.LOG) console.log.apply(console, args); },
   warn:  (...args) => { if(LOG_LEVEL >= LOG_LEVELS.WARN) console.warn.apply(console, args); },

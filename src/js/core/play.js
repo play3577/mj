@@ -15,7 +15,7 @@ function setup() {
 
   // A simple turn counter. Note that we do not
   // advance this counter on a draw.
-  let turn = 0;
+  let turn = 1;
 
   // A function that triggers the next turn's play.
   // Unless the game is over because we've played
@@ -72,6 +72,7 @@ function dealTiles(turn, players, wall) {
     for (let t=0, tile; t<bank.length; t++) {
       tile = bank[t];
       let revealed = player.append(tile);
+      players.forEach(p => p.receivedTile(player));
       if (revealed) {
         // bonus tile are shown to all other players.
         players.forEach(p => p.see(revealed, player));
@@ -111,8 +112,10 @@ function playGame(turn, players, wall, next) {
       tile = wall.get();
       Logger.debug(`${player.id} was given tile ${tile}`);
       let revealed = player.append(tile);
+      players.forEach(p => p.receivedTile(player));
       // bonus tile are shown to all other players.
       if (revealed) players.forEach(p => p.see(revealed, player));
+
       // if a played got a kong, and declared it, notify all
       // other players and issue a supplement tile.
       let kong = player.checkKong(tile);

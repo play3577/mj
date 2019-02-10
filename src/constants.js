@@ -2,16 +2,20 @@ if(typeof process !== "undefined") {
     Random = require('./js/prng.js');
 }
 
-const SEED = 0; //1890269799; //790579740; //28238738; //1822967933; //28238738;
+const SEED = 0; //1371711993; //1890269799; //790579740; //28238738; //1822967933; //28238738;
 const PRNG = new Random(SEED);
+
+//const LOG_LEVEL = LOG_LEVELS.DEBUG;
+const LOG_LEVEL = LOG_LEVELS.LOG;
 
 var BOT_PLAY = true; // can be changed at page start!
 
 const CLAIM_INTERVAL = 5000;
 const PLAY_INTERVAL = 100;
-const PAUSE_ON_TURN = 0;
 
 var TURN_INTERVAL = 3000; // can be changed during next() for debugging!
+
+const PAUSE_ON_TURN = 0;
 
 const ARTIFICIAL_HUMAN_DELAY = 0;
 const LOSERS_SETTLE_SCORES = true;
