@@ -11,11 +11,11 @@ function _tile_score(set) {
   // Only pairs of dragons score points.
   if (set.length === 2 && tile > 30) score = 2;
 
-  // Triples means either a chow or a pung,
-  // but only pungs score points.
+  // Triples means either a chow or a pung, but only pungs score points.
   if (set.length === 3) {
     let s1 = set[1];
     s1 = s1.dataset ? parseInt(s1.dataset.tile) : s1;
+    // honours score more than numbers.
     if (s1 === tile) score = (tile < 27) ? 2 : 4;
   }
 
