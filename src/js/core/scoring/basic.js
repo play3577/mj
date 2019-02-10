@@ -5,7 +5,6 @@ function _tile_score(set) {
   let locked = set.locked;
   if (set[0].dataset) set = set.map(s => parseInt(s.dataset.tile));
   let tile = set[0];
-
   let score = 0;
 
   // Only pairs of dragons score points.
@@ -56,9 +55,7 @@ function scoreTiles(disclosure) {
   // If there is nothing to be formed with the tiles in hand,
   // then we need to create an empty path, so that we at
   // least still compute score based on just the locked tiles.
-  if (openCompositions.length === 0) {
-    openCompositions.push([]);
-  }
+  if (openCompositions.length === 0) openCompositions.push([]);
 
   // Run through each possible interpetation of in-hand
   // tiles, and see how much they would score, based on
@@ -102,7 +99,8 @@ function settleScores(scores, winningplayer) {
 
     if(!LOSERS_SETTLE_SCORES) continue;
 
-    // and then they settle their scores amongst themselves
+    // If losers should settle their scores amongst
+    // themselves, make that happen right here:
     for(let j=0; j<scores.length; j++) {
       if (j===i) continue;
       if (j===winningplayer) continue;
