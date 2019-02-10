@@ -194,12 +194,6 @@ class Pattern {
    * @param {*} set
    */
   recurseForWin(composed, processed, results, single, pair, set) {
-    // try {
-    //   console.log(lineNumber++, ' -:', processed, 's:', single, 'p:', pair, 'sets:', set);
-    // } catch(e) {
-    //   console.log(set);
-    //   throw e;
-    // }
     let downstream = this.copy();
     downstream.remove(processed);
     if (downstream.keys.length > 0) {
@@ -272,7 +266,7 @@ function unroll(list, seen=[], result=[]) {
  * @param {*} locked
  * @param {*} canChow
  */
-function tilesNeeded(tiles, locked=[], canChow) {
+function tilesNeeded(tiles, locked=[], canChow=false, winningPattern=false) {
   let p = new Pattern(tiles, canChow);
 
   // Transform the "locked tiles" listing to
@@ -304,11 +298,13 @@ function tilesNeeded(tiles, locked=[], canChow) {
   // reason we needed that tile for:
   wincheck.results.forEach((l,idx) => lookout[idx] = l);
 
-  // Then, form all compositional paths that our unlocked tiles
-  // can take, and remove any compositional path that consists
-  // of fewer tiles than we have in hand.
+  // Then, form all compositional paths that our unlocked tiles can take.
   let paths = wincheck.composed.map(path => unroll(path));
-  let composed = paths.map(path => path[0]).filter(path => path.reduce((t,v)=>t+parseInt(v), 0) === tiles.length);
+  let composed = paths.map(path => path[0]);
+  // And, if this is a known winning hand, we should remove any
+  // incomplete compositional path (i.e., one that comprises
+  // fewer tiles than we have in hand).
+  if (winningPattern) composed = composed.filter(path => path.reduce((t,v)=>t+parseInt(v), 0) === tiles.length);
 
   // If we have any compositional paths left, we could
   // already have a winning pattern in our hand, as long

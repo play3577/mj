@@ -30,7 +30,7 @@ function setup() {
         if (turn !== shuffles) turn = shuffles;
       }
       if (!result.draw && turn === 16) {
-        Logger.log("\nfull game played.");
+        Logger.log(`\nfull game played.`);
         let scores = players.map(p => p.getScore());
         players.forEach(p => p.endOfGame(scores));
         return;
@@ -139,8 +139,10 @@ function playGame(turn, players, wall, next) {
 
       // calculate scores!
       let scores = disclosure.map(d => scoreTiles(d));
-      Logger.log(`Sending scores: ${scores}`);
-      players.forEach(p => p.recordScores(scores));
+      let adjustments = settleScores(scores, player.id);
+      Logger.log(`Scores: ${scores}`);
+      Logger.log(`Score adjustments: ${adjustments}`);
+      players.forEach(p => p.recordScores(adjustments));
 
       // On to the next hand!
       Logger.log(`(game took ${play_length}ms)`);
@@ -166,7 +168,7 @@ function playGame(turn, players, wall, next) {
     players.forEach(p => p.see(discard, player, true));
 
     if (wall.dead) {
-      Logger.log("Turn ${turn} is a draw.");
+      Logger.log(`Turn ${turn} is a draw.`);
       players.forEach(p => p.endOfHand());
       return setTimeout(() => next({ draw: true }), PLAY_INTERVAL);
     }

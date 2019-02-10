@@ -70,3 +70,32 @@ function scoreTiles(disclosure) {
 
   return possibleScores.sort().slice(-1)[0] + (bonus.length * 4);
 }
+
+/**
+ *
+ */
+function settleScores(scores, winningplayer) {
+  let adjustments = [0,0,0,0];
+
+  for(let i=0; i<scores.length; i++) {
+    if (i === winningplayer) continue;
+
+    // every non-winner pays the winner.
+    if (i !== winningplayer) {
+      let wscore = scores[winningplayer];
+      adjustments[winningplayer] += wscore;
+      adjustments[i] -= wscore;
+    }
+
+    if(!LOSERS_SETTLE_SCORES) continue;
+
+    // and then they settle their scores amongst themselves
+    for(let j=0; j<scores.length; j++) {
+      if (j===i) continue;
+      if (j===winningplayer) continue;
+      adjustments[i] += (scores[i] - scores[j]);
+    }
+  }
+
+  return adjustments;
+}

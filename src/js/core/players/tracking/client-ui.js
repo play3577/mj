@@ -44,7 +44,7 @@ class ClientUI extends TileBank {
 
   endOfHand(disclosure) {
     if (!disclosure) {
-      discards.classList.add('exhausted');
+      this.discards.classList.add('exhausted');
       return;
     }
 
