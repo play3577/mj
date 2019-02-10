@@ -239,6 +239,8 @@
 [data-tile="37"] { content:'bamboo';        background-image: url('https://pomax.github.io/MJJS/public/tiles/37.jpg'); }
 
 .player .tile { margin-top: calc(calc(var(--ph) / 6)); }
+
+.tile[data-hidden] { content:'unknown'; background-image: url('https://pomax.github.io/MJJS/public/tiles/concealed.jpg'); }
 .tile[data-locked]  { margin-top: calc(0em - calc(var(--ph) / 6)); }
 .tile[data-bonus]   { transform: scale(0.8, 0.8); border: 1px solid red; }
 .tile[data-winning] { border-width: 5px 1px 1px 1px; border-top-color: #00ff42; }

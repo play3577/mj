@@ -192,16 +192,20 @@ class ClientUI extends TileBank {
     // visual set locking is handled by see()/4 instead for human players.
   }
 
-  see(tile, player, discard, locked=true) {
+  see(tile, player, discard, locked=true, concealed=false) {
     let bank = this.playerbanks[player.id];
     if (!discard) {
       let e = create(tile);
+      if (concealed) e.dataset.hidden = 'hidden';
       if (locked === true) e.dataset.locked = 'locked';
       if (tile < 34) {
-        let blank = bank.querySelector('[data-tile="-1"]');
+        // reveal this tile, and remove a "blank" tile
+        let blank = bank.querySelector(`[data-tile="-1"]`);
         if (blank) bank.replaceChild(e, blank);
         else bank.appendChild(e);
+        e = blank ? blank : e;
       }
+      // bonus tiles don't replace anything.
       else bank.appendChild(e);
     } else {
       discard = create(tile);

@@ -3,12 +3,11 @@
 // =========================================
 
 class Player {
-  constructor(id, proxyWall) {
+  constructor(id) {
     this.el = document.createElement('div');
     this.el.setAttribute('class', 'player');
     this.el.id = id;
     this.id = id;
-    this.wall = proxyWall;
     this.tracker = new TileTracker(this.id);
     this.ui = new TileBank(this.id);
     this.wincount = 0;
@@ -91,7 +90,6 @@ class Player {
 
   winner() {
     this.ui.winner();
-    this.reveal();
   }
 
   append(t, concealed) {
@@ -108,22 +106,47 @@ class Player {
     return revealed;
   }
 
-  removeDiscard(discard) {
-    this.ui.remove(discard);
+  checkKong(tile) {
+    let tiles = this.getTileFaces().filter(t => t===tile);
+    if (tiles.length === 4) {
+      tiles = tiles.map((t,pos) => {
+        let tile = this.getSingleTileFromHand(t);
+        this.remove(tile);
+        tile.dataset.locked = 'locked';
+        tile.dataset.hidden = 'hidden';
+        this.ui.see(t, this, false, true, pos<3);
+        return tile.cloneNode();
+      });
+      delete tiles[3].dataset.hidden;
+      this.locked.push(tiles);
+      return tiles;
+    }
   }
 
-  see(tiles, player, discard) {
+  remove(tile) {
+    this.ui.remove(tile);
+  }
+
+  // FIXME: is this function still necessary?
+  // Does it matter that it was a discard?
+  removeDiscard(discard) {
+    this.remove(discard);
+  }
+
+  see(tiles, player, discard, locked) {
     if (player === this) return;
     if (!tiles.map) tiles = [tiles];
     tiles.forEach(tile => {
-      let ignore = false, from;
+      let ignore = false, concealed=false, from;
       if (typeof tile === 'object') {
         from = tile.dataset.from;
         if (from && from == this.id) ignore = true;
+        concealed = !!tile.dataset.hidden;
+        // revert tile to plain number
         tile = tile.dataset.tile;
       }
       if (!ignore) { this.tracker.seen(tile); }
-      this.ui.see(tile, player, discard);
+      this.ui.see(tile, player, discard, locked, concealed);
     });
   }
 
@@ -317,12 +340,7 @@ class Player {
         }
       });
 
-      // if the player locks away a total of 4 tiles, they need a tile from the wall
-      // to compensate for the loss of a tile.
       locked += count;
-      if (locked === 4 && !this.wall.dead()) {
-        this.getSupplementTile(p);
-      }
 
       this.locked.push(set);
       this.ui.lock(set);
@@ -356,13 +374,5 @@ class Player {
     this.ui.lock(set);
 
     return set;
-  }
-
-  getSupplementTile() {
-    let tile;
-    do {
-      tile = this.wall.get();
-      this.append(tile)
-    } while (tile>33 && !this.wall.dead());
   }
 }

@@ -40,6 +40,9 @@ function setup() {
     Logger.log(`\n${pre}tarting turn ${turn}.`); // Starting turn / Restarting turn
 
     players.forEach(player => player.reset());
+
+    if (PAUSE_ON_TURN && turn === PAUSE_ON_TURN) TURN_INTERVAL = 60 * 60 * 1000; // play debug
+
     playHand(turn, players, wall, next);
   };
 
@@ -74,6 +77,15 @@ function dealTiles(turn, players, wall) {
         players.forEach(p => p.see(revealed, player));
         bank.push(wall.get());
       }
+
+      // process kong declaration
+      let kong = player.checkKong(tile);
+      if (kong) {
+        Logger.debug(`${player.id} plays self-drawn kong ${kong[0].dataset.tile} during initial tile dealing`);
+        players.forEach(p => p.see(kong, player));
+        bank.push(wall.get());
+      }
+
       // At this point, a player should be able to decide whether or not to
       // declare any kongs they might have in their hand. While unlikely, it
       // is entirely possible for this to lead to a player declaring four
@@ -85,12 +97,36 @@ function dealTiles(turn, players, wall) {
 }
 
 /**
- * The game loop function.
+ * Set up and run the main game loop.
  */
 function playGame(turn, players, wall, next) {
   let currentPlayerId = 2;
   let discard = undefined;
 
+  // Since we need to do this in a few places,
+  // this is its own little function.
+  let dealTile = player => {
+    let tile;
+    do {
+      tile = wall.get();
+      Logger.debug(`${player.id} was given tile ${tile}`);
+      let revealed = player.append(tile);
+      // bonus tile are shown to all other players.
+      if (revealed) players.forEach(p => p.see(revealed, player));
+      // if a played got a kong, and declared it, notify all
+      // other players and issue a supplement tile.
+      let kong = player.checkKong(tile);
+      if (kong) {
+        Logger.debug(`${player.id} plays self-drawn kong ${kong[0].dataset.tile} during play`);
+        players.forEach(p => p.see(kong, player, false, true));
+        Logger.debug(`Dealing ${player.id} a supplement tile.`);
+        dealTile(player);
+      }
+    } while (tile>33 && !wall.dead);
+    return wall.dead;
+  }
+
+  // Game loop function:
   let play = async (claim) => {
     if (discard) discard.classList.remove('discard');
 
@@ -98,22 +134,19 @@ function playGame(turn, players, wall, next) {
     players.forEach(p => p.activate(player.id));
 
     // "Draw one"
-    if (!claim) {
-      let tile;
-      do {
-        tile = wall.get();
-        Logger.debug(`${player.id} was dealt a tile ${tile}`);
-        let revealed = player.append(tile);
-        // bonus tile are shown to all other players.
-        if (revealed) players.forEach(p => p.see(revealed, player));
-      } while (tile>33 && !wall.dead);
-    } else {
+    if (!claim) dealTile(player);
+    else {
       let tiles = player.awardClaim(currentPlayerId, claim, discard);
+
       // Awarded claims are shown to all other players. However,
       // the player whose discard this was should make sure to
       // ignore marking the tile they discarded as "seen" a
       // second time: they already saw it when they drew it.
       players.forEach(p => p.seeClaim(tiles, player, claim));
+
+      // if the player locks away a total of 4 tiles, they need
+      // a tile from the wall to compensate for the loss of a tile.
+      if (tiles.length === 4) dealTile(player);
     }
 
     // "Play one"

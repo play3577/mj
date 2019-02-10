@@ -80,7 +80,7 @@ class TileBank {
     tiles.forEach(tile => this.remove(tile));
   }
 
-  see(tile, player, discard, locked) {
+  see(tile, player, discard, locked, concealed) {
     // bots do nothing with this signal
   }
 
@@ -105,7 +105,7 @@ class TileBank {
   }
 
   getTileFaces(allTiles) {
-    return Array.from(this.getTiles(allTiles)).map(t => t.getTileFace());
+    return this.getTiles(allTiles).map(t => t.getTileFace());
   }
 
   getDuplicates(tile) {

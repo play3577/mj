@@ -22,7 +22,7 @@ class TileTracker {
       try {
         e.parentNode.removeChild(e);
       } catch(error) {
-        Logger.debug(`Player ${this.id} can't remove ${tile}, because there aren't any left to remove..?`);
+        Logger.log(`Player ${this.id} can't remove ${tile}, because there aren't any left to remove..?`);
         Logger.trace();
         throw error;
       }

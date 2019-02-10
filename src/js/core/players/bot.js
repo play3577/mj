@@ -4,8 +4,8 @@
  * and simply do what the code says to do.
  */
 class BotPlayer extends Player {
-  constructor(id, proxyWall) {
-    super(id, proxyWall);
+  constructor(id) {
+    super(id);
   }
 
   append(tile, concealed=true) {

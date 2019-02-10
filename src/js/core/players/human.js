@@ -6,8 +6,8 @@
  * "for free", and that's great!
  */
 class HumanPlayer extends BotPlayer {
-  constructor(id, proxyWall) {
-    super(id, proxyWall);
+  constructor(id) {
+    super(id);
     this.mayDiscard = false;
     this.maySendClaim = false;
 
