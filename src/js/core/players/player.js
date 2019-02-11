@@ -136,7 +136,7 @@ class Player {
   see(tiles, player, discard, locked) {
     if (player === this) return;
     if (!tiles.map) tiles = [tiles];
-    tiles.forEach(tile => {
+    tiles.forEach((tile, pos) => {
       let ignore = false, concealed=false, from;
       if (typeof tile === 'object') {
         from = tile.dataset.from;
@@ -154,9 +154,15 @@ class Player {
     this.ui.receivedTile(player);
   }
 
-  seeClaim(tiles, player, claim) {
-    this.ui.removeLastDiscard();
-    this.see(tiles, player);
+  seeClaim(tiles, player) {
+    // Due to the fact that the ui version of see()
+    // gets called on a tile-by-tile basis, we need
+    // to make sure that the UI is ready for see()
+    // calls following a claim separately.
+    this.ui.prepareForClaim(player);
+
+    // With that out of the way, process the tiles.
+    this.see(tiles, player, false, true);
   }
 
   nextPlayer() {

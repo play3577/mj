@@ -84,6 +84,10 @@ class TileBank {
     // bots do nothing with this signal
   }
 
+  prepareForClaim(player) {
+    // bots do nothing with this signal
+  }
+
   receivedTile(player) {
     // bots do nothing with this signal
   }

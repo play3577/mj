@@ -103,6 +103,7 @@ function dealTiles(turn, players, wall) {
 function playGame(turn, players, wall, next) {
   let currentPlayerId = 2;
   let discard = undefined;
+  let counter = 0;
 
   // Since we need to do this in a few places,
   // this is its own little function.
@@ -136,6 +137,11 @@ function playGame(turn, players, wall, next) {
     let player = players[currentPlayerId];
     players.forEach(p => p.activate(player.id));
 
+    // increase the play counter;
+    counter++;
+    playDelay = (turn===PAUSE_ON_TURN && counter===PAUSE_ON_PLAY) ? 60*60*1000 : PLAY_INTERVAL;
+    Logger.debug(`turn ${turn}, play ${counter}`);
+
     // "Draw one"
     if (!claim) dealTile(player);
     else {
@@ -145,7 +151,7 @@ function playGame(turn, players, wall, next) {
       // the player whose discard this was should make sure to
       // ignore marking the tile they discarded as "seen" a
       // second time: they already saw it when they drew it.
-      players.forEach(p => p.seeClaim(tiles, player, claim));
+      players.forEach(p => p.seeClaim(tiles, player));
 
       // if the player locks away a total of 4 tiles, they need
       // a tile from the wall to compensate for the loss of a tile.
@@ -191,25 +197,25 @@ function playGame(turn, players, wall, next) {
     delete discard.dataset.hidden;
 
     // Does someone want to claim this discard?
-    claim = await getAllClaims(players, currentPlayerId, discard);
+    claim = await getAllClaims(players, currentPlayerId, discard); // players take note of the fact that a discard happened as part of their determineClaim()
     if (claim) {
       Logger.debug(`${claim.p} wants ${discard.dataset.tile} for ${claim.claimtype}`);
       currentPlayerId = claim.p;
       player.disable();
       // and recurse, but using setTimeout rather than direct recursion.
-      return setTimeout(() => play(claim), PLAY_INTERVAL);
+      return setTimeout(() => play(claim), playDelay);
     }
 
     if (wall.dead) {
       Logger.log(`Turn ${turn} is a draw.`);
       players.forEach(p => p.endOfHand());
-      return setTimeout(() => next({ draw: true }), PLAY_INTERVAL);
+      return setTimeout(() => next({ draw: true }), playDelay);
     }
 
     // We have tiles left to play with, so move on to the next player:
     players.forEach(p => p.nextPlayer());
     currentPlayerId = (currentPlayerId + 1) % 4;
-    return setTimeout(() => {player.disable(); play();}, PLAY_INTERVAL);
+    return setTimeout(() => {player.disable(); play();}, playDelay);
   };
 
   play();

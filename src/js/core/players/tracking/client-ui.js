@@ -40,10 +40,6 @@ class ClientUI extends TileBank {
     this.bar.style.width = `0%`;
   }
 
-  handWillStart() {
-    // not doing anything here for now.
-  }
-
   startCountDown(ms) {
     let update = fraction => (this.bar.style.width = `${100 - 100 * fraction}%`);
     for (let i=0, fraction, e=10; i<=e; i++) {
@@ -207,6 +203,8 @@ class ClientUI extends TileBank {
   see(tile, player, discard, locked=true, concealed=false) {
     let bank = this.playerbanks[player.id];
 
+    Logger.debug(`${this.id} sees ${tile} from ${player.id}, discard:${discard}, locked:${locked}, concealed:${concealed}`);
+
     // remove a blank (for not-us banks)
     if (player.id !== this.id) {
       let blank = bank.querySelector(`[data-tile="-1"]`);
@@ -226,6 +224,15 @@ class ClientUI extends TileBank {
       if (!BOT_PLAY) this.startCountDown(CLAIM_INTERVAL);
     }
     this.sortTiles(bank);
+  }
+
+  prepareForClaim(player, tile) {
+    // The discarded tile is getting claimed, so it
+    // won't be in the discard pile anymore
+    this.removeLastDiscard();
+
+    // Add a blank tile, so we don't "over-remove" blanks
+    this.receivedTile(player);
   }
 
   receivedTile(player) {

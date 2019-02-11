@@ -2,7 +2,7 @@ const html = document.querySelector('html');
 const winds = Array.from(document.querySelectorAll('.player-wind'));
 const indicator = document.querySelector('.windicator');
 
-let shuffles = 0;
+let shuffles = 1;
 
 indicator.addEventListener("click", rotateWinds);
 
