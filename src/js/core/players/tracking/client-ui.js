@@ -37,6 +37,7 @@ class ClientUI extends TileBank {
 
   clearTimeouts() {
     this.timeouts.forEach(t => clearTimeout(t));
+    this.bar.style.width = `0%`;
   }
 
   handWillStart() {
