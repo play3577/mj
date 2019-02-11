@@ -4,7 +4,7 @@ html {
 body {
     background: white;
     width: 800px;
-    padding: 0 80px 80px 80px;
+    padding: 10px 80px 80px 80px;
     margin: auto;
 }
 
@@ -15,14 +15,28 @@ h1, h2, h3, h4, h5, h6 {
 h1 { font-size: 2rem; }
 h2 { font-size: 1.75rem; }
 
-p {
+p, li {
     text-indent: 1em;
-    font-family: Arial, Hiragina, "MS Gothic", sans-serif;
+    font-family: Arial, Hiragino, "MS Gothic", sans-serif;
     text-align: justify;
 }
 
 ul {
     width: 90%;
+}
+
+li, li > p {
+    text-indent: 0;
+}
+
+li img {
+    border: 1px solid black;
+    margin: 2px;
+    border-radius: 5px;
+}
+
+li + li {
+    margin-top: 1em
 }
 
 footer {

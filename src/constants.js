@@ -2,7 +2,7 @@ if(typeof process !== "undefined") {
     Random = require('./js/prng.js');
 }
 
-const SEED = 472544597; //1371711993; //1890269799; //790579740; //28238738; //1822967933; //28238738;
+const SEED = 0; //472544597; //1371711993; //1890269799; //790579740; //28238738; //1822967933; //28238738;
 const PRNG = new Random(SEED);
 
 //const LOG_LEVEL = LOG_LEVELS.DEBUG;

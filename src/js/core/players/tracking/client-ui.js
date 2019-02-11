@@ -54,9 +54,11 @@ class ClientUI extends TileBank {
 
     let stile = this.getSingleTileFromHand(suggestion.dataset.tile);
     stile.classList.add('suggestion');
+    stile.setAttribute('title','Bot-recommended discard.');
 
     let fn = e => {
       stile.classList.remove('suggestion');
+      stile.removeAttribute('title');
       tiles.forEach(tile => {
         tile.classList.remove('selectable');
         tile.removeEventListener("click", fn);
