@@ -26,7 +26,7 @@ class HumanPlayer extends BotPlayer {
     // Let's ask our "bot" assistant for what
     // it would suggest we throw away:
     super.determineDiscard(suggestion => {
-      if (BOT_PLAY) return resolve(suggestion);
+      if (config.BOT_PLAY) return resolve(suggestion);
       this.ui.listenForDiscard(resolve, suggestion);
     });
   }
@@ -34,7 +34,7 @@ class HumanPlayer extends BotPlayer {
   determineClaim(pid, discard, resolve, interrupt) {
     // And of course, the same applies here:
     let suggestion = super.determineClaim(pid, discard, suggestion => {
-      if (BOT_PLAY) return resolve(suggestion);
+      if (config.BOT_PLAY) return resolve(suggestion);
       this.ui.listenForClaim(pid, discard, resolve, interrupt);
     });
   }

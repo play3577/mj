@@ -15,7 +15,6 @@
       <div class="discards">discards</div>
       <div class="knowledge"></div>
       <div class="windicator">
-          <link rel="stylesheet" href="src/css/rotator.css">
           <div class="player-wind tc e">東</div>
           <div class="player-wind rc">南</div>
           <div class="player-wind bc">西</div>
@@ -281,30 +280,31 @@
     </section>
 
     <section id="scripts">
-      <!-- prerequisites -->
-      <script src="src/js/utils.js"></script>
-      <script src="src/logger.js"></script>
-      <script src="src/js/prng.js"></script>
-      <script src="src/constants.js"></script>
+      <script src="src/js/core/utils/prng.js"></script>
+      <script src="src/config.js"></script>
+
+      <script src="src/js/core/utils/utils.js"></script>
       <script src="src/js/core/players/tracking/tile-tracker.js"></script>
       <script src="src/js/core/players/tracking/tile-bank.js"></script>
 
-      <script src="src/js/core/players/tracking/client-ui.js"></script>
+      <script src="src/js/core/players/tracking/client/client-ui.js"></script>
       <link rel="stylesheet" href="src/css/client.css">
 
-      <script src="src/js/rotator.js"></script>
+      <script src="src/js/core/players/tracking/client/rotator.js"></script>
+      <link rel="stylesheet" href="src/css/rotator.css">
+
       <script src="src/js/core/players/player.js"></script>
       <script src="src/js/core/wall.js"></script>
       <script src="src/js/core/players/bot.js"></script>
       <script src="src/js/core/players/human.js"></script>
       <script src="src/js/core/mgen.js"></script> <!-- contains tilesNeeded() -->
-      <script src="src/js/modal.js"></script>
+      <script src="src/js/page/modal.js"></script>
 
       <script src="src/js/core/scoring/basic.js"></script>
       <script src="src/js/core/play.js"></script>
 
       <!-- twitter the sparrows! -->
-      <script src="src/js/play-or-watch.js"></script>
+      <script src="src/js/page/play-or-watch.js"></script>
     </section>
 
     <footer>

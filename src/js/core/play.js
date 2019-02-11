@@ -15,9 +15,9 @@ function setup() {
 
   // A simple turn counter. Note that we do not
   // advance this counter on a draw.
-  let turn = 1;
+  let hand = 1;
 
-  // A function that triggers the next turn's play.
+  // A function that triggers the next hand's play.
   // Unless the game is over because we've played
   // enough rounds to rotate the winds fully.
   const next = (result) => {
@@ -27,9 +27,9 @@ function setup() {
       pre = result.draw ? 'Res' : pre;
       if (result.winner) {
         let shuffles = rotateWinds();
-        if (turn !== shuffles) turn = shuffles;
+        if (hand !== shuffles) hand = shuffles;
       }
-      if (!result.draw && turn === 16) {
+      if (!result.draw && hand === 16) {
         Logger.log(`\nfull game played.`);
         let scores = players.map(p => p.getScore());
         players.forEach(p => p.endOfGame(scores));
@@ -37,13 +37,13 @@ function setup() {
       }
     }
 
-    Logger.log(`\n${pre}tarting turn ${turn}.`); // Starting turn / Restarting turn
+    Logger.log(`\n${pre}tarting hand ${hand}.`); // Starting hand / Restarting hand
 
     players.forEach(player => player.reset());
 
-    if (PAUSE_ON_TURN && turn === PAUSE_ON_TURN) TURN_INTERVAL = 60 * 60 * 1000; // play debug
+    if (config.PAUSE_ON_HAND && hand === config.PAUSE_ON_HAND) config.HAND_INTERVAL = 60 * 60 * 1000; // play debug
 
-    playHand(turn, players, wall, next);
+    playHand(hand, players, wall, next);
   };
 
   return { play() { next(); }};
@@ -53,21 +53,21 @@ function setup() {
  * A single hand in a game consists of "dealing tiles"
  * and then starting play.
  */
-function playHand(turn, players, wall, next) {
+function playHand(hand, players, wall, next) {
   PLAY_START = Date.now();
-  dealTiles(turn, players, wall);
+  dealTiles(hand, players, wall);
   players.forEach(p => p.handWillStart());
-  playGame(turn, players, wall, next);
+  playGame(hand, players, wall, next);
 }
 
 /**
  * Dealing tiles means getting each player 13 play tiles,
  * with any bonus tiles replaced by normal tiles.
  */
-function dealTiles(turn, players, wall) {
+function dealTiles(hand, players, wall) {
   wall.reset();
   players.forEach((player, p) => {
-    player.markTurn(turn);
+    player.markHand(hand);
     let bank = wall.get(13);
     for (let t=0, tile; t<bank.length; t++) {
       tile = bank[t];
@@ -100,7 +100,7 @@ function dealTiles(turn, players, wall) {
 /**
  * Set up and run the main game loop.
  */
-function playGame(turn, players, wall, next) {
+function playGame(hand, players, wall, next) {
   let currentPlayerId = 2;
   let discard = undefined;
   let counter = 0;
@@ -139,8 +139,8 @@ function playGame(turn, players, wall, next) {
 
     // increase the play counter;
     counter++;
-    playDelay = (turn===PAUSE_ON_TURN && counter===PAUSE_ON_PLAY) ? 60*60*1000 : PLAY_INTERVAL;
-    Logger.debug(`turn ${turn}, play ${counter}`);
+    playDelay = (hand===config.PAUSE_ON_HAND && counter===config.PAUSE_ON_PLAY) ? 60*60*1000 : config.PLAY_INTERVAL;
+    Logger.debug(`hand ${hand}, play ${counter}`);
 
     // "Draw one"
     if (!claim) dealTile(player);
@@ -170,7 +170,7 @@ function playGame(turn, players, wall, next) {
     // Did anyone win?
     if (!discard) {
       let play_length = (Date.now() - PLAY_START);
-      Logger.log(`Player ${currentPlayerId} wins round ${turn}!`);
+      Logger.log(`Player ${currentPlayerId} wins round ${hand}!`);
       Logger.log(`Revealed tiles ${player.getLockedTileFaces()}`);
       Logger.log(`Concealed tiles: ${player.getTileFaces()}`);
       player.winner();
@@ -188,7 +188,7 @@ function playGame(turn, players, wall, next) {
 
       // On to the next hand!
       Logger.log(`(game took ${play_length}ms)`);
-      return setTimeout(() => next({ winner: player }), TURN_INTERVAL);
+      return setTimeout(() => next({ winner: player }), config.HAND_INTERVAL);
     }
 
     // No winner - process the discard.
@@ -207,7 +207,7 @@ function playGame(turn, players, wall, next) {
     }
 
     if (wall.dead) {
-      Logger.log(`Turn ${turn} is a draw.`);
+      Logger.log(`Hand ${hand} is a draw.`);
       players.forEach(p => p.endOfHand());
       return setTimeout(() => next({ draw: true }), playDelay);
     }

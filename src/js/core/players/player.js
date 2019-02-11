@@ -59,11 +59,10 @@ class Player {
     return this._score;
   }
 
-  markTurn(turn) {
-    this.wind = (turn + (this.id|0)) % 4;
-    this.windOfTheRound = (turn/4)|0;
-
-    this.ui.markTurn(turn, this.wind);
+  markHand(hand) {
+    this.wind = (hand + (this.id|0)) % 4;
+    this.windOfTheRound = (hand/4)|0;
+    this.ui.markHand(hand, this.wind);
   }
 
   activate(id) {
@@ -278,7 +277,7 @@ class Player {
     let overrideTrigger = setTimeout(() => {
       overrideKickedIn = true;
       resolve({ claimtype: CLAIM.IGNORE })
-    }, CLAIM_INTERVAL);
+    }, config.CLAIM_INTERVAL);
 
     // And similarly, make sure to cancel the
     // timeout check if we do have a claim

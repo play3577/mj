@@ -9,7 +9,7 @@ class Wall {
     let tiles = BASE.slice();
     this.tiles = [];
     while (tiles.length) {
-      let pos = (PRNG.nextFloat() * tiles.length)|0;
+      let pos = (config.PRNG.nextFloat() * tiles.length)|0;
       this.tiles.push( tiles.splice(pos,1)[0] );
     }
     this.dead = false;

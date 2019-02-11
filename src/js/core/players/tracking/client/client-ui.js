@@ -87,6 +87,7 @@ class ClientUI extends TileBank {
     let fn = e => {
       interrupt();
       this.clearTimeouts();
+      let CLAIM = config.CLAIM;
 
       // let's spawn a little modal to see what the user actually wanted to do here.
       modal.setContent("What kind of claim are you making?", [
@@ -162,7 +163,7 @@ class ClientUI extends TileBank {
     });
   }
 
-  markTurn(turn, wind) {
+  markHand(hand, wind) {
     this.el.dataset.wind = ['東','南','西','北'][wind];
   }
 
@@ -223,7 +224,7 @@ class ClientUI extends TileBank {
       discard.classList.add('discard');
       discard.dataset.from = player.id;
       this.discards.appendChild(discard);
-      if (!BOT_PLAY) this.startCountDown(CLAIM_INTERVAL);
+      if (!config.BOT_PLAY) this.startCountDown(config.CLAIM_INTERVAL);
     }
     this.sortTiles(bank);
   }
@@ -248,7 +249,7 @@ class ClientUI extends TileBank {
     e = e || this.el;
     Array
     .from(e.querySelectorAll('.tile'))
-    .sort(SORT_TILE_FN)
+    .sort(config.SORT_TILE_FN)
     .forEach(tile => e.appendChild(tile));
   }
 

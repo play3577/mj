@@ -1,3 +1,13 @@
+/**
+ * This is the difficult file in the code base. It's the part that's responsible for
+ * taking a set of "free" tiles, and sets of locked tiles, and figure out:
+ *
+ *   1. which free tiles can form which sets by claiming which single tile
+ *   2. which possible combinations of sets all free tiles can form
+ *   3. whether a combination of free + locked tiles is a win or not.
+ */
+
+
 // hash a tile requirement object to a compact string form.
 function hash(set) {
   let s = `${set.type}`;
@@ -5,6 +15,7 @@ function hash(set) {
   if (set.type===Constants.PAIR || set.type===Constants.CHOW) { s = `${s}t${set.tile}`; }
   return s;
 }
+
 
 // unhash a tile requirement object from its compact string form.
 function unhash(print, tile) {
@@ -17,6 +28,7 @@ function unhash(print, tile) {
   let obj = { required, type, subtype, tile };
   return obj;
 }
+
 
 /**
  *

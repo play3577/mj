@@ -38,7 +38,7 @@ class TileBank {
     // bots do nothing with this signal
   }
 
-  markTurn(turn, wind) {
+  markHand(hand, wind) {
     // bots do nothing with this signal
   }
 
@@ -93,7 +93,7 @@ class TileBank {
   }
 
   sortTiles(e) {
-    this.tiles.sort(SORT_TILE_FN);
+    this.tiles.sort(config.SORT_TILE_FN);
   }
 
   getAvailableTiles() {

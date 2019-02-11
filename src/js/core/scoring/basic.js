@@ -33,7 +33,7 @@ function getBasicTileScore(scorePattern) {
 }
 
 /**
- * Scoring tiles means first seeing how many different 
+ * Scoring tiles means first seeing how many different
  * things can be formed with the not-revelead tiles,
  * and then for each of those things, calculate the
  * total hand score by adding in the locked tiles.
@@ -97,7 +97,7 @@ function settleScores(scores, winningplayer) {
       adjustments[i] -= wscore;
     }
 
-    if(!LOSERS_SETTLE_SCORES) continue;
+    if(!config.LOSERS_SETTLE_SCORES) continue;
 
     // If losers should settle their scores amongst
     // themselves, make that happen right here:
