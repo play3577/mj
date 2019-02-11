@@ -1,6 +1,7 @@
 const html = document.querySelector('html');
 const winds = Array.from(document.querySelectorAll('.player-wind'));
 const indicator = document.querySelector('.windicator');
+const handcount = indicator.querySelector('.hand-counter');
 
 let shuffles = 1;
 
@@ -33,5 +34,8 @@ function rotateWinds(evt) {
   else winds.forEach(e => {
     indicator.classList.add('done');
   });
+
+  handcount.textContent = shuffles;
+
   return shuffles;
 }
