@@ -8,4 +8,4 @@ The live version, which just lets you watch four bots play a round of MJ, can be
 
 #### url query params
 
-Because it's fun, you can append `?play=<num>&hand=<num>` to the URL to change the bot play speed, and the pause between hands, and you can append `autoplay` to start the page with bots autoplaying... so if you want to see the bots work as fast as the UI will let them, hit up https://pomax.github.io/mj/?play=0&hand=0&autoplay and enjoy the fireworks.
+Because it's fun, you can append `?play=<num>&hand=<num>` to the URL to change the bot play speed, and the pause between hands, and you can set `autoplay=true` to start the page with bots autoplaying... so if you want to see the bots work as fast as the UI will let them, hit up https://pomax.github.io/mj/?autoplay=true&play=0&hand=0 and enjoy the fireworks.
