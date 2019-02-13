@@ -88,7 +88,7 @@ function dealTiles(hand, players, wall) {
       let kong = player.checkKong(tile);
       if (kong) {
         Logger.debug(`${player.id} plays self-drawn kong ${kong[0].dataset.tile} during initial tile dealing`);
-        players.forEach(p => p.see(kong, player));
+        players.forEach(p => p.seeKong(kong, player));
         bank.push(wall.get());
       }
 
@@ -100,6 +100,76 @@ function dealTiles(hand, players, wall) {
       // Note that this also affects client-ui.js!
     }
   });
+}
+
+/**
+ *
+ */
+function processWin(player, hand, players, currentPlayerId, next) {
+  let play_length = (Date.now() - PLAY_START);
+  Logger.log(`Player ${currentPlayerId} wins round ${hand}!`);
+  Logger.log(`Revealed tiles ${player.getLockedTileFaces()}`);
+  Logger.log(`Concealed tiles: ${player.getTileFaces()}`);
+  player.winner();
+
+  // Let everyone know what everyone had. It's the nice thing to do.
+  let disclosure = players.map(p => p.getDisclosure());
+  players.forEach(p => p.endOfHand(disclosure));
+
+  // calculate scores!
+  let scores = disclosure.map((d,id) => scoreTiles(d, id, windOfTheRound));
+  Logger.log("score breakdown:", scores);
+  let adjustments = settleScores(scores, player.id);
+  Logger.log(`Scores: ${scores.map(s => s.total)}`);
+  Logger.log(`Score adjustments: ${adjustments}`);
+  players.forEach(p => p.recordScores(adjustments));
+
+  // On to the next hand!
+  Logger.log(`(game took ${play_length}ms)`);
+  setTimeout(() => next({ winner: player }), config.HAND_INTERVAL);
+}
+
+/**
+ *
+ */
+function processDiscard(player, discard, players) {
+  Logger.debug(`${player.id} discarded ${discard.dataset.tile}`);
+  player.removeDiscard(discard);
+  discard.dataset.from = player.id;
+  delete discard.dataset.hidden;
+  players.forEach(p => p.playerDiscarded(player, discard));
+}
+
+/**
+ *
+ */
+function processClaim(player, claim, discard, next) {
+  Logger.debug(`${claim.p} wants ${discard.dataset.tile} for ${claim.claimtype}`);
+  player.disable();
+  // and recurse, but using setTimeout rather than direct recursion.
+  setTimeout(next, playDelay);
+}
+
+/**
+ *
+ */
+function dealTileToPlayer(player, tile, players, next) {
+  Logger.debug(`${player.id} was given tile ${tile}`);
+  Logger.debug(`dealing ${tile} to player ${player.id}`);
+  let revealed = player.append(tile);
+  players.forEach(p => p.receivedTile(player));
+  // bonus tile are shown to all other players.
+  if (revealed) players.forEach(p => p.see(revealed, player));
+
+  // if a played got a kong, and declared it, notify all
+  // other players and issue a supplement tile.
+  let kong = player.checkKong(tile);
+  if (kong) {
+    Logger.debug(`${player.id} plays self-drawn kong ${kong[0].dataset.tile} during play`);
+    players.forEach(p => p.seeKong(kong, player));
+    Logger.debug(`Dealing ${player.id} a supplement tile.`);
+    next();
+  }
 }
 
 /**
@@ -116,28 +186,15 @@ function playGame(hand, players, wall, windOfTheRound, next) {
     let tile;
     do {
       tile = wall.get();
-      Logger.debug(`${player.id} was given tile ${tile}`);
-      Logger.debug(`dealing ${tile} to player ${player.id}`);
-      let revealed = player.append(tile);
-      players.forEach(p => p.receivedTile(player));
-      // bonus tile are shown to all other players.
-      if (revealed) players.forEach(p => p.see(revealed, player));
-
-      // if a played got a kong, and declared it, notify all
-      // other players and issue a supplement tile.
-      let kong = player.checkKong(tile);
-      if (kong) {
-        Logger.debug(`${player.id} plays self-drawn kong ${kong[0].dataset.tile} during play`);
-        players.forEach(p => p.see(kong, player, false, true));
-        Logger.debug(`Dealing ${player.id} a supplement tile.`);
-        dealTile(player);
-      }
+      dealTileToPlayer(player, tile, players, () => dealTile(player))
     } while (tile>33 && !wall.dead);
     return wall.dead;
   }
 
   // Game loop function:
   let play = async (claim) => {
+
+    if (claim) currentPlayerId = claim.p;
     let player = players[currentPlayerId];
     players.forEach(p => p.activate(player.id));
 
@@ -149,79 +206,38 @@ function playGame(hand, players, wall, windOfTheRound, next) {
     // "Draw one"
     if (!claim) dealTile(player);
     else {
-      let tiles = player.awardClaim(currentPlayerId, claim, discard);
+      let tiles = player.receiveDiscardForClaim(claim, discard);
 
-      // Awarded claims are shown to all other players. However,
-      // the player whose discard this was should make sure to
-      // ignore marking the tile they discarded as "seen" a
-      // second time: they already saw it when they drew it.
+      // Awarded claims are shown to all other players.
       players.forEach(p => p.seeClaim(tiles, player, discard));
 
-      // if the player locks away a total of 4 tiles, they need
-      // a tile from the wall to compensate for the loss of a tile.
+      // If the player locks away a total of 4 tiles,
+      // they need a supplement tile.
       if (tiles.length === 4) dealTile(player);
     }
-
 
     // "Play one"
     if (discard) discard.classList.remove('discard');
     discard = await new Promise(resolve => player.getDiscard(resolve));
 
-    if (discard) {
-      Logger.debug(`player ${player.id} discarded ${discard.dataset.tile} from ${player.getTileFaces()}`);
-    }
-
-    // Aaaand that's the core game mechanic covered!
-
     // Did anyone win?
-    if (!discard) {
-      let play_length = (Date.now() - PLAY_START);
-      Logger.log(`Player ${currentPlayerId} wins round ${hand}!`);
-      Logger.log(`Revealed tiles ${player.getLockedTileFaces()}`);
-      Logger.log(`Concealed tiles: ${player.getTileFaces()}`);
-      player.winner();
-
-      // Let everyone know what everyone had. It's the nice thing to do.
-      let disclosure = players.map(p => p.getDisclosure());
-      players.forEach(p => p.endOfHand(disclosure));
-
-      // calculate scores!
-      let scores = disclosure.map((d,id) => scoreTiles(d, id, windOfTheRound));
-      Logger.log("score breakdown:", scores);
-      let adjustments = settleScores(scores, player.id);
-      Logger.log(`Scores: ${scores.map(s => s.total)}`);
-      Logger.log(`Score adjustments: ${adjustments}`);
-      players.forEach(p => p.recordScores(adjustments));
-
-      // On to the next hand!
-      Logger.log(`(game took ${play_length}ms)`);
-      return setTimeout(() => next({ winner: player }), config.HAND_INTERVAL);
-    }
+    if (!discard) return processWin(player, hand, players, currentPlayerId, next);
 
     // No winner - process the discard.
-    Logger.debug(`${player.id} discarded ${discard.dataset.tile}`);
-    player.removeDiscard(discard);
-    discard.dataset.from = player.id;
-    delete discard.dataset.hidden;
-    players.forEach(p => p.playerDiscarded(player.id, discard));
+    processDiscard(player, discard, players);
 
     // Does someone want to claim this discard?
     claim = await getAllClaims(players, currentPlayerId, discard); // players take note of the fact that a discard happened as part of their determineClaim()
-    if (claim) {
-      Logger.debug(`${claim.p} wants ${discard.dataset.tile} for ${claim.claimtype}`);
-      currentPlayerId = claim.p;
-      player.disable();
-      // and recurse, but using setTimeout rather than direct recursion.
-      return setTimeout(() => play(claim), playDelay);
-    }
+    if (claim) return processClaim(player, claim, discard, () => play(claim));
 
+    // No claims: have we run out of tiles?
     if (wall.dead) {
       Logger.log(`Hand ${hand} is a draw.`);
       players.forEach(p => p.endOfHand());
       return setTimeout(() => next({ draw: true }), playDelay);
     }
 
-    // We have tiles left to play with, so move on to the next player:
+    // Nothing of note happened: game on.
     players.forEach(p => p.nextPlayer());
     currentPlayerId = (currentPlayerId + 1) % 4;
     return setTimeout(() => {player.disable(); play();}, playDelay);

@@ -99,17 +99,18 @@ class Player {
     this.ui.winner();
   }
 
-  append(t, concealed) {
-    let revealed;
+  append(t, claimed) {
+    Logger.debug(`appending ${t} (${claimed})`);
+    let revealed = false;
     if (typeof t !== 'object') {
       if (t > 33) {
         revealed = t;
         this.bonus.push(t);
       }
-      t = create(t, concealed);
+      t = create(t);
     }
     this.latest = t;
-    this.tracker.seen(t.dataset.tile);
+    if (!claimed) this.tracker.seen(t.dataset.tile);
     this.ui.append(t);
     return revealed;
   }
@@ -126,9 +127,13 @@ class Player {
         this.remove(tile);
         tile.dataset.locked = 'locked';
         tile.dataset.hidden = 'hidden';
-        this.ui.see(t, this, false, true, pos<3);
         return tile.cloneNode();
       });
+
+      // FIXME: this does not feel like the right place to "see" our own kong.
+      //        This should be processed as part of the reveal, by everyone.
+      this.ui.see(tiles, this);
+
       delete tiles[3].dataset.hidden;
       this.locked.push(tiles);
       return tiles;
@@ -141,36 +146,39 @@ class Player {
     this.remove(discard);
   }
 
-  see(tiles, player, discard, locked) {
+  see(tiles, player) {
     if (player === this) return;
     if (!tiles.map) tiles = [tiles];
-    tiles.forEach((tile, pos) => {
-      let ignore = false, concealed=false, from;
-      if (typeof tile === 'object') {
-        from = tile.dataset.from;
-        if (from && from == this.id) ignore = true;
-        concealed = !!tile.dataset.hidden;
-        // revert tile to plain number
-        tile = tile.dataset.tile;
-      }
-      if (!ignore) { this.tracker.seen(tile); }
-      this.ui.see(tile, player, discard, locked, concealed);
-    });
+    tiles.forEach(tile => this.tracker.seen(tile));
+    this.ui.see(tiles, player);
   }
 
   receivedTile(player) {
     this.ui.receivedTile(player);
   }
 
-  seeClaim(tiles, player) {
-    // Due to the fact that the ui version of see()
-    // gets called on a tile-by-tile basis, we need
-    // to make sure that the UI is ready for see()
-    // calls following a claim separately.
-    this.ui.prepareForClaim(player);
+  playerDiscarded(player, discard) {
+    let tile = discard.dataset.tile;
+    if (this.id != player.id) this.tracker.seen(tile);
+    this.ui.playerDiscarded(player, tile);
+  }
 
-    // With that out of the way, process the tiles.
-    this.see(tiles, player, false, true);
+  seeKong(tiles, player) {
+    this.see(tiles.map(t => t.dataset.tile), player, false, true);
+  }
+
+  seeClaim(tiles, player, claimedTile) {
+    if (player === this) return;
+    if (!tiles.map) tiles = [tiles];
+
+    tiles.forEach((tile, pos) => {
+      // We've already see the discard that got claimed
+      if (tile === claimedTile) return;
+      // But we haven't seen the other tiles yet.
+      this.tracker.seen(tile.dataset.tile);
+    });
+
+    this.ui.seeClaim(tiles, player);
   }
 
   nextPlayer() {
@@ -268,18 +276,7 @@ class Player {
     resolve(undefined);
   }
 
-  playerDiscarded(pid, discard) {
-    let tile = discard.dataset.tile;
-    if (this.id !== pid) {
-      // track tile?
-    }
-    // this.ui.see tile?
-  }
-
   async getClaim(pid, discard, resolve) {
-    let tile = discard.dataset.tile;
-    this.ui.see(tile, {id: pid}, true);
-
     // in terms of universal behaviour, we want
     // to make sure that we exit early if this is
     // "our own" discard. No bidding on that please.
@@ -322,7 +319,7 @@ class Player {
     resolve({ claimtype: CLAIM.IGNORE });
   }
 
-  awardClaim(p, claim, discard) {
+  receiveDiscardForClaim(claim, discard) {
     let tile = discard.getTileFace();
     let claimtype = claim.claimtype;
 
@@ -339,9 +336,7 @@ class Player {
       }
     }
 
-    // being awared a discard based on a claims, however,
-    // is universal: the tiles get locked.
-    this.append(discard);
+    this.append(discard, true);
 
     discard.dataset.locked = 'locked';
     if(this.has_won) discard.dataset.winning='winning';

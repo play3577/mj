@@ -80,7 +80,15 @@ class TileBank {
     tiles.forEach(tile => this.remove(tile));
   }
 
-  see(tile, player, discard, locked, concealed) {
+  playerDiscarded(player, tile) {
+    // bots do nothing with this signal
+  }
+
+  see(tiles, player) {
+    // bots do nothing with this signal
+  }
+
+  seeClaim(tiles, player) {
     // bots do nothing with this signal
   }
 

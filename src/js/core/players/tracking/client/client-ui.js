@@ -226,30 +226,58 @@ class ClientUI extends TileBank {
     // visual set locking is handled by see()/4 instead for human players.
   }
 
-  see(tile, player, discard, locked=true, concealed=false) {
+  playerDiscarded(player, tile) {
     let bank = this.playerbanks[player.id];
 
-    Logger.debug(`${this.id} sees ${tile} from ${player.id}, discard:${discard}, locked:${locked}, concealed:${concealed}`);
+    Logger.debug(`${this.id} sees discard ${tile} from ${player.id}`);
 
-    // remove a blank (for not-us banks)
-    if (player.id !== this.id) {
+    if (player.id != this.id) {
       let blank = bank.querySelector(`[data-tile="-1"]`);
       if (blank) bank.removeChild(blank);
     }
 
-    if (!discard) {
-      let e = create(tile);
-      if (concealed) e.dataset.hidden = 'hidden';
-      if (locked === true) e.dataset.locked = 'locked';
-      bank.appendChild(e);
-    } else {
-      discard = create(tile);
-      discard.classList.add('discard');
-      discard.dataset.from = player.id;
-      this.discards.appendChild(discard);
-      if (!config.BOT_PLAY) this.startCountDown(config.CLAIM_INTERVAL);
-    }
+    let discard = create(tile);
+    discard.classList.add('discard');
+    discard.dataset.from = player.id;
+    this.discards.appendChild(discard);
+
+    if (!config.BOT_PLAY) this.startCountDown(config.CLAIM_INTERVAL);
+
     this.sortTiles(bank);
+  }
+
+  see(tiles, player) {
+    let bank = this.playerbanks[player.id];
+
+    Logger.debug(`${this.id} sees ${tiles.map(t => t.dataset ? t.dataset.tile : t)} from ${player.id}`);
+
+    tiles.forEach(tile => {
+      let face = (tile.dataset ? tile.dataset.tile : tile)|0;
+
+      if (player.id != this.id) {
+        // remove a "blank" tile to replace with the one we're seeing.
+        let blank = bank.querySelector(`[data-tile="-1"]`);
+        if (blank) bank.removeChild(blank);
+      }
+
+      let e = create(face);
+      if (tile.dataset && tile.dataset.hidden) e.dataset.hidden = 'hidden';
+      e.dataset.locked = 'locked';
+      bank.appendChild(e);
+    });
+
+    this.sortTiles(bank);
+  }
+
+
+  seeClaim(tiles, player) {
+    // this differs from see() in that we know we need to remove one
+    // "blank" tile fewer than are being revealed. So we add one, and
+    // then call see() to offset the otherwise superfluous removal.
+    let bank = this.playerbanks[player.id];
+    let blank = create(-1);
+    bank.appendChild(blank);
+    this.see(tiles, player);
   }
 
   prepareForClaim(player, tile) {

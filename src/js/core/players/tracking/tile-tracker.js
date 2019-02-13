@@ -13,13 +13,18 @@ class TileTracker {
     return this.tiles[tile];
   }
   seen(tile) {
+    if (tile.dataset) {
+      Logger.log(`Player ${this.id} tracker was passed an HTMLElement instead of a tile`);
+      Logger.trace();
+      throw new Error('why is the tracker being given an HTML element?');
+    }
     if (this.id == 2) {
       Logger.debug(`Player ${this.id} removing ${tile} from available tiles.`);
     }
     this.tiles[tile]--;
     if (this.counts) {
-      let e = this.counts[tile].shift();
       try {
+        let e = this.counts[tile].shift();
         e.parentNode.removeChild(e);
       } catch(error) {
         Logger.log(`Player ${this.id} can't remove ${tile}, because there aren't any left to remove..?`);

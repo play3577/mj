@@ -38,8 +38,8 @@ class BotPlayer extends Player {
     }
   }
 
-  append(tile, concealed=true) {
-    let _ = super.append(tile, concealed);
+  append(tile, claimed) {
+    let _ = super.append(tile, claimed);
     this.showTilesAnyway();
     return _;
   }

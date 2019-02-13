@@ -18,10 +18,6 @@ class HumanPlayer extends BotPlayer {
     this.ui = new ClientUI(this.id);
   }
 
-  append(tile, concealed=false) {
-    return super.append(tile, concealed);
-  }
-
   determineDiscard(resolve) {
     // Let's ask our "bot" assistant for what
     // it would suggest we throw away:
