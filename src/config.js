@@ -17,7 +17,7 @@ if (typeof window !== "undefined") {
 }
 
 
-const SEED = params.seed ? parseInt(params.seed) : 752896630;
+const SEED = params.seed ? parseInt(params.seed) : 0;
 const PLAY_IMMEDIATELY = params.autoplay ? true : false;
 const PLAY_INTERVAL = params.play ? params.play : 200;
 const HAND_INTERVAL = params.hand ? params.hand : 3000;

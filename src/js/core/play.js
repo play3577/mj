@@ -29,7 +29,7 @@ function setup() {
         let shuffles = rotateWinds();
         if (hand !== shuffles) hand = shuffles;
       }
-      if (!result.draw && hand === 16) {
+      if (!result.draw && hand > 16) {
         Logger.log(`\nfull game played.`);
         let scores = players.map(p => p.getScore());
         players.forEach(p => p.endOfGame(scores));
