@@ -6,6 +6,10 @@
 
 The live version, which just lets you watch four bots play a round of MJ, can be found at https://pomax.github.io/mj - note that the bit play interval has been set to 200ms, instead of the 0ms they actually need to play. This lets you see the game happening, rather than loading the page to discover the bots already finished playing. Because it takes them half a second to play a full round, which is less than the time it takes to load the tile images from cache.
 
-#### url query params
+#### URL query params
 
-Because it's fun, you can append `?play=<num>&hand=<num>` to the URL to change the bot play speed, and the pause between hands. So if you want to see the bots work as fast as the UI will let them, hit up https://pomax.github.io/mj/?play=0&hand=0 and enjoy the fireworks.
+Because it's fun, you can append `?play=<num>&hand=<num>` to the URL to change the bot play speed, and the pause between hands, and you can set `autoplay=true` to start the page with bots autoplaying... so if you want to see the bots work as fast as the UI will let them, hit up https://pomax.github.io/mj/?autoplay=true&play=0&hand=0 and enjoy the fireworks.
+
+#### Seeing play information
+
+Open your dev console. If it's not in there, it's not worth seeing unless you're literally working on the code and need to debug, instead of just inspect.
