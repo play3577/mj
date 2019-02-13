@@ -89,7 +89,7 @@ const simple = {
     // separation of concern and force bots to
     // update the player's ui, even though they
     // normally would have no way to access it.
-    FORCE_OPEN_BOT_PLAY: true,
+    FORCE_OPEN_BOT_PLAY: false,
 };
 
 
