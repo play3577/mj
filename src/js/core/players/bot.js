@@ -8,9 +8,47 @@ class BotPlayer extends Player {
     super(id);
   }
 
-  append(tile, concealed=true) {
-    return super.append(tile, concealed);
+  showTilesAnyway() {
+    if (!config.FORCE_OPEN_BOT_PLAY) return;
+
+    // HACK: this function only exists to allow bot play debugging.
+    if (PLAYER_BANKS.banks && this.id !== 2) {
+      let bank = PLAYER_BANKS.banks[this.id];
+      bank.innerHTML = '';
+
+      this.getTileFaces().forEach(t => {
+        t = create(t);
+        bank.appendChild(t);
+      })
+
+      this.locked.forEach(s => {
+        s.forEach(t => {
+          t = create(t.dataset.tile);
+          t.dataset.locked = 'locked';
+          bank.appendChild(t);
+        });
+      })
+
+      this.bonus.forEach(t => {
+        t = create(t);
+        t.dataset.locked = 'locked';
+        t.dataset.bonus = 'bonus';
+        bank.appendChild(t);
+      });
+    }
   }
+
+  append(tile, concealed=true) {
+    let _ = super.append(tile, concealed);
+    this.showTilesAnyway();
+    return _;
+  }
+
+  remove(tile) {
+    super.remove(tile);
+    this.showTilesAnyway();
+  }
+
 
   determineDiscard(resolve) {
     // If we were awarded a winning claim, then by the
@@ -31,16 +69,8 @@ class BotPlayer extends Player {
     // actually make us win?
     let {lookout, waiting, composed, winpaths} = tilesNeeded(this.getTileFaces(), this.locked);
 
-
-
-        // FIXME: SOMETHING IS GOING VERY WRONG HERE, LEADING
-        //        TO FAR TOO MANY DRAWS COMPARED TO BEFORE.
-
-
-
-    // By using winningPatter=true in the tilesNeeded call, we made it
-    // throw away any compositional path that doesn't let us win.
     if(winpaths > 0) {
+
       // We have indeed won! Mark this as a self-drawn win, because
       // if it was a claimed win we would have exited this function
       // already, and then let the play.js game loop discover we've
@@ -48,8 +78,7 @@ class BotPlayer extends Player {
       if (!this.latest.dataset.from) {
         this.selfdraw = true;
         console.log(`Self-drawn win for player ${this.id} on ${this.latest.dataset.tile}`);
-      }
-      else {
+      } else {
         // FIXME: the fact that we can get here means that we performed
         //        a claim that we didn't think was a win, but it _was_
         //        so that's a bug in determineClaim and the following

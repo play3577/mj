@@ -90,10 +90,13 @@ class Pattern {
    */
   getChowInformation(tile) {
     let suit = (tile / 9)|0;
+
     let t1 = this.tiles[tile+1];
     if (t1 !== undefined && !this.matchSuit(tile + 1, suit)) t1 = undefined;
+
     let t2 = this.tiles[tile+2];
     if (t2 !== undefined && !this.matchSuit(tile + 2, suit)) t2 = undefined;
+
     return { t1, t2, suit};
   }
 
@@ -238,7 +241,7 @@ class Pattern {
    * with the current list of tiles.
    */
   determineWin(paths=[], results=[], single=[], pair=[], set=[]) {
-    //console.log(`called with:`, pair, set, `- local tiles:`, this.tiles);
+    Logger.debug(`called with:`, pair, set, `- local tiles:`, this.tiles);
 
     if (!this.keys.length) {
       // It's possible the very first call is already for a complete,
@@ -252,7 +255,7 @@ class Pattern {
 
     // Otherwise, let's get determine-y:
 
-    let tile = this.keys[0];
+    let tile = (this.keys[0]|0); // remember: object keys are strings, we need to (int) them,
     let count = this.tiles[tile];
     let head = [];
     let toRemove = [];
@@ -368,7 +371,10 @@ function tilesNeeded(tiles, locked=[], canChow=false, winningPattern=false) {
 
 
 if (typeof process !== "undefined") {
-  Constants = require('../../config.js').Constants;
+  conf = require('../../config.js')
+  Logger = conf.LOGGER;
+  Constants = conf.Constants;
+
 
   // local:
   let hand, locked,
@@ -414,11 +420,18 @@ if (typeof process !== "undefined") {
         [29,29,29,29],
         [31,31]
       ]
+    },
+    {
+      hand: [14,15,16,22,23,24,24,24],
+      locked: [
+        [10,11,12],
+        [20,21,22]
+      ]
     }
   ]
 
   tests.forEach((test,tid) => {
-    if (tid < 3) return;
+    if (tid < 4) return;
 
     let hand = test.hand;
     let locked = lock(test.locked);

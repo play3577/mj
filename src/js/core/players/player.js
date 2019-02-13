@@ -114,6 +114,10 @@ class Player {
     return revealed;
   }
 
+  remove(tile) {
+    this.ui.remove(tile);
+  }
+
   checkKong(tile) {
     let tiles = this.getTileFaces().filter(t => t===tile);
     if (tiles.length === 4) {
@@ -129,10 +133,6 @@ class Player {
       this.locked.push(tiles);
       return tiles;
     }
-  }
-
-  remove(tile) {
-    this.ui.remove(tile);
   }
 
   // FIXME: is this function still necessary?
@@ -269,7 +269,8 @@ class Player {
   }
 
   async getClaim(pid, discard, resolve) {
-    this.ui.see(discard.dataset.tile, {id: pid}, true);
+    let tile = discard.dataset.tile;
+    this.ui.see(tile, {id: pid}, true);
 
     // in terms of universal behaviour, we want
     // to make sure that we exit early if this is

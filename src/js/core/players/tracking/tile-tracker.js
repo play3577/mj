@@ -40,8 +40,7 @@ class TileTracker {
       this.el.appendChild(div)
       this.counts[tile] = [];
       while(count--) {
-        let e = document.createElement('span');
-        e.dataset.tile = tile;
+        let e = create(tile)
         this.counts[tile].push(e);
         div.appendChild(e);
       }

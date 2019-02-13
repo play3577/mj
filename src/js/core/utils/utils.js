@@ -8,7 +8,7 @@ const create = (t, hidden) => {
     span.dataset.bonus = 'bonus';
     span.dataset.locked = 'locked';
   }
-  span.getTileFace = () => span.dataset.tile|0;
+  span.getTileFace = () => (span.dataset.tile|0);
   return span;
 }
 

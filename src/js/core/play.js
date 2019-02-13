@@ -76,8 +76,8 @@ function dealTiles(hand, players, wall) {
     let bank = wall.get(13);
     for (let t=0, tile; t<bank.length; t++) {
       tile = bank[t];
-      let revealed = player.append(tile);
       players.forEach(p => p.receivedTile(player));
+      let revealed = player.append(tile);
       if (revealed) {
         // bonus tile are shown to all other players.
         players.forEach(p => p.see(revealed, player));
