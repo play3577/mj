@@ -21,6 +21,7 @@ class Player {
     this.wind = false;
     this.windOfTheRound = false;
     this.has_won = false;
+    this.selfdraw = false;
     this.tracker.reset();
     this.el.innerHTML = '';
     this.el.classList.remove('winner');
@@ -34,11 +35,18 @@ class Player {
   getDisclosure() {
     let hand = this.getTileFaces();
     return {
-      locked: this.locked,
+      // tile information
       concealed: hand.filter(v => v < 34),
+      locked: this.locked,
       bonus: this.bonus,
+      // player information
+      wind: this.wind,
       winner: this.has_won,
-      wincount: this.getWinCount()
+      wincount: this.getWinCount(),
+      // If this player has won, did they self-draw their winning tile?
+      selfdraw: this.has_won ? this.selfdraw : false,
+      // If this player has won, the last-claimed tile can matter.
+      final: this.has_won ? this.latest.dataset.tile : false
     };
   }
 
@@ -60,7 +68,7 @@ class Player {
   }
 
   markHand(hand) {
-    this.wind = (hand + (this.id|0)) % 4;
+    this.wind = ((hand-1) + (this.id|0)) % 4;
     this.windOfTheRound = (hand/4)|0;
     this.ui.markHand(hand, this.wind);
   }
@@ -100,9 +108,14 @@ class Player {
       }
       t = create(t, concealed);
     }
+    this.latest = t;
     this.tracker.seen(t.dataset.tile);
     this.ui.append(t);
     return revealed;
+  }
+
+  remove(tile) {
+    this.ui.remove(tile);
   }
 
   checkKong(tile) {
@@ -120,10 +133,6 @@ class Player {
       this.locked.push(tiles);
       return tiles;
     }
-  }
-
-  remove(tile) {
-    this.ui.remove(tile);
   }
 
   // FIXME: is this function still necessary?
@@ -189,7 +198,7 @@ class Player {
   }
 
   getLockedTileFaces() {
-    return this.locked.map(set => `[${set.map(v=>v.dataset.tile|0)}]${set[0].dataset.winning?'!':''}`);
+    return this.locked.map(set => `[${set.map(v=>v.dataset.tile|0)}]${set.winning?'!':''}`);
   }
 
   getDuplicates(tile) {
@@ -260,7 +269,8 @@ class Player {
   }
 
   async getClaim(pid, discard, resolve) {
-    this.ui.see(discard.dataset.tile, {id: pid}, true);
+    let tile = discard.dataset.tile;
+    this.ui.see(tile, {id: pid}, true);
 
     // in terms of universal behaviour, we want
     // to make sure that we exit early if this is
@@ -308,27 +318,25 @@ class Player {
     let tile = discard.getTileFace();
     let claimtype = claim.claimtype;
 
+    let set = [];
+    set.push(discard);
+    set.locked = true;
+
     if (claimtype === CLAIM.WIN) {
       this.markWinner();
+      set.winning = true;
       claimtype = claim.wintype;
       if (claimtype === CLAIM.CHOW) {
         claimtype = convertSubtypeToClaim(claimtype);
       }
     }
 
-    Logger.debug(`claim awarded, ${this.id} to form ${claimtype} using tile ${tile} and hand ${this.ui.getTileFaces()}`);
-
     // being awared a discard based on a claims, however,
     // is universal: the tiles get locked.
     this.append(discard);
 
-    let locked = 1;
     discard.dataset.locked = 'locked';
     if(this.has_won) discard.dataset.winning='winning';
-
-    let set = [];
-    set.push(discard);
-    set.locked = true;
 
     // lock related tiles if this was a pung/kong
     if (claimtype === CLAIM.PAIR || claimtype === CLAIM.PUNG || claimtype === CLAIM.KONG) {
@@ -348,8 +356,6 @@ class Player {
           set.push(t);
         }
       });
-
-      locked += count;
 
       this.locked.push(set);
       this.ui.lock(set);

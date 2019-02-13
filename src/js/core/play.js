@@ -43,7 +43,12 @@ function setup() {
 
     if (config.PAUSE_ON_HAND && hand === config.PAUSE_ON_HAND) config.HAND_INTERVAL = 60 * 60 * 1000; // play debug
 
-    playHand(hand, players, wall, next);
+    // FIXME: this needs to be tracked separately, to be fixed
+    //        when the shuffle() function is made a proper play
+    //        function instead of being left to the rotator...
+    windOfTheRound = ((hand/4)|0);
+
+    playHand(hand, players, wall, windOfTheRound, next);
   };
 
   return { play() { next(); }};
@@ -53,11 +58,11 @@ function setup() {
  * A single hand in a game consists of "dealing tiles"
  * and then starting play.
  */
-function playHand(hand, players, wall, next) {
+function playHand(hand, players, wall, windOfTheRound, next) {
   PLAY_START = Date.now();
   dealTiles(hand, players, wall);
   players.forEach(p => p.handWillStart());
-  playGame(hand, players, wall, next);
+  playGame(hand, players, wall, windOfTheRound, next);
 }
 
 /**
@@ -71,8 +76,8 @@ function dealTiles(hand, players, wall) {
     let bank = wall.get(13);
     for (let t=0, tile; t<bank.length; t++) {
       tile = bank[t];
-      let revealed = player.append(tile);
       players.forEach(p => p.receivedTile(player));
+      let revealed = player.append(tile);
       if (revealed) {
         // bonus tile are shown to all other players.
         players.forEach(p => p.see(revealed, player));
@@ -100,7 +105,7 @@ function dealTiles(hand, players, wall) {
 /**
  * Set up and run the main game loop.
  */
-function playGame(hand, players, wall, next) {
+function playGame(hand, players, wall, windOfTheRound, next) {
   let currentPlayerId = 2;
   let discard = undefined;
   let counter = 0;
@@ -112,6 +117,7 @@ function playGame(hand, players, wall, next) {
     do {
       tile = wall.get();
       Logger.debug(`${player.id} was given tile ${tile}`);
+      Logger.debug(`dealing ${tile} to player ${player.id}`);
       let revealed = player.append(tile);
       players.forEach(p => p.receivedTile(player));
       // bonus tile are shown to all other players.
@@ -180,9 +186,10 @@ function playGame(hand, players, wall, next) {
       players.forEach(p => p.endOfHand(disclosure));
 
       // calculate scores!
-      let scores = disclosure.map(d => scoreTiles(d));
+      let scores = disclosure.map((d,id) => scoreTiles(d, id, windOfTheRound));
+      Logger.log("score breakdown:", scores);
       let adjustments = settleScores(scores, player.id);
-      Logger.log(`Scores: ${scores}`);
+      Logger.log(`Scores: ${scores.map(s => s.total)}`);
       Logger.log(`Score adjustments: ${adjustments}`);
       players.forEach(p => p.recordScores(adjustments));
 
@@ -192,6 +199,7 @@ function playGame(hand, players, wall, next) {
     }
 
     // No winner - process the discard.
+    Logger.debug(`${player.id} discarded ${discard.dataset.tile}`);
     player.removeDiscard(discard);
     discard.dataset.from = player.id;
     delete discard.dataset.hidden;

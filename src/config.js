@@ -1,9 +1,28 @@
+if (typeof process !== "undefined") {
+    Random = require('./js/core/utils/prng.js');
+}
+
+// hackhackahckkakachcahca
+PLAYER_BANKS = {};
+
 /**
  * We're using a javascript config, not a
  * JSON config, because JSON doesn't allow
  * comments, and a config that can't document
  * itself is a thoroughly useless config.
  */
+
+let params = {};
+if (typeof window !== "undefined") {
+    params = location.search
+        .slice(1)
+        .split('&')
+        .map(p => p.split('='))
+        .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {});
+}
+
+const PLAY_INTERVAL = params.play ? params.play : 200;
+const HAND_INTERVAL = params.hand ? params.hand : 3000;
 
 
  // Possible values for the logger's verbosity.
@@ -23,7 +42,13 @@ const simple = {
     // The pseudo-random number generator seed.
     // This value lets us "replay" problematic
     // games to find out where things go wrong.
-    SEED: 0,
+    SEED: 752896630,
+
+    CURRENT_TEST_SEEDS: [
+        1010612157, // first round player 0 claims pung, then discovers they have won. That should be a win claim with pung subtype instead.
+        379859036, // there seem to be an inordinate amount of draws
+        752896630, // turn 1 winner has some scorePatterns that are waaaaay too long
+    ],
 
     // In increasing level of verbosity, we
     // can use LOG, WARN, ERROR, or DEBUG.
@@ -31,7 +56,7 @@ const simple = {
 
     // The number of milliseconds between
     // players taking their turn.
-    PLAY_INTERVAL: 100,
+    PLAY_INTERVAL: PLAY_INTERVAL,
 
     // The number of milliseconds the game
     // allows players to lay claim to a discard.
@@ -41,7 +66,7 @@ const simple = {
 
     // The number of milliseconds pause
     // between playing "hands".
-    HAND_INTERVAL: 3000,
+    HAND_INTERVAL: HAND_INTERVAL,
 
     // For debugging purposes, we can tell
     // the game to effectively pause play
@@ -54,6 +79,17 @@ const simple = {
     // tile getting dealt during a hand.
     // A value of 0 means "don't pause".
     PAUSE_ON_PLAY: 0,
+
+    // This determines whether you get asked to
+    // choose normal vs. automated play when you
+    // load the page.
+    PLAY_IMMEDIATELY: true,
+
+    // This determines whether we bypass the
+    // separation of concern and force bots to
+    // update the player's ui, even though they
+    // normally would have no way to access it.
+    FORCE_OPEN_BOT_PLAY: true,
 };
 
 
@@ -91,19 +127,15 @@ const Constants = {
 const config = {
     SEED: simple.SEED,
 
-    // A list of seeds used previously to debug something.
-    OLD_SEEDS: [],
-
     // The pseudo-random number generator used by
     // any code that needs to randomise data.
     PRNG: new Random(simple.SEED),
 
+    // Log verbosity
     LOG_LEVEL: simple.LOG_LEVEL,
 
-    // This determines whether you get asked to
-    // choose normal vs. automated play when you
-    // load the page.
-    PLAY_IMMEDIATELY: true,
+    // page choice on load
+    PLAY_IMMEDIATELY: simple.PLAY_IMMEDIATELY,
 
     // This setting determines which type of play
     // is initiated if PLAY_IMMEDIATELY is true
@@ -148,11 +180,15 @@ const config = {
     // A tile sorting function. This will probably
     // be migrated to somewhere else soon.
     SORT_TILE_FN: (a,b) => {
-        let la = a.dataset.locked;
-        let lb = b.dataset.locked;
-
+        try {
         a = a.getTileFace();
         b = b.getTileFace();
+        } catch (e) {
+            console.log('a:', a);
+            console.log('b:', b);
+            console.trace();
+            throw e;
+        }
 
         // bonus tiles always go on the far left
         if (a>33 || b>33) {
@@ -180,6 +216,7 @@ const config = {
     }
 };
 
+
 // Declare our logger as part of the config
 
 let LOG_LEVEL = simple.LOG_LEVEL;
@@ -191,3 +228,8 @@ const Logger = {
     debug: (...args) => { if(LOG_LEVEL >= LOG_LEVELS.DEBUG) console.debug.apply(console, args); },
     trace: () => { console.trace(); }
 };
+
+config.LOGGER = Logger;
+
+// in node context?
+if(typeof process !== "undefined") module.exports = config;

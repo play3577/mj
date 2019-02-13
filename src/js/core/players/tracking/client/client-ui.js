@@ -12,6 +12,13 @@ class ClientUI extends TileBank {
     this.el = this.playerbanks[2];
     this.timeouts = [];
     this.reset();
+
+    // Super debug setting: allows bots to tap directly
+    // into the player's UI. This is super bad, but for
+    // development purposes, rather required.
+    if (config.FORCE_OPEN_BOT_PLAY) {
+      PLAYER_BANKS.banks = this.playerbanks;
+    }
   }
 
   reset() {
@@ -132,15 +139,31 @@ class ClientUI extends TileBank {
     disclosure.forEach( (res,id) => {
       if (id == this.id) return;
       let bank = this.playerbanks[id];
-      res.concealed.forEach(t => this.see(t, {id}, false, false));
+      bank.innerHTML = '';
+
+      res.concealed.forEach(t => bank.appendChild(create(t)));
+
       res.locked.forEach(s => {
-        if (!s[0].dataset.winning) return;
-        s.forEach(t => bank.querySelector(`[data-locked][data-tile="${t.dataset.tile}"]:not([data-winning])`).dataset.winning = 'winning');
+        s.forEach(t => {
+          let n = create(t.dataset.tile);
+          n.dataset.locked = 'locked';
+          if (t.dataset.winning) n.dataset.winning = 'winning';
+          bank.appendChild(n);
+        });
+      })
+
+      res.bonus.forEach(t => {
+        t = create(t);
+        t.dataset.locked = 'locked';
+        t.dataset.bonus = 'bonus';
+        bank.appendChild(t);
       });
+
       if (res.winner) {
         this.discards.classList.add('winner');
         bank.classList.add('winner');
       }
+
       bank.dataset.wincount = res.wincount;
     });
   }
