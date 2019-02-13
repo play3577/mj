@@ -138,8 +138,6 @@ function playGame(hand, players, wall, windOfTheRound, next) {
 
   // Game loop function:
   let play = async (claim) => {
-    if (discard) discard.classList.remove('discard');
-
     let player = players[currentPlayerId];
     players.forEach(p => p.activate(player.id));
 
@@ -157,14 +155,16 @@ function playGame(hand, players, wall, windOfTheRound, next) {
       // the player whose discard this was should make sure to
       // ignore marking the tile they discarded as "seen" a
       // second time: they already saw it when they drew it.
-      players.forEach(p => p.seeClaim(tiles, player));
+      players.forEach(p => p.seeClaim(tiles, player, discard));
 
       // if the player locks away a total of 4 tiles, they need
       // a tile from the wall to compensate for the loss of a tile.
       if (tiles.length === 4) dealTile(player);
     }
 
+
     // "Play one"
+    if (discard) discard.classList.remove('discard');
     discard = await new Promise(resolve => player.getDiscard(resolve));
 
     if (discard) {
@@ -203,6 +203,7 @@ function playGame(hand, players, wall, windOfTheRound, next) {
     player.removeDiscard(discard);
     discard.dataset.from = player.id;
     delete discard.dataset.hidden;
+    players.forEach(p => p.playerDiscarded(player.id, discard));
 
     // Does someone want to claim this discard?
     claim = await getAllClaims(players, currentPlayerId, discard); // players take note of the fact that a discard happened as part of their determineClaim()

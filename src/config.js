@@ -1,9 +1,4 @@
-if (typeof process !== "undefined") {
-    Random = require('./js/core/utils/prng.js');
-}
-
-// hackhackahckkakachcahca
-PLAYER_BANKS = {};
+if (typeof process !== "undefined") Random = require('./js/core/utils/prng.js');
 
 /**
  * We're using a javascript config, not a
@@ -21,6 +16,8 @@ if (typeof window !== "undefined") {
         .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {});
 }
 
+
+const SEED = params.seed ? parseInt(params.seed) : 752896630;
 const PLAY_IMMEDIATELY = params.autoplay ? true : false;
 const PLAY_INTERVAL = params.play ? params.play : 200;
 const HAND_INTERVAL = params.hand ? params.hand : 3000;
@@ -43,7 +40,7 @@ const simple = {
     // The pseudo-random number generator seed.
     // This value lets us "replay" problematic
     // games to find out where things go wrong.
-    SEED: 752896630,
+    SEED: SEED,
 
     CURRENT_TEST_SEEDS: [
         1010612157, // first round player 0 claims pung, then discovers they have won. That should be a win claim with pung subtype instead.

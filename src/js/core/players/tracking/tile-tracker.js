@@ -41,6 +41,7 @@ class TileTracker {
       this.counts[tile] = [];
       while(count--) {
         let e = create(tile)
+        e.removeAttribute('class');
         this.counts[tile].push(e);
         div.appendChild(e);
       }

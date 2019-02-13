@@ -268,6 +268,14 @@ class Player {
     resolve(undefined);
   }
 
+  playerDiscarded(pid, discard) {
+    let tile = discard.dataset.tile;
+    if (this.id !== pid) {
+      // track tile?
+    }
+    // this.ui.see tile?
+  }
+
   async getClaim(pid, discard, resolve) {
     let tile = discard.dataset.tile;
     this.ui.see(tile, {id: pid}, true);
