@@ -30,6 +30,7 @@ function setup() {
         if (hand !== shuffles) hand = shuffles;
       }
       if (!result.draw && hand > 16) {
+        hand = '';
         Logger.log(`\nfull game played.`);
         let scores = players.map(p => p.getScore());
         players.forEach(p => p.endOfGame(scores));
