@@ -13,6 +13,9 @@ class BotPlayer extends Player {
   }
 
   determineDiscard(resolve) {
+    // If we were awarded a winning claim, then by the
+    // time we are asked to discard, we will already be
+    // marked as having won:
     if (this.has_won) return resolve(undefined);
 
     // we only consider tiles that we can legally play with, meaning
@@ -24,8 +27,42 @@ class BotPlayer extends Player {
     // declaring a win off of a discard. So... don't discard!
     if (!tiles.length) return resolve(undefined);
 
-    // Now then. Let's figure out which tiles are worth keeping,
+    // If we have concealed tiles still, did the tile we just received
+    // actually make us win?
+    let {lookout, waiting, composed, winpaths} = tilesNeeded(this.getTileFaces(), this.locked);
+
+
+
+        // FIXME: SOMETHING IS GOING VERY WRONG HERE, LEADING
+        //        TO FAR TOO MANY DRAWS COMPARED TO BEFORE.
+
+
+
+    // By using winningPatter=true in the tilesNeeded call, we made it
+    // throw away any compositional path that doesn't let us win.
+    if(winpaths > 0) {
+      // We have indeed won! Mark this as a self-drawn win, because
+      // if it was a claimed win we would have exited this function
+      // already, and then let the play.js game loop discover we've
+      // won by not discarding anything.
+      if (!this.latest.dataset.from) {
+        this.selfdraw = true;
+        console.log(`Self-drawn win for player ${this.id} on ${this.latest.dataset.tile}`);
+      }
+      else {
+        // FIXME: the fact that we can get here means that we performed
+        //        a claim that we didn't think was a win, but it _was_
+        //        so that's a bug in determineClaim and the following
+        //        code should not be necessary when that's fixed:
+        this.locked.slice(-1)[0].winning = true;
+      }
+      return resolve(undefined);
+    }
+
+    // Now then. We haven't won, let's figure out which tiles are worth keeping,
     // and which tiles are worth throwing away.
+
+      // TODO: can we use the lookout/composed information computed above?
 
     // First, let's see how many of each tile we have.
     let tileCount = [];
@@ -88,7 +125,7 @@ class BotPlayer extends Player {
 
     // build a quick list of what we might actually be interested in
     let canChow = ((pid+1)%4 == this.id);
-    let {lookout, waiting} = window.tilesNeeded(this.getTileFaces(), this.locked, canChow);
+    let {lookout, waiting, composed} = tilesNeeded(this.getTileFaces(), this.locked, canChow);
     this.markWaiting(waiting);
 
     // is the current discard in the list of tiles we want?

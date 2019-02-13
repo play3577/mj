@@ -1,3 +1,7 @@
+if (typeof process !== "undefined") {
+    Random = require('./js/core/utils/prng.js');
+}
+
 /**
  * We're using a javascript config, not a
  * JSON config, because JSON doesn't allow
@@ -23,7 +27,13 @@ const simple = {
     // The pseudo-random number generator seed.
     // This value lets us "replay" problematic
     // games to find out where things go wrong.
-    SEED: 0,
+    SEED: 752896630,
+
+    CURRENT_TEST_SEEDS: [
+        1010612157, // first round player 0 claims pung, then discovers they have won. That should be a win claim with pung subtype instead.
+        379859036, // there seem to be an inordinate amount of draws
+        752896630, // turn 1 winner has some scorePatterns that are waaaaay too long
+    ],
 
     // In increasing level of verbosity, we
     // can use LOG, WARN, ERROR, or DEBUG.
@@ -31,7 +41,7 @@ const simple = {
 
     // The number of milliseconds between
     // players taking their turn.
-    PLAY_INTERVAL: 100,
+    PLAY_INTERVAL: 10,
 
     // The number of milliseconds the game
     // allows players to lay claim to a discard.
@@ -90,9 +100,6 @@ const Constants = {
 // And then rest of the configuration.
 const config = {
     SEED: simple.SEED,
-
-    // A list of seeds used previously to debug something.
-    OLD_SEEDS: [],
 
     // The pseudo-random number generator used by
     // any code that needs to randomise data.
@@ -191,3 +198,6 @@ const Logger = {
     debug: (...args) => { if(LOG_LEVEL >= LOG_LEVELS.DEBUG) console.debug.apply(console, args); },
     trace: () => { console.trace(); }
 };
+
+// in node context?
+if(typeof process !== "undefined") module.exports = config;
