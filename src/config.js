@@ -21,6 +21,7 @@ if (typeof window !== "undefined") {
         .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {});
 }
 
+const PLAY_IMMEDIATELY = params.autoplay ? true : false;
 const PLAY_INTERVAL = params.play ? params.play : 200;
 const HAND_INTERVAL = params.hand ? params.hand : 3000;
 
@@ -83,7 +84,7 @@ const simple = {
     // This determines whether you get asked to
     // choose normal vs. automated play when you
     // load the page.
-    PLAY_IMMEDIATELY: true,
+    PLAY_IMMEDIATELY: PLAY_IMMEDIATELY,
 
     // This determines whether we bypass the
     // separation of concern and force bots to
