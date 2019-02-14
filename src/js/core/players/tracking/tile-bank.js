@@ -76,7 +76,7 @@ class TileBank {
     this.tiles.splice(pos, 1);
   }
 
-  lock(tiles) {
+  lockClaim(tiles) {
     tiles.forEach(tile => this.remove(tile));
   }
 

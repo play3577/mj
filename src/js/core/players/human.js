@@ -23,7 +23,7 @@ class HumanPlayer extends BotPlayer {
     // it would suggest we throw away:
     super.determineDiscard(suggestion => {
       if (config.BOT_PLAY) return resolve(suggestion);
-      this.ui.listenForDiscard(resolve, suggestion);
+      this.ui.listenForDiscard(resolve, suggestion, this.lastClaim);
     });
   }
 

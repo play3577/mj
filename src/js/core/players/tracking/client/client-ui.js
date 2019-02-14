@@ -56,27 +56,51 @@ class ClientUI extends TileBank {
     this.timeouts.push(setTimeout(() => update(1), ms + 10));
   }
 
-  listenForDiscard(resolve, suggestion) {
-    let tiles = [];
+  listenForDiscard(resolve, suggestion, lastClaim) {
+    let tiles = this.getAvailableTiles();
+
+    // If we have no tiles left to discard, that's
+    // an automatic win declaration.
+    if (tiles.length === 0) {
+      return resolve(undefined);
+    }
+
+    // If we just claimed a win, that's also
+    // an automatic win declaration.
+    if (lastClaim && lastClaim.claimtype === CLAIM.WIN) {
+      return resolve(undefined);
+    }
+
+    // If the bot knows we have a winning hand,
+    // let the user decide whether to declare a
+    // win or whether to keep playing.
+    if (!suggestion) {
+      return modal.setContent("Declare win?", [
+        { label: 'You better believe it!', value: 'win' },
+        { label: 'No, I think I can do better...', value: '' },
+      ], result => {
+        if (result) resolve(undefined);
+        else this.listenForDiscard(resolve, true);
+      });
+    }
 
     let stile = this.getSingleTileFromHand(suggestion.dataset.tile);
     stile.classList.add('suggestion');
     stile.setAttribute('title','Bot-recommended discard.');
 
-    let fn = e => {
+    let pickAsDiscard = e => {
       stile.classList.remove('suggestion');
       stile.removeAttribute('title');
       tiles.forEach(tile => {
         tile.classList.remove('selectable');
-        tile.removeEventListener("click", fn);
+        tile.removeEventListener("click", pickAsDiscard);
       });
       resolve(e.target);
     };
 
-    tiles = this.getAvailableTiles();
     tiles.forEach(tile => {
       tile.classList.add('selectable');
-      tile.addEventListener("click", fn);
+      tile.addEventListener("click", pickAsDiscard);
     });
   }
 
@@ -89,15 +113,18 @@ class ClientUI extends TileBank {
   }
 
   haveSingle(tile) {
-    return this.getAllTilesInHand(tile.dataset ? tile.dataset.tile : tile) >= 1;
+    let tiles = this.getAllTilesInHand(tile.dataset ? tile.dataset.tile : tile);
+    return tiles.length >= 1;
   }
 
   canPung(tile) {
-    return this.getAllTilesInHand(tile.dataset ? tile.dataset.tile : tile) >= 2;
+    let tiles = this.getAllTilesInHand(tile.dataset ? tile.dataset.tile : tile);
+    return tiles.length >= 2;
   }
 
   canKong(tile) {
-    return this.getAllTilesInHand(tile.dataset ? tile.dataset.tile : tile) === 3;
+    let tiles = this.getAllTilesInHand(tile.dataset ? tile.dataset.tile : tile);
+    return tiles.length === 3;
   }
 
   canChow(tile, type) {
@@ -134,7 +161,7 @@ class ClientUI extends TileBank {
 
       // let's spawn a little modal to see what the user actually wanted to do here.
       modal.setContent("What kind of claim are you making?", [
-        { label: "Cancel", value: CLAIM.IGNORE },
+        { label: "Ignore", value: CLAIM.IGNORE },
         (mayChow && this.canChow(discard, CLAIM.CHOW1)) ? { label: "Chow (X**)", value: CLAIM.CHOW1 } : false,
         (mayChow && this.canChow(discard, CLAIM.CHOW2)) ? { label: "Chow (*X*)", value: CLAIM.CHOW2 } : false,
         (mayChow && this.canChow(discard, CLAIM.CHOW3)) ? { label: "Chow (**X)", value: CLAIM.CHOW3 } : false,
@@ -146,11 +173,11 @@ class ClientUI extends TileBank {
         tile.removeEventListener("click", fn);
         if (result === CLAIM.WIN) {
           modal.setContent("How does this tile make you win?", [
-            { label: "Cancel", value: CLAIM.IGNORE },
+            { label: "Actually, it doesn't", value: CLAIM.IGNORE },
             this.haveSingle(discard) ? { label: "Pair", value: CLAIM.PAIR } : false,
-            (mayChow && this.canChow(discard, CLAIM.CHOW1)) ? { label: "Chow (X**)", value: CLAIM.CHOW1 } : false,
-            (mayChow && this.canChow(discard, CLAIM.CHOW2)) ? { label: "Chow (*X*)", value: CLAIM.CHOW2 } : false,
-            (mayChow && this.canChow(discard, CLAIM.CHOW3)) ? { label: "Chow (**X)", value: CLAIM.CHOW3 } : false,
+            this.canChow(discard, CLAIM.CHOW1) ? { label: "Chow (X**)", value: CLAIM.CHOW1 } : false,
+            this.canChow(discard, CLAIM.CHOW2) ? { label: "Chow (*X*)", value: CLAIM.CHOW2 } : false,
+            this.canChow(discard, CLAIM.CHOW3) ? { label: "Chow (**X)", value: CLAIM.CHOW3 } : false,
             this.canPung(discard) ? { label: "Pung", value: CLAIM.PUNG } : false
           ], result => {
             if (result === CLAIM.IGNORE) resolve({ claimtype: CLAIM.IGNORE });
@@ -258,8 +285,10 @@ class ClientUI extends TileBank {
     this.el.removeChild(discard);
   }
 
-  lock(tiles) {
-    // visual set locking is handled by see()/4 instead for human players.
+  lockClaim(tiles) {
+    // visual set locking is handled by see()/4 for human players,
+    // we the one thing we do need to do is remove that last discard.
+    this.removeLastDiscard();
   }
 
   playerDiscarded(player, tile) {
@@ -306,7 +335,7 @@ class ClientUI extends TileBank {
   }
 
 
-  seeClaim(tiles, player) {
+  seeClaim(tiles, player, claim) {
     // this differs from see() in that we know we need to remove one
     // "blank" tile fewer than are being revealed. So we add one, and
     // then call see() to offset the otherwise superfluous removal.
@@ -314,6 +343,26 @@ class ClientUI extends TileBank {
     let blank = create(-1);
     bank.appendChild(blank);
     this.see(tiles, player);
+
+    // add a visual signal
+    if (!config.BOT_PLAY) {
+      this.yellClaim(player.id, claim.claimtype);
+    }
+  }
+
+  yellClaim(pid, claimtype) {
+    let label = 'win';
+    if (claimtype === 16) label = 'kong';
+    if (claimtype === 8) label = 'pung';
+    if (claimtype < 8) label = 'chow';
+    let yell = document.createElement('div');
+    yell.classList.add('yell');
+    yell.textContent = `${label}!`;
+    yell.dataset.player = pid;
+    document.querySelector('.board').appendChild(yell);
+    yell.addEventListener('transitionend ', () => {
+      yell.parentNode.removeChild(yell);
+    });
   }
 
   prepareForClaim(player, tile) {

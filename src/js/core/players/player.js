@@ -110,7 +110,10 @@ class Player {
       t = create(t);
     }
     this.latest = t;
-    if (!claimed) this.tracker.seen(t.dataset.tile);
+    if (!claimed) {
+      this.tracker.seen(t.dataset.tile);
+      this.lastClaim = false;
+    }
     this.ui.append(t);
     return revealed;
   }
@@ -167,7 +170,7 @@ class Player {
     this.see(tiles.map(t => t.dataset.tile), player, false, true);
   }
 
-  seeClaim(tiles, player, claimedTile) {
+  seeClaim(tiles, player, claimedTile, claim) {
     if (player === this) return;
     if (!tiles.map) tiles = [tiles];
 
@@ -177,8 +180,7 @@ class Player {
       // But we haven't seen the other tiles yet.
       this.tracker.seen(tile.dataset.tile);
     });
-
-    this.ui.seeClaim(tiles, player);
+    this.ui.seeClaim(tiles, player, claim);
   }
 
   nextPlayer() {
@@ -320,6 +322,7 @@ class Player {
   }
 
   receiveDiscardForClaim(claim, discard) {
+    this.lastClaim = claim;
     let tile = discard.getTileFace();
     let claimtype = claim.claimtype;
 
@@ -361,7 +364,7 @@ class Player {
       });
 
       this.locked.push(set);
-      this.ui.lock(set);
+      this.ui.lockClaim(set);
 
       return set;
     }
@@ -389,7 +392,7 @@ class Player {
     });
 
     this.locked.push(set);
-    this.ui.lock(set);
+    this.ui.lockClaim(set);
 
     return set;
   }

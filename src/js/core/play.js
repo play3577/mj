@@ -210,7 +210,7 @@ function playGame(hand, players, wall, windOfTheRound, next) {
       let tiles = player.receiveDiscardForClaim(claim, discard);
 
       // Awarded claims are shown to all other players.
-      players.forEach(p => p.seeClaim(tiles, player, discard));
+      players.forEach(p => p.seeClaim(tiles, player, discard, claim));
 
       // If the player locks away a total of 4 tiles,
       // they need a supplement tile.
