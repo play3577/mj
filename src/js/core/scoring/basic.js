@@ -115,7 +115,7 @@ function _tile_score(set, windTile, windOfTheRoundTile) {
  * In addition to straight up points, certain combinations
  * of sets come with additional points in the form of doubles
  */
-function checkWinnerHandPatterns(scorePattern, selfdraw=false, windTile, windOfTheRoundTile, scoreObject) {
+function checkWinnerHandPatterns(scorePattern, winset, selfdraw=false, windTile, windOfTheRoundTile, scoreObject) {
   // We start with some assumptions, and we'll
   // invalidate them as we see more sets.
 
@@ -159,11 +159,18 @@ function checkWinnerHandPatterns(scorePattern, selfdraw=false, windTile, windOfT
     }
 
     if (set.length === 2) {
-      if (tile > 26 && tile < 31) { windPair = true; majorPair = true; }
-      if (tile > 30) { dragonPair = true; majorPair = true; }
-      if (tile === windTile) { ownWindPair = true; majorPair = true; }
-      if (tile === windOfTheRoundTile) { wotrPair = true; majorPair = true; }
-      if (!set.winning) outonPair = false;
+      if (!winset || winset.length !== 2) {
+        // We check the winset because SOMEHOW if we set newset.winning = true
+        // in the code that converts locked[] into tile number sets, that flag
+        // goes missing between computing basic tile scores, and computing
+        // the winning hand scores here. Super weird. FIXME: figure out why?
+        outonPair = false;
+      } else {
+        if (tile > 26 && tile < 31) { windPair = true; majorPair = true; }
+        if (tile > 30) { dragonPair = true; majorPair = true; }
+        if (tile === windTile) { ownWindPair = true; majorPair = true; }
+        if (tile === windOfTheRoundTile) { wotrPair = true; majorPair = true; }
+      }
     }
 
     if (set.length === 3) {
@@ -270,7 +277,7 @@ function checkWinnerHandPatterns(scorePattern, selfdraw=false, windTile, windOfT
 /**
  * Determine the tile score for a collection of sets
  */
-function getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winner=false, selfdraw=false) {
+function getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset, winner=false, selfdraw=false) {
   Logger.debug(scorePattern.map(s => s.locked));
 
   let result = scorePattern
@@ -320,7 +327,7 @@ function getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winner=
   result.wotd = windOfTheRoundTile;
 
   // also determine points/doubles based on the full hand
-  if (winner) checkWinnerHandPatterns(scorePattern, selfdraw, windTile, windOfTheRoundTile, result);
+  if (winner) checkWinnerHandPatterns(scorePattern, winset, selfdraw, windTile, windOfTheRoundTile, result);
 
   if (result.limit) {
     result.score = LIMIT;
@@ -353,6 +360,7 @@ function scoreTiles(disclosure, id, windOfTheRound) {
   let tiles = disclosure.concealed;
   let locked = disclosure.locked;
   let bonus = disclosure.bonus;
+  let winset = false;
   let windTile = getWindTile(disclosure.wind);
   let windOfTheRoundTile = getWindTile(windOfTheRound);
 
@@ -362,14 +370,11 @@ function scoreTiles(disclosure, id, windOfTheRound) {
   let openCompositions = tileInformation.composed;
 
   locked = locked.map(set => {
-    if (set[0].dataset) {
-      let newset = set.map(s => parseInt(s.dataset.tile))
-      newset.locked = true;
-      newset.winning = set.winning;
-      return newset;
-    }
-    set.locked = true;
-    return set;
+    let winning = !!set[0].dataset.winning;
+    let newset = set.map(s => parseInt(s.dataset.tile))
+    newset.locked = 'locked';
+    if (winning) winset = newset;
+    return newset;
   });
 
   // If there is nothing to be formed with the tiles in hand,
@@ -401,7 +406,7 @@ function scoreTiles(disclosure, id, windOfTheRound) {
       return set;
     }).concat(winner ? [] : locked);
 
-    return getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winner, selfdraw);
+    return getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset, winner, selfdraw);
   });
 
   // And then make sure we award each player the highest
