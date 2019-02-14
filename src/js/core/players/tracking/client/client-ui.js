@@ -88,8 +88,44 @@ class ClientUI extends TileBank {
     this.discards.lastChild.classList.remove('selectable');
   }
 
+  haveSingle(tile) {
+    return this.getAllTilesInHand(tile.dataset ? tile.dataset.tile : tile) >= 1;
+  }
+
+  canPung(tile) {
+    return this.getAllTilesInHand(tile.dataset ? tile.dataset.tile : tile) >= 2;
+  }
+
+  canKong(tile) {
+    return this.getAllTilesInHand(tile.dataset ? tile.dataset.tile : tile) === 3;
+  }
+
+  canChow(tile, type) {
+    tile = (tile.dataset ? tile.dataset.tile : tile) |0;
+    if (tile > 26) return false;
+    let face = tile % 9;
+    let t1, t2;
+    if (type === CLAIM.CHOW1) {
+      if (face > 6) return false;
+      t1 = tile + 1;
+      t2 = tile + 2;
+    }
+    if (type === CLAIM.CHOW2) {
+      if (face===0 || face===8) return false;
+      t1 = tile - 1;
+      t2 = tile + 1;
+    }
+    if (type === CLAIM.CHOW3) {
+      if (face < 2) return false;
+      t1 = tile - 2;
+      t2 = tile - 1;
+    }
+    return this.getSingleTileFromHand(t1) && this.getSingleTileFromHand(t2);
+  }
+
   listenForClaim(pid, discard, resolve, interrupt) {
     let tile = this.discards.lastChild;
+    let mayChow = (((pid + 1)%4) == this.id);
 
     let fn = e => {
       interrupt();
@@ -99,23 +135,23 @@ class ClientUI extends TileBank {
       // let's spawn a little modal to see what the user actually wanted to do here.
       modal.setContent("What kind of claim are you making?", [
         { label: "Cancel", value: CLAIM.IGNORE },
-        { label: "Chow (X**)", value: CLAIM.CHOW1 },
-        { label: "Chow (*X*)", value: CLAIM.CHOW2 },
-        { label: "Chow (**X)", value: CLAIM.CHOW3 },
-        { label: "Pung", value: CLAIM.PUNG },
-        { label: "Kong", value: CLAIM.KONG },
-        { label: "Win", value: CLAIM.WIN },
+        (mayChow && this.canChow(discard, CLAIM.CHOW1)) ? { label: "Chow (X**)", value: CLAIM.CHOW1 } : false,
+        (mayChow && this.canChow(discard, CLAIM.CHOW2)) ? { label: "Chow (*X*)", value: CLAIM.CHOW2 } : false,
+        (mayChow && this.canChow(discard, CLAIM.CHOW3)) ? { label: "Chow (**X)", value: CLAIM.CHOW3 } : false,
+        this.canPung(discard) ? { label: "Pung", value: CLAIM.PUNG } : false,
+        this.canKong(discard) ? { label: "Kong", value: CLAIM.KONG } : false,
+        { label: "Win", value: CLAIM.WIN }, // Let's not pre-filter this one
       ], result => {
         tile.classList.remove('selectable');
         tile.removeEventListener("click", fn);
         if (result === CLAIM.WIN) {
           modal.setContent("How does this tile make you win?", [
             { label: "Cancel", value: CLAIM.IGNORE },
-            { label: "Pair", value: CLAIM.PAIR },
-            { label: "Chow (X**)", value: CLAIM.CHOW1 },
-            { label: "Chow (*X*)", value: CLAIM.CHOW2 },
-            { label: "Chow (**X)", value: CLAIM.CHOW3 },
-            { label: "Pung", value: CLAIM.PUNG }
+            this.haveSingle(discard) ? { label: "Pair", value: CLAIM.PAIR } : false,
+            (mayChow && this.canChow(discard, CLAIM.CHOW1)) ? { label: "Chow (X**)", value: CLAIM.CHOW1 } : false,
+            (mayChow && this.canChow(discard, CLAIM.CHOW2)) ? { label: "Chow (*X*)", value: CLAIM.CHOW2 } : false,
+            (mayChow && this.canChow(discard, CLAIM.CHOW3)) ? { label: "Chow (**X)", value: CLAIM.CHOW3 } : false,
+            this.canPung(discard) ? { label: "Pung", value: CLAIM.PUNG } : false
           ], result => {
             if (result === CLAIM.IGNORE) resolve({ claimtype: CLAIM.IGNORE });
             else resolve({ claimtype: CLAIM.WIN, wintype: result });
