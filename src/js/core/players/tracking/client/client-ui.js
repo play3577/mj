@@ -75,7 +75,7 @@ class ClientUI extends TileBank {
     // let the user decide whether to declare a
     // win or whether to keep playing.
     if (!suggestion) {
-      return modal.setContent("Declare win?", [
+      return modal.choiceInput("Declare win?", [
         { label: 'You better believe it!', value: 'win' },
         { label: 'No, I think I can do better...', value: '' },
       ], result => {
@@ -160,7 +160,7 @@ class ClientUI extends TileBank {
       let CLAIM = config.CLAIM;
 
       // let's spawn a little modal to see what the user actually wanted to do here.
-      modal.setContent("What kind of claim are you making?", [
+      modal.choiceInput("What kind of claim are you making?", [
         { label: "Ignore", value: CLAIM.IGNORE },
         (mayChow && this.canChow(discard, CLAIM.CHOW1)) ? { label: "Chow (X**)", value: CLAIM.CHOW1 } : false,
         (mayChow && this.canChow(discard, CLAIM.CHOW2)) ? { label: "Chow (*X*)", value: CLAIM.CHOW2 } : false,
@@ -172,7 +172,7 @@ class ClientUI extends TileBank {
         tile.classList.remove('selectable');
         tile.removeEventListener("click", fn);
         if (result === CLAIM.WIN) {
-          modal.setContent("How does this tile make you win?", [
+          modal.choiceInput("How does this tile make you win?", [
             { label: "Actually, it doesn't", value: CLAIM.IGNORE },
             this.haveSingle(discard) ? { label: "Pair", value: CLAIM.PAIR } : false,
             this.canChow(discard, CLAIM.CHOW1) ? { label: "Chow (X**)", value: CLAIM.CHOW1 } : false,

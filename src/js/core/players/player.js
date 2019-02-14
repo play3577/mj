@@ -58,9 +58,9 @@ class Player {
     this.ui.endOfGame(scores);
   }
 
-  recordScores(values) {
-    this._score += values[this.id];
-    this.ui.recordScores(values);
+  recordScores(adjustments) {
+    this._score += adjustments[this.id];
+    this.ui.recordScores(adjustments);
   }
 
   getScore() {

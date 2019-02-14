@@ -21,23 +21,37 @@
 }
 
 .modal {
-  background: rgba(0,0,0,0.7);
+  background: rgba(68, 28, 28, 0.63);
   display: flex;
   justify-content: center;
   align-items: center;
-  position: fixed;
+  position: absolute;
   z-index: 100;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  width: 100vw;
-  height: 100vh;
 }
+
 .modal .panel {
   background: white;
   padding: 1em;
   display: inline-block;
+}
+
+.modal .panel h3 {
+  position: relative;
+}
+
+.modal .panel h3 .close {
+  font-variant: small-caps;
+  font-family: Verdana;
+  cursor: pointer;
+  color: #444;
+  font-weight: normal;
+  position: absolute;
+  right: 0;
+  top: -1em;
 }
 
 .modal .panel button {
@@ -45,9 +59,42 @@
   width: 100%;
   white-space: nowrap;
 }
+
 .modal .panel button + button {
   margin-top: 3px;
 }
+
+.modal .panel table tr th {
+  border-bottom: 1px solid black;
+}
+
+.modal .panel table tr:nth-last-child(2) td {
+  border-top: 1px solid black;
+}
+
+.modal .panel table tr th:first-child,
+.modal .panel table tr:last-child td:first-child {
+  border: none;
+}
+
+.modal .panel table tr td {
+  text-align: right;
+}
+
+.modal .panel table tr th,
+.modal .panel table tr td:first-child {
+  font-family: Verdana;
+  text-align: center;
+  font-weight: bold;
+  font-variant: small-caps;
+}
+
+.modal .panel table tr.details td {
+  color: blue;
+  text-align: right;
+  cursor: pointer;
+}
+
 
 .board {
   position: relative;
