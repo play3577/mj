@@ -127,7 +127,7 @@ function checkWinnerHandPatterns(scorePattern, selfdraw=false, windTile, windOfT
   let allterminals = true;
   let punghand = true;
 
-  let outonpair = true;
+  let outonPair = true;
   let majorPair = false;
   let dragonPair = false;
   let windPair = false;
@@ -163,7 +163,7 @@ function checkWinnerHandPatterns(scorePattern, selfdraw=false, windTile, windOfT
       if (tile > 30) { dragonPair = true; majorPair = true; }
       if (tile === windTile) { ownWindPair = true; majorPair = true; }
       if (tile === windOfTheRoundTile) { wotrPair = true; majorPair = true; }
-      if (!set.winning) outonpair = false;
+      if (!set.winning) outonPair = false;
     }
 
     if (set.length === 3) {
@@ -199,12 +199,12 @@ function checkWinnerHandPatterns(scorePattern, selfdraw=false, windTile, windOfT
     scoreObject.log.push(`2 points for self-drawn win`);
   }
 
-  if (outonpair) {
+  if (outonPair) {
     scoreObject.score += 2;
     scoreObject.log.push(`2 points for winning on a pair`);
   }
 
-  if (majorPair) {
+  if (outonPair && majorPair) {
     scoreObject.score += 2;
     scoreObject.log.push(`2 points for winning on a major pair`);
   }
