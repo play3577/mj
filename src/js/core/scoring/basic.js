@@ -146,7 +146,7 @@ function checkWinnerHandPatterns(scorePattern, selfdraw=false, windTile, windOfT
     let tile = set[0];
 
     if (tile < 27) {
-      if (!suit) suit = (tile/9)|0;
+      if (suit === false) suit = (tile/9)|0;
       else if (suit !== (tile/9)|0) onesuit = false;
       if (set.some(t => t!==0 || t!==8)) {
         terminals = false;
