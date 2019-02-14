@@ -56,7 +56,7 @@ function _tile_score(set, windTile, windOfTheRoundTile) {
           log.push(`${locked? 2 : 4} for ${prefix}pung of simple (${tile})`);
         }
       }
-      else if (tile < 30) {
+      else if (tile < 31) {
         score += locked? 4 : 8;
         log.push(`${locked? 4 : 8} for ${prefix}pung of winds (${tile})`);
         if (tile === windTile) {
@@ -88,7 +88,7 @@ function _tile_score(set, windTile, windOfTheRoundTile) {
         log.push(`${locked? 8 : 16} for ${prefix}kong of simple (${tile})`);
       }
     }
-    else if (tile < 30) {
+    else if (tile < 31) {
       score += locked? 16 : 32;
       log.push(`${locked? 16 : 32} for ${prefix}kong of winds (${tile})`);
       if (tile === windTile) {
@@ -442,3 +442,16 @@ function settleScores(scores, winningplayer) {
 
   return adjustments;
 }
+
+
+/**
+
+Incorrect scoring:
+
+Player 0 wins round 6! config.js:223:71
+Revealed tiles [2,4,3],[20,19,18],[26,25,24]! config.js:223:71
+Concealed tiles: 28,28,32,32,32
+
+incorrectly reports winning on a major pair.
+
+**/
