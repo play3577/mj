@@ -285,8 +285,6 @@ function processWin(player, hand, players, currentPlayerId, next) {
 
   // Show the score line, and the move on to the next hand.
   scores[player.id].winner = true;
-  modal.setScores(hand, scores, adjustments, () => {
-    console.log('n');
-    next({ winner: player });
-  });
+  let moveOn = () => next({ winner: player });
+  modal.setScores(hand, scores, adjustments, moveOn);
 }
