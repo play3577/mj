@@ -283,7 +283,6 @@
 .tile.discard[data-from="2"] { animation: p2-discard 0.5s; }
 .tile.discard[data-from="3"] { animation: p3-discard 0.5s; }
 
-
 @keyframes fade-out { 0% { opacity: 1; } 66% { opacity: 1; } 100% { opacity: 0; } }
 
 .yell[data-player] {

@@ -293,29 +293,34 @@ function getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset,
     log:[]
   });
 
+  let hasOwnFlower = false;
+  let hasOwnSeason = false;
   bonus.forEach( tile => {
     result.score += 4;
     result.log.push(`4 for bonus tile (${tile})`);
 
     if(ownFlower(tile, windTile)) {
-      result.doubles += 1
-      result.log.push(`1 double for own flower (${tile})`);
+      hasOwnFlower = true;
     }
 
     if(ownSeason(tile, windTile)) {
-      result.doubles += 1
-      result.log.push(`1 double for own season (${tile})`);
+      hasOwnSeason = true;
     }
   });
 
+  if (hasOwnFlower && hasOwnSeason) {
+    result.doubles += 1
+    result.log.push(`1 double for own flower and season (${tile})`);
+  }
+
   if (allFlowers(bonus)) {
     result.doubles += 2;
-    result.log.push(`2 more doubles for having all flowers`);
+    result.log.push(`1 more double for having all flowers`);
   }
 
   if (allSeasons(bonus)) {
     result.doubles += 2;
-    result.log.push(`2 more doubles for having all seasons`);
+    result.log.push(`1 more double for having all seasons`);
   }
 
   if (winner) {
