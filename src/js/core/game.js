@@ -180,14 +180,41 @@ class Game {
 
   // shorthand function to wrap the do/while loop.
   dealTile(player) {
-    let wall = this.wall;
-    let next = () => this.dealTile(player);
-    let tile;
+    let tile, wall = this.wall;
     do {
       tile = wall.get();
-      dealTileToPlayer(player, tile, this.players, next);
+      this.dealTileToPlayer(player, tile);
     } while (tile>33 && !wall.dead);
     return wall.dead;
   }
 
+  /**
+   * At the start of a player's turn, deal them a tile. This
+   * might actually turn into several tiles, as bonus tiles and
+   * tiles that form kongs may require a supplement tile being
+   * dealt to that player. And of course, that supplement can
+   * also be a bonus or kong tile.
+   */
+  dealTileToPlayer(player, tile) {
+    let players = this.players;
+
+    Logger.debug(`${player.id} was given tile ${tile}`);
+    Logger.debug(`dealing ${tile} to player ${player.id}`);
+
+    let revealed = player.append(tile);
+    players.forEach(p => p.receivedTile(player));
+
+    // bonus tile are shown to all other players.
+    if (revealed) players.forEach(p => p.see(revealed, player));
+
+    // if a played got a kong, and declared it, notify all
+    // other players and issue a supplement tile.
+    let kong = player.checkKong(tile);
+    if (kong) {
+      Logger.debug(`${player.id} plays self-drawn kong ${kong[0].dataset.tile} during play`);
+      players.forEach(p => p.seeKong(kong, player));
+      Logger.debug(`Dealing ${player.id} a supplement tile.`);
+      this.dealTile(player);
+    }
+  }
 }
