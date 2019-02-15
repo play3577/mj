@@ -55,13 +55,7 @@ class Game {
 
     this.players.forEach(p => p.handWillStart());
 
-    let start = this.preparePlay(
-      this.hand,
-      this.players,
-      this.wall,
-      this.windOfTheRound,
-      () => this.startHand()
-    );
+    let start = this.preparePlay();
 
     start();
   }
@@ -108,7 +102,13 @@ class Game {
   /**
    * Set up and run the main game loop.
    */
-  preparePlay(hand, players, wall, windOfTheRound, next) {
+  preparePlay() {
+    let hand = this.hand;
+    let players = this.players;
+    let wall = this.wall;
+    let windOfTheRound = this.windOfTheRound;
+    let next = () => this.startHand();
+
     let currentPlayerId = 2;
     let discard = undefined;
     let counter = 0;
