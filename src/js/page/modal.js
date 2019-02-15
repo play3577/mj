@@ -1,6 +1,9 @@
 // Simple general purpose modal
 let modal = document.querySelector(".modal");
 
+/**
+ * ...
+ */
 modal.choiceInput = (label, options, resolve) => {
   let panel = modal.querySelector('.panel');
   panel.innerHTML = `<p>${label}</p>`;
@@ -18,6 +21,9 @@ modal.choiceInput = (label, options, resolve) => {
   modal.classList.remove("hidden");
 };
 
+/**
+ * ...
+ */
 modal.setScores = (hand, scores, adjustments, resolve) => {
   console.log(adjustments);
 
@@ -96,6 +102,8 @@ modal.setScores = (hand, scores, adjustments, resolve) => {
     resolve();
   });
   panel.appendChild(ok);
+
+  if(config.BOT_PLAY) setTimeout(() => ok.click(), config.HAND_INTERVAL);
 
   modal.classList.remove("hidden");
 };

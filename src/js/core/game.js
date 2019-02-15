@@ -53,9 +53,6 @@ class Game {
     PLAY_START = Date.now();
 
     this.dealTiles();
-
-    this.players.forEach(p => p.handWillStart());
-
     this.preparePlay();
     this.play();
   }
@@ -106,6 +103,7 @@ class Game {
     this.currentPlayerId = 2;
     this.discard = undefined;
     this.counter = 0;
+    this.players.forEach(p => p.handWillStart());
   }
 
   /**
