@@ -1,17 +1,13 @@
-// once all functions have been merged in,
-// these values can become instance variables
-
-PLAY_START = 0;
-playDelay = config.PLAY_INTERVAL;
-
-
+/**
+ * This class models an entire game.
+ */
 class Game {
   constructor(players) {
     this.players = players;
+    this.wall = new Wall();
   }
 
   startGame() {
-    this.wall = new Wall();
     this.hand = 1;
     this.startHand();
   }
@@ -50,7 +46,7 @@ class Game {
       config.HAND_INTERVAL = 60 * 60 * 1000;
     }
 
-    PLAY_START = Date.now();
+    this.PLAY_START = Date.now();
 
     this.dealTiles();
     this.preparePlay();
@@ -113,7 +109,6 @@ class Game {
     let hand = this.hand;
     let players = this.players;
     let wall = this.wall;
-    let windOfTheRound = this.windOfTheRound;
 
     if (claim) this.currentPlayerId = claim.p;
 
@@ -124,7 +119,7 @@ class Game {
 
     // increase the play counter;
     this.counter++;
-    playDelay = (hand===config.PAUSE_ON_HAND && this.counter===config.PAUSE_ON_PLAY) ? 60*60*1000 : config.PLAY_INTERVAL;
+    this.playDelay = (hand===config.PAUSE_ON_HAND && this.counter===config.PAUSE_ON_PLAY) ? 60*60*1000 : config.PLAY_INTERVAL;
     Logger.debug(`hand ${hand}, play ${this.counter}`);
 
     // "Draw one"
@@ -158,17 +153,14 @@ class Game {
     if (wall.dead) {
       Logger.log(`Hand ${hand} is a draw.`);
       players.forEach(p => p.endOfHand());
-      return setTimeout(() => this.startHand({ draw: true }), playDelay);
+      return setTimeout(() => this.startHand({ draw: true }), this.playDelay);
     }
 
     // Nothing of note happened: game on.
     players.forEach(p => p.nextPlayer());
     this.currentPlayerId = (this.currentPlayerId + 1) % 4;
 
-    return setTimeout(() => {
-      player.disable();
-      this.play();
-    }, playDelay);
+    return setTimeout(() => {player.disable(); this.play();}, this.playDelay);
   }
 
   // shorthand function to wrap the do/while loop.
@@ -266,7 +258,7 @@ class Game {
     let discard = this.discard;
     Logger.debug(`${claim.p} wants ${discard.dataset.tile} for ${claim.claimtype}`);
     player.disable();
-    setTimeout(() => this.play(claim), playDelay);
+    setTimeout(() => this.play(claim), this.playDelay);
   }
 
   /**
@@ -279,7 +271,7 @@ class Game {
     let currentPlayerId = this.currentPlayerId;
     let windOfTheRound = this.windOfTheRound;
 
-    let play_length = (Date.now() - PLAY_START);
+    let play_length = (Date.now() - this.PLAY_START);
     Logger.log(`Player ${currentPlayerId} wins round ${hand}!`);
     Logger.log(`Revealed tiles ${player.getLockedTileFaces()}`);
     Logger.log(`Concealed tiles: ${player.getTileFaces()}`);
@@ -302,6 +294,4 @@ class Game {
     let moveOn = () => this.startHand({ winner: player });
     modal.setScores(hand, scores, adjustments, moveOn);
   }
-
 }
-
