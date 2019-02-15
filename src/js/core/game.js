@@ -113,14 +113,6 @@ class Game {
     let discard = undefined;
     let counter = 0;
 
-    // shorthand function to wrap the do/while loop.
-    let dealTile = player => {
-      let tile;
-      do { tile = wall.get(); dealTileToPlayer(player, tile, players, () => dealTile(player)) }
-      while (tile>33 && !wall.dead);
-      return wall.dead;
-    };
-
     // Game loop function:
     let play = async (claim) => {
 
@@ -134,7 +126,7 @@ class Game {
       Logger.debug(`hand ${hand}, play ${counter}`);
 
       // "Draw one"
-      if (!claim) dealTile(player);
+      if (!claim) this.dealTile(player);
       else {
         let tiles = player.receiveDiscardForClaim(claim, discard);
 
@@ -143,7 +135,7 @@ class Game {
 
         // If the player locks away a total of 4 tiles,
         // they need a supplement tile.
-        if (tiles.length === 4) dealTile(player);
+        if (tiles.length === 4) this.dealTile(player);
       }
 
       // "Play one"
@@ -176,5 +168,16 @@ class Game {
     return play;
   }
 
+  // shorthand function to wrap the do/while loop.
+  dealTile(player) {
+    let wall = this.wall;
+    let next = () => this.dealTile(player);
+    let tile;
+    do {
+      tile = wall.get();
+      dealTileToPlayer(player, tile, this.players, next);
+    } while (tile>33 && !wall.dead);
+    return wall.dead;
+  }
 
 }
