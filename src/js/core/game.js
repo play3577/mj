@@ -159,7 +159,7 @@ class Game {
 
     // Does someone want to claim this discard?
     claim = await this.getAllClaims(); // players take note of the fact that a discard happened as part of their determineClaim()
-    if (claim) return processClaim(player, claim, discard, () => this.play(claim));
+    if (claim) return this.processClaim(player, claim);
 
     // No claims: have we run out of tiles?
     if (wall.dead) {
@@ -263,6 +263,17 @@ class Game {
     return p === -1 ? undefined : { claimtype: claim, wintype: win, p };
   }
 
-
+  /**
+   * Handle a claim on a discard. Note that the actual "awarding"
+   * of the claim happens in the play loop, where the fact that
+   * play started with a pending claim means that instead of tile
+   * being drawn, the player "draws" the discard tile instead.
+   */
+  processClaim(player, claim) {
+    let discard = this.discard;
+    Logger.debug(`${claim.p} wants ${discard.dataset.tile} for ${claim.claimtype}`);
+    player.disable();
+    setTimeout(() => this.play(claim), playDelay);
+  }
 }
 
