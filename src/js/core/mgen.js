@@ -260,6 +260,8 @@ class Pattern {
     let head = [];
     let toRemove = [];
 
+    Logger.debug(`evaluating tile`,tile);
+
     if (count>3) {
       head=[`4k-${tile}`];
       paths.push(head);
@@ -274,9 +276,14 @@ class Pattern {
       this.recurseForWin(head, toRemove, results, single, pair, set.concat(head), paths);
     }
 
-    if (count>1 && pair.length<1) {
-      head=[`2p-${tile}`];
-      paths.push(head);
+    if (count>1) {
+      // we can have 1 pair in a winning hand set.
+      if (pair.length<1) {
+        head=[`2p-${tile}`];
+        paths.push(head);
+      } else {
+        head = paths;
+      }
       toRemove = [tile, tile];
       this.recurseForWin(head, toRemove, results, single, pair.concat([tile]), set, paths);
     }
@@ -427,11 +434,17 @@ if (typeof process !== "undefined") {
         [10,11,12],
         [20,21,22]
       ]
+    },
+    {
+      hand: [18,18,27,27,27,30,30,32,32,32],
+      locked: [
+        [20,22,21]
+      ]
     }
   ]
 
   tests.forEach((test,tid) => {
-    if (tid < 4) return;
+    if (tid < 5) return;
 
     let hand = test.hand;
     let locked = lock(test.locked);

@@ -369,9 +369,14 @@ function scoreTiles(disclosure, id, windOfTheRound) {
   let windTile = getWindTile(disclosure.wind);
   let windOfTheRoundTile = getWindTile(windOfTheRound);
 
+  Logger.debug(`player ${id}`);
+  Logger.debug(disclosure);
+
   // And then let's see what our tile-examining
   // algorithm has to say about the tiles we have.
   let tileInformation = tilesNeeded(tiles, locked);
+  Logger.debug(tileInformation);
+
   let openCompositions = tileInformation.composed;
 
   locked = locked.map(set => {
@@ -414,6 +419,7 @@ function scoreTiles(disclosure, id, windOfTheRound) {
     return getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset, winner, selfdraw);
   });
 
+
   // And then make sure we award each player the highest
   // score they're elligible for.
   let finalScore = possibleScores.sort( (a,b) => { a = a.total; b = b.total; return a - b; }).slice(-1)[0];
@@ -452,16 +458,3 @@ function settleScores(scores, winningplayer) {
 
   return adjustments;
 }
-
-
-/**
-
-Incorrect scoring:
-
-Player 0 wins round 6! config.js:223:71
-Revealed tiles [2,4,3],[20,19,18],[26,25,24]! config.js:223:71
-Concealed tiles: 28,28,32,32,32
-
-incorrectly reports winning on a major pair.
-
-**/
