@@ -112,7 +112,7 @@ class Game {
    * Set up and run the main game loop.
    */
   preparePlay() {
-    this.currentPlayerId = 0;
+    this.currentPlayerId = (this.wind % 4);
     this.discard = undefined;
     this.counter = 0;
     this.players.forEach(p => p.handWillStart());
