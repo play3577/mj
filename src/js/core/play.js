@@ -1,55 +1,4 @@
 /**
- * Set up a game of four players, and begin a game
- */
-function setup(players) {
-  console.log('running setup');
-
-  let wall = new Wall();
-
-  // A simple turn counter. Note that we do not
-  // advance this counter on a draw.
-  let hand = 1;
-
-  // A function that triggers the next hand's play.
-  // Unless the game is over because we've played
-  // enough rounds to rotate the winds fully.
-  const next = (result) => {
-    let pre = 'S';
-
-    if (result) {
-      pre = result.draw ? 'Res' : pre;
-      if (result.winner) {
-        let shuffles = rotateWinds();
-        if (hand !== shuffles) hand = shuffles;
-      }
-      if (!result.draw && hand > 16) {
-        hand = '';
-        Logger.log(`\nfull game played.`);
-        let scores = players.map(p => p.getScore());
-        players.forEach(p => p.endOfGame(scores));
-        return;
-      }
-    }
-
-    Logger.log(`\n${pre}tarting hand ${hand}.`); // Starting hand / Restarting hand
-
-    players.forEach(player => player.reset());
-
-    if (config.PAUSE_ON_HAND && hand === config.PAUSE_ON_HAND) config.HAND_INTERVAL = 60 * 60 * 1000; // play debug
-
-    // FIXME: this needs to be tracked separately, to be fixed
-    //        when the shuffle() function is made a proper play
-    //        function instead of being left to the rotator...
-    windOfTheRound = ((hand/4)|0);
-
-    playHand(hand, players, wall, windOfTheRound, next);
-  };
-
-  return { play() { next(); }};
-}
-
-
-/**
  * A single hand in a game consists of "dealing tiles"
  * and then starting play.
  */
@@ -145,7 +94,7 @@ function preparePlay(hand, players, wall, windOfTheRound, next) {
     discard = await new Promise(resolve => player.getDiscard(resolve));
 
     // Did anyone win?
-    if (!discard) return processWin(player, hand, players, currentPlayerId, next);
+    if (!discard) return processWin(player, hand, players, currentPlayerId, windOfTheRound, next);
 
     // No winner - process the discard.
     processDiscard(player, discard, players);
@@ -256,7 +205,7 @@ function processClaim(player, claim, discard, next) {
  * Once a plyer has won, process that win in terms of scoring and
  * letting everyone know what the result of the hand is.
  */
-function processWin(player, hand, players, currentPlayerId, next) {
+function processWin(player, hand, players, currentPlayerId, windOfTheRound, next) {
   let play_length = (Date.now() - PLAY_START);
   Logger.log(`Player ${currentPlayerId} wins round ${hand}!`);
   Logger.log(`Revealed tiles ${player.getLockedTileFaces()}`);

@@ -2,7 +2,7 @@
     function play() {
         let manager = new GameManager();
         let game = manager.create();
-        game.start();
+        game.startGame();
     }
 
     function offerChoice() {
