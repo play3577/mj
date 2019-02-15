@@ -12,32 +12,33 @@ class Game {
 
   startGame() {
     this.wall = new Wall();
-    this.hand = 0;
+    this.hand = 1;
     this.startHand();
   }
 
   // A function that triggers the s hand's play.
   // Unless the game is over because we've played
   // enough rounds to rotate the winds fully.
-  startHand(result) {
-    let pre = 'S';
+  startHand(result = {}) {
+    let pre = result.draw ? 'Res' : 'S';
+    let players = this.players;
 
-    if (result) {
-      pre = result.draw ? 'Res' : pre;
-      if (result.winner) {
-        let shuffles = rotateWinds();
-        if (hand !== shuffles) hand = shuffles;
-      }
-      if (!result.draw && hand > 16) {
-        hand = '';
-        Logger.log(`\nfull game played.`);
-        let scores = players.map(p => p.getScore());
-        players.forEach(p => p.endOfGame(scores));
-        return;
-      }
+    if (result.winner) {
+      // FIXME: this should be controlled by the game, with the
+      //        rotator being _told_ what to do. Not the other
+      //        way around.
+      let shuffles = rotateWinds();
+      if (this.hand !== shuffles) this.hand = shuffles;
     }
 
-    this.hand++;
+    if (!result.draw && this.hand > 16) {
+      this.hand = '';
+      Logger.log(`\nfull game played.`);
+      let scores = players.map(p => p.getScore());
+      players.forEach(p => p.endOfGame(scores));
+      return;
+    }
+
     this.windOfTheRound = ((this.hand/4)|0);
     this.wall.reset();
     this.players.forEach(player => player.reset());
@@ -55,9 +56,8 @@ class Game {
 
     this.players.forEach(p => p.handWillStart());
 
-    let start = this.preparePlay();
-
-    start();
+    this.preparePlay();
+    this.play();
   }
 
   /**
@@ -103,69 +103,81 @@ class Game {
    * Set up and run the main game loop.
    */
   preparePlay() {
+    this.currentPlayerId = 2;
+    this.discard = undefined;
+    this.counter = 0;
+  }
+
+  /**
+   * The actual main game loop.
+   */
+  async play(claim) {
     let hand = this.hand;
     let players = this.players;
     let wall = this.wall;
     let windOfTheRound = this.windOfTheRound;
-    let next = () => this.startHand();
 
-    let currentPlayerId = 2;
-    let discard = undefined;
-    let counter = 0;
+    if (claim) this.currentPlayerId = claim.p;
 
-    // Game loop function:
-    let play = async (claim) => {
+    let discard = this.discard;
+    let currentPlayerId = this.currentPlayerId;
+    let player = players[currentPlayerId];
+    players.forEach(p => p.activate(currentPlayerId));
 
-      if (claim) currentPlayerId = claim.p;
-      let player = players[currentPlayerId];
-      players.forEach(p => p.activate(player.id));
+    // increase the play counter;
+    this.counter++;
+    playDelay = (hand===config.PAUSE_ON_HAND && this.counter===config.PAUSE_ON_PLAY) ? 60*60*1000 : config.PLAY_INTERVAL;
+    Logger.debug(`hand ${hand}, play ${this.counter}`);
 
-      // increase the play counter;
-      counter++;
-      playDelay = (hand===config.PAUSE_ON_HAND && counter===config.PAUSE_ON_PLAY) ? 60*60*1000 : config.PLAY_INTERVAL;
-      Logger.debug(`hand ${hand}, play ${counter}`);
+    // "Draw one"
+    if (!claim) this.dealTile(player);
+    else {
+      let tiles = player.receiveDiscardForClaim(claim, discard);
 
-      // "Draw one"
-      if (!claim) this.dealTile(player);
-      else {
-        let tiles = player.receiveDiscardForClaim(claim, discard);
+      // Awarded claims are shown to all other players.
+      players.forEach(p => p.seeClaim(tiles, player, discard, claim));
 
-        // Awarded claims are shown to all other players.
-        players.forEach(p => p.seeClaim(tiles, player, discard, claim));
+      // If the player locks away a total of 4 tiles,
+      // they need a supplement tile.
+      if (tiles.length === 4) this.dealTile(player);
+    }
 
-        // If the player locks away a total of 4 tiles,
-        // they need a supplement tile.
-        if (tiles.length === 4) this.dealTile(player);
-      }
+    // "Play one"
+    if (discard) discard.classList.remove('discard');
+    discard = this.discard = await new Promise(resolve => player.getDiscard(resolve));
 
-      // "Play one"
-      if (discard) discard.classList.remove('discard');
-      discard = await new Promise(resolve => player.getDiscard(resolve));
+    // Did anyone win?
+    if (!discard) return processWin(
+      player,
+      hand,
+      players,
+      currentPlayerId,
+      windOfTheRound,
+      result => this.startHand(result)
+    );
 
-      // Did anyone win?
-      if (!discard) return processWin(player, hand, players, currentPlayerId, windOfTheRound, next);
+    // No winner - process the discard.
+    processDiscard(player, discard, players);
 
-      // No winner - process the discard.
-      processDiscard(player, discard, players);
+    // Does someone want to claim this discard?
+    claim = await getAllClaims(players, currentPlayerId, discard); // players take note of the fact that a discard happened as part of their determineClaim()
+    if (claim) return processClaim(player, claim, discard, () => this.play(claim));
 
-      // Does someone want to claim this discard?
-      claim = await getAllClaims(players, currentPlayerId, discard); // players take note of the fact that a discard happened as part of their determineClaim()
-      if (claim) return processClaim(player, claim, discard, () => play(claim));
+    // No claims: have we run out of tiles?
+    if (wall.dead) {
+      Logger.log(`Hand ${hand} is a draw.`);
+      players.forEach(p => p.endOfHand());
+      return setTimeout(() => this.startHand({ draw: true }), playDelay);
+    }
 
-      // No claims: have we run out of tiles?
-      if (wall.dead) {
-        Logger.log(`Hand ${hand} is a draw.`);
-        players.forEach(p => p.endOfHand());
-        return setTimeout(() => next({ draw: true }), playDelay);
-      }
+    // Nothing of note happened: game on.
+    players.forEach(p => p.nextPlayer());
+    this.currentPlayerId = (this.currentPlayerId + 1) % 4;
 
-      // Nothing of note happened: game on.
-      players.forEach(p => p.nextPlayer());
-      currentPlayerId = (currentPlayerId + 1) % 4;
-      return setTimeout(() => {player.disable(); play();}, playDelay);
-    };
-
-    return play;
+    return setTimeout(() => {
+      player.disable();
+      this.play();
+    }, playDelay);
   }
 
   // shorthand function to wrap the do/while loop.
