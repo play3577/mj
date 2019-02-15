@@ -1,3 +1,6 @@
+// once all functions have been merged in, this can become an instance variable:
+PLAY_START = 0;
+
 class Game {
   constructor(players) {
     this.players = players;
@@ -42,13 +45,20 @@ class Game {
       config.HAND_INTERVAL = 60 * 60 * 1000;
     }
 
-    playHand(
+    PLAY_START = Date.now();
+
+    dealTiles(this.hand, this.players, this.wall);
+
+    this.players.forEach(p => p.handWillStart());
+
+    let start = preparePlay(
       this.hand,
       this.players,
       this.wall,
       this.windOfTheRound,
       () => this.startHand()
     );
-  };
 
+    start();
+  }
 }
