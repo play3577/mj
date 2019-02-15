@@ -145,14 +145,7 @@ class Game {
     discard = this.discard = await new Promise(resolve => player.getDiscard(resolve));
 
     // Did anyone win?
-    if (!discard) return processWin(
-      player,
-      hand,
-      players,
-      currentPlayerId,
-      windOfTheRound,
-      result => this.startHand(result)
-    );
+    if (!discard) return this.processWin(player);
 
     // No winner - process the discard.
     this.processDiscard(player);
@@ -275,5 +268,40 @@ class Game {
     player.disable();
     setTimeout(() => this.play(claim), playDelay);
   }
+
+  /**
+   * Once a plyer has won, process that win in terms of scoring and
+   * letting everyone know what the result of the hand is.
+   */
+  processWin(player) {
+    let hand = this.hand;
+    let players = this.players;
+    let currentPlayerId = this.currentPlayerId;
+    let windOfTheRound = this.windOfTheRound;
+
+    let play_length = (Date.now() - PLAY_START);
+    Logger.log(`Player ${currentPlayerId} wins round ${hand}!`);
+    Logger.log(`Revealed tiles ${player.getLockedTileFaces()}`);
+    Logger.log(`Concealed tiles: ${player.getTileFaces()}`);
+    player.winner()
+    // Let everyone know what everyone had. It's the nice thing to do.
+    let disclosure = players.map(p => p.getDisclosure());
+    players.forEach(p => p.endOfHand(disclosure));
+
+    // calculate scores!
+    let scores = disclosure.map((d,id) => scoreTiles(d, id, windOfTheRound));
+    Logger.log("score breakdown:", scores);
+    let adjustments = settleScores(scores, player.id);
+    Logger.log(`Scores: ${scores.map(s => s.total)}`);
+    Logger.log(`Score adjustments: ${adjustments}`);
+    players.forEach(p => p.recordScores(adjustments));
+    Logger.log(`(game took ${play_length}ms)`);
+
+    // Show the score line, and the move on to the next hand.
+    scores[player.id].winner = true;
+    let moveOn = () => this.startHand({ winner: player });
+    modal.setScores(hand, scores, adjustments, moveOn);
+  }
+
 }
 
