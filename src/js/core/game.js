@@ -1,5 +1,9 @@
-// once all functions have been merged in, this can become an instance variable:
+// once all functions have been merged in,
+// these values can become instance variables
+
 PLAY_START = 0;
+playDelay = config.PLAY_INTERVAL;
+
 
 class Game {
   constructor(players) {
@@ -51,7 +55,7 @@ class Game {
 
     this.players.forEach(p => p.handWillStart());
 
-    let start = preparePlay(
+    let start = this.preparePlay(
       this.hand,
       this.players,
       this.wall,
@@ -100,4 +104,77 @@ class Game {
       }
     });
   }
+
+  /**
+   * Set up and run the main game loop.
+   */
+  preparePlay(hand, players, wall, windOfTheRound, next) {
+    let currentPlayerId = 2;
+    let discard = undefined;
+    let counter = 0;
+
+    // shorthand function to wrap the do/while loop.
+    let dealTile = player => {
+      let tile;
+      do { tile = wall.get(); dealTileToPlayer(player, tile, players, () => dealTile(player)) }
+      while (tile>33 && !wall.dead);
+      return wall.dead;
+    };
+
+    // Game loop function:
+    let play = async (claim) => {
+
+      if (claim) currentPlayerId = claim.p;
+      let player = players[currentPlayerId];
+      players.forEach(p => p.activate(player.id));
+
+      // increase the play counter;
+      counter++;
+      playDelay = (hand===config.PAUSE_ON_HAND && counter===config.PAUSE_ON_PLAY) ? 60*60*1000 : config.PLAY_INTERVAL;
+      Logger.debug(`hand ${hand}, play ${counter}`);
+
+      // "Draw one"
+      if (!claim) dealTile(player);
+      else {
+        let tiles = player.receiveDiscardForClaim(claim, discard);
+
+        // Awarded claims are shown to all other players.
+        players.forEach(p => p.seeClaim(tiles, player, discard, claim));
+
+        // If the player locks away a total of 4 tiles,
+        // they need a supplement tile.
+        if (tiles.length === 4) dealTile(player);
+      }
+
+      // "Play one"
+      if (discard) discard.classList.remove('discard');
+      discard = await new Promise(resolve => player.getDiscard(resolve));
+
+      // Did anyone win?
+      if (!discard) return processWin(player, hand, players, currentPlayerId, windOfTheRound, next);
+
+      // No winner - process the discard.
+      processDiscard(player, discard, players);
+
+      // Does someone want to claim this discard?
+      claim = await getAllClaims(players, currentPlayerId, discard); // players take note of the fact that a discard happened as part of their determineClaim()
+      if (claim) return processClaim(player, claim, discard, () => play(claim));
+
+      // No claims: have we run out of tiles?
+      if (wall.dead) {
+        Logger.log(`Hand ${hand} is a draw.`);
+        players.forEach(p => p.endOfHand());
+        return setTimeout(() => next({ draw: true }), playDelay);
+      }
+
+      // Nothing of note happened: game on.
+      players.forEach(p => p.nextPlayer());
+      currentPlayerId = (currentPlayerId + 1) % 4;
+      return setTimeout(() => {player.disable(); play();}, playDelay);
+    };
+
+    return play;
+  }
+
+
 }
