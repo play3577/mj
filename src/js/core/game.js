@@ -155,7 +155,7 @@ class Game {
     );
 
     // No winner - process the discard.
-    processDiscard(player, discard, players);
+    this.processDiscard(player);
 
     // Does someone want to claim this discard?
     claim = await getAllClaims(players, currentPlayerId, discard); // players take note of the fact that a discard happened as part of their determineClaim()
@@ -216,5 +216,17 @@ class Game {
       Logger.debug(`Dealing ${player.id} a supplement tile.`);
       this.dealTile(player);
     }
+  }
+
+  /**
+   * Handle a discard and let all players know that discard occurred.
+   */
+  processDiscard(player) {
+    let discard = this.discard;
+    Logger.debug(`${player.id} discarded ${discard.dataset.tile}`);
+    player.removeDiscard(discard);
+    discard.dataset.from = player.id;
+    delete discard.dataset.hidden;
+    this.players.forEach(p => p.playerDiscarded(player, discard));
   }
 }
