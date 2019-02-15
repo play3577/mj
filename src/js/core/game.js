@@ -158,7 +158,7 @@ class Game {
     this.processDiscard(player);
 
     // Does someone want to claim this discard?
-    claim = await getAllClaims(players, currentPlayerId, discard); // players take note of the fact that a discard happened as part of their determineClaim()
+    claim = await this.getAllClaims(); // players take note of the fact that a discard happened as part of their determineClaim()
     if (claim) return processClaim(player, claim, discard, () => this.play(claim));
 
     // No claims: have we run out of tiles?
@@ -229,4 +229,40 @@ class Game {
     delete discard.dataset.hidden;
     this.players.forEach(p => p.playerDiscarded(player, discard));
   }
+
+  /**
+   * Ask all players to stake a claim on a discard, and pause
+   * general game logic until each player has either indicated
+   * they are not intereted, or what they are interested in it for.
+   *
+   * If there are multiple claims, the highest valued claim wins.
+   */
+  async getAllClaims() {
+    let players = this.players;
+    let currentpid = this.currentPlayerId;
+    let discard = this.discard;
+
+    // get all players to put in a claim bid
+    let claims = await Promise.all(
+      players.map(p => new Promise(resolve => p.getClaim(currentpid, discard, resolve)))
+    );
+
+    let claim = CLAIM.IGNORE;
+    let win = undefined;
+    let p = -1;
+
+    // Who wins the bidding war?
+    claims.forEach((c,pid)=> {
+      if (c.claimtype > claim) {
+        claim = c.claimtype;
+        win = c.wintype ? c.wintype : undefined;
+        p = pid;
+      }
+    });
+
+    return p === -1 ? undefined : { claimtype: claim, wintype: win, p };
+  }
+
+
 }
+
