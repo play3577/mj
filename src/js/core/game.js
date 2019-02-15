@@ -8,7 +8,10 @@ class Game {
   }
 
   startGame() {
-    this.hand = 1;
+    this.wind = 0;
+    this.windOfTheRound = 0;
+    this.hand = 0;
+    this.draws = 0;
     this.startHand();
   }
 
@@ -20,26 +23,40 @@ class Game {
     let players = this.players;
 
     if (result.winner) {
-      // FIXME: this should be controlled by the game, with the
-      //        rotator being _told_ what to do. Not the other
-      //        way around.
-      let shuffles = rotateWinds();
-      if (this.hand !== shuffles) this.hand = shuffles;
+      // only rotate the winds if the winner is not East
+      let winner = result.winner;
+      if (winner.wind !== 0) {
+        this.wind++;
+        if (this.wind === 4) {
+          this.wind = 0;
+          this.windOfTheRound++;
+          if (this.windOfTheRound === 4) {
+            Logger.log(`\nfull game played.`);
+            this.hand = this.draws = '';
+            rotateWinds();
+            let finalScores = players.map(p => p.getScore());
+            players.forEach(p => p.endOfGame(finalScores));
+            return;
+          }
+        }
+      } else Logger.debug(`Winner player was East, winds will not rotate.`);
     }
 
-    if (!result.draw && this.hand > 16) {
-      this.hand = '';
-      Logger.log(`\nfull game played.`);
-      let scores = players.map(p => p.getScore());
-      players.forEach(p => p.endOfGame(scores));
-      return;
-    }
-
-    this.windOfTheRound = ((this.hand/4)|0);
-    this.wall.reset();
-    this.players.forEach(player => player.reset());
+    if (!result.draw) {
+      this.hand++;
+      this.draws = 0;
+    } else this.draws++;
 
     Logger.log(`\n${pre}tarting hand ${this.hand}.`); // Starting hand / Restarting hand
+    Logger.debug("Rotated winds:", this.wind, this.windOfTheRound);
+    rotateWinds(this.wind, this.windOfTheRound, this.hand, this.draws);
+
+    this.wall.reset();
+    this.players.forEach((player,p) => {
+      // Player winds have to rotate in the opposite direction as the winds do.
+      let playerWind = (4 + this.wind - p) % 4;
+      player.reset(this.hand, playerWind, this.windOfTheRound);
+    });
 
     // used for play debugging:
     if (config.PAUSE_ON_HAND && hand === config.PAUSE_ON_HAND) {
@@ -62,7 +79,6 @@ class Game {
     let players = this.players;
 
     players.forEach(player => {
-      player.markHand(this.hand);
       let bank = wall.get(13);
       for (let t=0, tile; t<bank.length; t++) {
         tile = bank[t];
@@ -96,7 +112,7 @@ class Game {
    * Set up and run the main game loop.
    */
   preparePlay() {
-    this.currentPlayerId = 2;
+    this.currentPlayerId = 0;
     this.discard = undefined;
     this.counter = 0;
     this.players.forEach(p => p.handWillStart());
@@ -271,27 +287,24 @@ class Game {
     let currentPlayerId = this.currentPlayerId;
     let windOfTheRound = this.windOfTheRound;
 
+    player.winner();
+
     let play_length = (Date.now() - this.PLAY_START);
-    Logger.log(`Player ${currentPlayerId} wins round ${hand}!`);
-    Logger.log(`Revealed tiles ${player.getLockedTileFaces()}`);
-    Logger.log(`Concealed tiles: ${player.getTileFaces()}`);
-    player.winner()
+    Logger.log(`Player ${currentPlayerId} wins round ${hand}! (game took ${play_length}ms)`);
+
     // Let everyone know what everyone had. It's the nice thing to do.
     let disclosure = players.map(p => p.getDisclosure());
     players.forEach(p => p.endOfHand(disclosure));
 
-    // calculate scores!
+    // And calculate the scores.
     let scores = disclosure.map((d,id) => scoreTiles(d, id, windOfTheRound));
-    Logger.log("score breakdown:", scores);
     let adjustments = settleScores(scores, player.id);
-    Logger.log(`Scores: ${scores.map(s => s.total)}`);
-    Logger.log(`Score adjustments: ${adjustments}`);
     players.forEach(p => p.recordScores(adjustments));
-    Logger.log(`(game took ${play_length}ms)`);
 
     // Show the score line, and the move on to the next hand.
     scores[player.id].winner = true;
-    let moveOn = () => this.startHand({ winner: player });
-    modal.setScores(hand, scores, adjustments, moveOn);
+    modal.setScores(hand, scores, adjustments, () => {
+      this.startHand({ winner: player });
+    });
   }
 }

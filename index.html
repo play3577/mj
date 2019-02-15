@@ -5,19 +5,22 @@
     <meta charset="utf-8">
     <title>Mahjong - HTML/CSS/JS</title>
     <link rel="stylesheet" href="src/css/page.css">
+    <link rel="stylesheet" href="src/css/modal.css">
   </head>
   <body>
     <div class="board">
-      <div class="player" id="0" data-wincount="0" data-score="0"></div>
-      <div class="player" id="1" data-wincount="0" data-score="0"></div>
-      <div class="player" id="2" data-wincount="0" data-score="0"></div>
-      <div class="player" id="3" data-wincount="0" data-score="0"></div>
+      <main>
+        <div class="player" id="0" data-wincount="0" data-score="0"></div>
+        <div class="player" id="1" data-wincount="0" data-score="0"></div>
+        <div class="player" id="2" data-wincount="0" data-score="0"></div>
+        <div class="player" id="3" data-wincount="0" data-score="0"></div>
+      </main>
       <div class="discards">discards</div>
       <div class="knowledge"></div>
       <div class="windicator">
-        <div class="player-wind tc e">東</div>
+        <div class="player-wind tc e">西</div>
         <div class="player-wind rc">南</div>
-        <div class="player-wind bc">西</div>
+        <div class="player-wind bc">東</div>
         <div class="player-wind lc">北</div>
         <div class="wind-of-the-round">東　南　西　北　</div>
         <div class="hand-counter">1</div>

@@ -25,8 +25,6 @@ modal.choiceInput = (label, options, resolve) => {
  * ...
  */
 modal.setScores = (hand, scores, adjustments, resolve) => {
-  console.log(adjustments);
-
   let panel = modal.querySelector('.panel');
   panel.innerHTML = `<h3>Scores for hand ${hand}</h3>`;
 

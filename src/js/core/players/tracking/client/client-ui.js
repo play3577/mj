@@ -9,7 +9,7 @@ class ClientUI extends TileBank {
     super(id);
     this.discards = document.querySelector(".discards");
     this.playerbanks = document.querySelectorAll(".player");
-    this.el = this.playerbanks[2];
+    this.el = this.playerbanks[id];
     this.timeouts = [];
     this.reset();
 

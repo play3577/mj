@@ -3,39 +3,39 @@ const winds = Array.from(document.querySelectorAll('.player-wind'));
 const indicator = document.querySelector('.windicator');
 const handcount = indicator.querySelector('.hand-counter');
 
-let shuffles = 1;
+let previous = 0;
 
-indicator.addEventListener("click", rotateWinds);
+function rotateWinds(wind=false, wotr=false, hand='', draws='') {
+  handcount.textContent = `${hand}${draws? `.${draws}`:''}`;
 
-function rotateWinds(evt) {
-  shuffles++;
-  offset = (2 * (((shuffles/4)|0)%4))
+  if (!hand) return (indicator.classList.add('done'));
 
-  if (shuffles < 16) winds.forEach(e => {
+  let h = (wotr*4 + wind);
+
+  if (h===previous) return;
+  previous = h;
+
+  let p = (((h/4)|0)%4);
+  let offset = (2 * p);
+
+  winds.forEach(e => {
     html.style.setProperty('--slide', offset + 'em');
 
     if(e.classList.contains('tc')) {
       e.classList.remove('tc');
-      e.classList.add('lc');
+      e.classList.add('rc');
     }
     else if(e.classList.contains('rc')) {
       e.classList.remove('rc');
-      e.classList.add('tc');
+      e.classList.add('bc');
     }
     else if(e.classList.contains('bc')) {
       e.classList.remove('bc');
-      e.classList.add('rc');
+      e.classList.add('lc');
     }
     else if(e.classList.contains('lc')) {
       e.classList.remove('lc');
-      e.classList.add('bc');
+      e.classList.add('tc');
     }
   });
-  else winds.forEach(e => {
-    indicator.classList.add('done');
-  });
-
-  handcount.textContent = shuffles;
-
-  return shuffles;
 }

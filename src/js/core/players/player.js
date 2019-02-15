@@ -15,17 +15,17 @@ class Player {
     this.reset();
   }
 
-  reset() {
+  reset(hand, wind, windOfTheRound) {
+    this.wind = wind;
+    this.windOfTheRound = windOfTheRound;
     this.locked = [];
     this.bonus = [];
-    this.wind = false;
-    this.windOfTheRound = false;
     this.has_won = false;
     this.selfdraw = false;
     this.tracker.reset();
     this.el.innerHTML = '';
     this.el.classList.remove('winner');
-    this.ui.reset();
+    this.ui.reset(hand, wind, windOfTheRound);
   }
 
   handWillStart() {
@@ -65,12 +65,6 @@ class Player {
 
   getScore() {
     return this._score;
-  }
-
-  markHand(hand) {
-    this.wind = ((hand-1) + (this.id|0)) % 4;
-    this.windOfTheRound = (hand/4)|0;
-    this.ui.markHand(hand, this.wind);
   }
 
   activate(id) {
