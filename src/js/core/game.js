@@ -47,7 +47,7 @@ class Game {
 
     PLAY_START = Date.now();
 
-    dealTiles(this.hand, this.players, this.wall);
+    this.dealTiles();
 
     this.players.forEach(p => p.handWillStart());
 
@@ -60,5 +60,44 @@ class Game {
     );
 
     start();
+  }
+
+  /**
+   * Dealing tiles means getting each player 13 play tiles,
+   * with any bonus tiles replaced by normal tiles.
+   */
+  dealTiles() {
+    let wall = this.wall;
+    let players = this.players;
+
+    players.forEach(player => {
+      player.markHand(this.hand);
+      let bank = wall.get(13);
+      for (let t=0, tile; t<bank.length; t++) {
+        tile = bank[t];
+        players.forEach(p => p.receivedTile(player));
+        let revealed = player.append(tile);
+        if (revealed) {
+          // bonus tile are shown to all other players.
+          players.forEach(p => p.see(revealed, player));
+          bank.push(wall.get());
+        }
+
+        // process kong declaration
+        let kong = player.checkKong(tile);
+        if (kong) {
+          Logger.debug(`${player.id} plays self-drawn kong ${kong[0].dataset.tile} during initial tile dealing`);
+          players.forEach(p => p.seeKong(kong, player));
+          bank.push(wall.get());
+        }
+
+        // At this point, a player should be able to decide whether or not to
+        // declare any kongs they might have in their hand. While unlikely, it
+        // is entirely possible for this to lead to a player declaring four
+        // kongs before play has even started. We will add this in later.
+        //
+        // Note that this also affects client-ui.js!
+      }
+    });
   }
 }
