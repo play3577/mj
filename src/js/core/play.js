@@ -1,17 +1,10 @@
-
 /**
  * Set up a game of four players, and begin a game
  */
-function setup() {
-  let wall = new Wall();
-  let proxy = wall.getProxy();
+function setup(players) {
+  console.log('running setup');
 
-  let players  = [
-    new BotPlayer(0,proxy),
-    new BotPlayer(1, proxy),
-    new HumanPlayer(2, proxy),
-    new BotPlayer(3, proxy),
-  ];
+  let wall = new Wall();
 
   // A simple turn counter. Note that we do not
   // advance this counter on a draw.
