@@ -303,6 +303,6 @@
   text-align: center;
 }
 .yell[data-player="0"] { top: var(--ph); right: calc(50% - 2em); }
-.yell[data-player="1"] { right: calc(var(--ph) * 1.5); top: 50%; }
+.yell[data-player="1"] { left: var(--ph); top: 50%; }
 .yell[data-player="2"] { bottom: var(--ph); right: calc(50% - 2em); }
-.yell[data-player="3"] { left: var(--ph); top: 50%; }
+.yell[data-player="3"] { right: calc(var(--ph) * 1.5); top: 50%; }
