@@ -103,7 +103,11 @@ modal.setScores = (hand, scores, adjustments, resolve) => {
   });
   panel.appendChild(ok);
 
-  if(config.BOT_PLAY) setTimeout(() => ok.click(), config.HAND_INTERVAL);
+  // Auto-dismiss the score panel during bot play,
+  // UNLESS the user interacts with the modal.
+  let dismiss = () => ok.click();
+  if(config.BOT_PLAY) setTimeout(() => dismiss(), config.HAND_INTERVAL);
+  panel.addEventListener('click', () => (dismiss = ()=>{}));
 
   modal.classList.remove("hidden");
 };
