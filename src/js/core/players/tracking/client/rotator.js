@@ -6,7 +6,9 @@ const handcount = indicator.querySelector('.hand-counter');
 let previous = 0;
 
 function rotateWinds(wind=false, wotr=false, hand='', draws='') {
-  handcount.textContent = `${hand}${draws? `.${draws}`:''}`;
+
+  handcount.innerHTML = `round ${1+wotr}<br>hand ${hand}`;
+  if (draws) { handcount.innerHTML += `<br>rtr ${draws}`; }
 
   if (!hand) return (indicator.classList.add('done'));
 

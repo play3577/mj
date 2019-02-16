@@ -115,7 +115,7 @@ function _tile_score(set, windTile, windOfTheRoundTile) {
  * In addition to straight up points, certain combinations
  * of sets come with additional points in the form of doubles
  */
-function checkWinnerHandPatterns(scorePattern, winset, selfdraw=false, windTile, windOfTheRoundTile, scoreObject) {
+function checkWinnerHandPatterns(scorePattern, winset, selfdraw=false, windTile, windOfTheRoundTile, tilesLeft, scoreObject) {
   // We start with some assumptions, and we'll
   // invalidate them as we see more sets.
 
@@ -269,15 +269,22 @@ function checkWinnerHandPatterns(scorePattern, winset, selfdraw=false, windTile,
     scoreObject.limit = `Fully concealed pung hand`;
   }
 
-  // MISSING: doubles for out on last discard, last wall,
-  //          supplement tile, robbing a kong,
-  //          "waiting to win after initial deal".
+  if (tilesLeft <= 0) {
+    scoreObject.doubles += 1;
+    if (selfdraw) {
+      scoreObject.log.push(`1 double for winning with the last available wall tile`);
+    } else {
+      scoreObject.log.push(`1 double for winning with the last discard`);
+    }
+  }
+
+  // MISSING: supplement tile, robbing a kong, "waiting to win after initial deal".
 }
 
 /**
  * Determine the tile score for a collection of sets
  */
-function getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset, winner=false, selfdraw=false) {
+function getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset, winner=false, selfdraw=false, tilesLeft) {
   Logger.debug(scorePattern.map(s => s.locked));
 
   let result = scorePattern
@@ -310,7 +317,7 @@ function getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset,
 
   if (hasOwnFlower && hasOwnSeason) {
     result.doubles += 1
-    result.log.push(`1 double for own flower and season (${tile})`);
+    result.log.push(`1 double for own flower and season`);
   }
 
   if (allFlowers(bonus)) {
@@ -332,7 +339,7 @@ function getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset,
   result.wotd = windOfTheRoundTile;
 
   // also determine points/doubles based on the full hand
-  if (winner) checkWinnerHandPatterns(scorePattern, winset, selfdraw, windTile, windOfTheRoundTile, result);
+  if (winner) checkWinnerHandPatterns(scorePattern, winset, selfdraw, windTile, windOfTheRoundTile, tilesLeft, result);
 
   if (result.limit) {
     result.score = LIMIT;
@@ -358,7 +365,7 @@ function getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset,
  * Whichever combination of pattersn scores highest
  * is the score the player will be assigned.
  */
-function scoreTiles(disclosure, id, windOfTheRound) {
+function scoreTiles(disclosure, id, windOfTheRound, tilesLeft) {
   // Let's get the administrative data:
   let winner = disclosure.winner;
   let selfdraw = disclosure.selfdraw;
@@ -416,7 +423,7 @@ function scoreTiles(disclosure, id, windOfTheRound) {
       return set;
     }).concat(winner ? [] : locked);
 
-    return getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset, winner, selfdraw);
+    return getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset, winner, selfdraw, tilesLeft);
   });
 
 

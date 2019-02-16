@@ -154,7 +154,9 @@ class ClientUI extends TileBank {
     let tile = this.discards.lastChild;
     let mayChow = (((pid + 1)%4) == this.id);
 
-    let fn = e => {
+    let fn = evt => {
+      evt.stopPropagation();
+
       interrupt();
       this.clearTimeouts();
       let CLAIM = config.CLAIM;
@@ -191,6 +193,17 @@ class ClientUI extends TileBank {
 
     tile.classList.add('selectable');
     tile.addEventListener("click", fn);
+
+    let ignore = evt => {
+      interrupt();
+      tile.classList.remove('selectable');
+      tile.removeEventListener("click", fn);
+      this.clearTimeouts();
+      this.discards.removeEventListener("click", ignore);
+      resolve(CLAIM.IGNORE);
+    };
+
+    this.discards.addEventListener("click", ignore);
   }
 
   endOfHand(disclosure) {

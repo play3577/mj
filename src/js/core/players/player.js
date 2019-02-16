@@ -32,6 +32,12 @@ class Player {
     this.ui.handWillStart();
   }
 
+  markTilesLeft(left, dead) {
+    this.tilesLeft = left;
+    this.tilesDead = dead;
+    this.ui.markTilesLeft(left, dead);
+  }
+
   getDisclosure() {
     let hand = this.getTileFaces();
     return {

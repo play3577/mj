@@ -18,6 +18,10 @@ class TileBank {
     // bots do nothing with this signal.
   }
 
+  markTilesLeft(left, dead) {
+    // bots do nothing with this signal.
+  }
+
   removeLastDiscard() {
     // bots do nothing with this signal.
   }

@@ -6,7 +6,7 @@ let modal = document.querySelector(".modal");
  */
 modal.choiceInput = (label, options, resolve) => {
   let panel = modal.querySelector('.panel');
-  panel.innerHTML = `<p>${label}</p>`;
+  panel.innerHTML = `<h1>${label}</h1>`;
 
   options.filter(v=>v).forEach(data => {
     let btn = document.createElement("button");

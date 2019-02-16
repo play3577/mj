@@ -4,7 +4,7 @@
 class Game {
   constructor(players) {
     this.players = players;
-    this.wall = new Wall();
+    this.wall = new Wall(players);
   }
 
   startGame() {
@@ -297,7 +297,7 @@ class Game {
     players.forEach(p => p.endOfHand(disclosure));
 
     // And calculate the scores.
-    let scores = disclosure.map((d,id) => scoreTiles(d, id, windOfTheRound));
+    let scores = disclosure.map((d,id) => scoreTiles(d, id, windOfTheRound, wall.remaining));
     let adjustments = settleScores(scores, player.id);
     players.forEach(p => p.recordScores(adjustments));
 

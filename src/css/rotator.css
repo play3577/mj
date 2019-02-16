@@ -112,12 +112,11 @@ html {
 
 .windicator .hand-counter {
   height: 1em;
-  background: var(--prp);
   color: gold;
   position: absolute;
   z-index: 100;
-  top: calc(calc(var(--wotr-dim) / 2) - 0.6em);
-  left: calc(calc(0em - calc(var(--wotr-dim) / 2)) - 0.6em);
+  top: calc(calc(var(--wotr-dim) / 2) - 1.9em);
+  left: calc(calc(0em - calc(var(--wotr-dim) / 2)) - 1.4em);
   transform: rotate(-45deg);
   text-align: left;
   font-family: arial;
