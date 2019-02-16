@@ -12,8 +12,8 @@ class BotPlayer extends Player {
     if (!config.FORCE_OPEN_BOT_PLAY) return;
 
     // HACK: this function only exists to allow bot play debugging.
-    if (PLAYER_BANKS.banks && this.id !== 2) {
-      let bank = PLAYER_BANKS.banks[this.id];
+    if (window.PLAYER_BANKS && this.id !== 0) {
+      let bank = window.PLAYER_BANKS[this.id];
       bank.innerHTML = '';
 
       this.getTileFaces().forEach(t => {

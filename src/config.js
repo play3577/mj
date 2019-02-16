@@ -16,12 +16,11 @@ if (typeof window !== "undefined") {
         .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {});
 }
 
-
 const SEED = params.seed ? parseInt(params.seed) : 0;
 const PLAY_IMMEDIATELY = (params.autoplay==='true') ? true : false;
+const FORCE_OPEN_BOT_PLAY = (params.force_open_bot_play==='true') ? true : false;
 const PLAY_INTERVAL = params.play ? params.play : 100;
 const HAND_INTERVAL = params.hand ? params.hand : 3000;
-
 
  // Possible values for the logger's verbosity.
 const LOG_LEVELS = {
@@ -81,13 +80,7 @@ const simple = {
     // This determines whether you get asked to
     // choose normal vs. automated play when you
     // load the page.
-    PLAY_IMMEDIATELY: PLAY_IMMEDIATELY,
-
-    // This determines whether we bypass the
-    // separation of concern and force bots to
-    // update the player's ui, even though they
-    // normally would have no way to access it.
-    FORCE_OPEN_BOT_PLAY: false,
+    PLAY_IMMEDIATELY: PLAY_IMMEDIATELY
 };
 
 
@@ -211,7 +204,13 @@ const config = {
         if(diff === 1) return CLAIM.CHOW2;
         if(diff === 2) return CLAIM.CHOW1;
         return diff;
-    }
+    },
+
+    // This determines whether we bypass the
+    // separation of concern and force bots to
+    // update the player's ui, even though they
+    // normally would have no way to access it.
+    FORCE_OPEN_BOT_PLAY: FORCE_OPEN_BOT_PLAY
 };
 
 
