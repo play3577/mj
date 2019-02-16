@@ -1,3 +1,6 @@
+// Different rules have different starting conditions
+const PLAYER_STARTING_SCORE = 1000;
+
 // maximum number of points a hand can score:
 const LIMIT = 1000;
 
