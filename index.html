@@ -3,22 +3,34 @@
   <head>
     <meta name="viewport" content="width=device-width" />
     <meta charset="utf-8" />
-    <title>Mahjong - HTML/CSS/JS</title>
+
+    <title>Mahjong, using standard HTML, CSS, and JavaScript</title>
+
+    <!-- page CSS -->
     <link rel="stylesheet" href="src/css/page.css" />
     <link rel="stylesheet" href="src/css/modal.css" />
+
+    <!-- client UI CSS -->
+    <link rel="stylesheet" href="src/css/board.css" />
+    <link rel="stylesheet" href="src/css/tiles.css" />
+    <link rel="stylesheet" href="src/css/discards.css" />
+    <link rel="stylesheet" href="src/css/rotator.css" />
+    <link rel="stylesheet" href="src/css/players.css" />
+    <link rel="stylesheet" href="src/css/tracking.css" />
+    <link rel="stylesheet" href="src/css/animations.css" />
   </head>
 
   <body>
-    <div class="board">
-      <main>
+    <main class="board">
+      <div class="players">
         <div class="player" id="0" data-wincount="0" data-score="0"></div>
         <div class="player" id="1" data-wincount="0" data-score="0"></div>
         <div class="player" id="2" data-wincount="0" data-score="0"></div>
         <div class="player" id="3" data-wincount="0" data-score="0"></div>
-      </main>
+      </div>
 
       <div class="wall data"></div>
-      <div class="discards">discards</div>
+      <div class="discards"></div>
       <div class="knowledge"></div>
 
       <div class="windicator">
@@ -30,10 +42,8 @@
         <div class="hand-counter"></div>
       </div>
 
-      <div class="hidden modal">
-        <div class="panel"></div>
-      </div>
-    </div>
+      <div class="hidden modal"><div class="panel"></div></div>
+    </main>
 
     <section id="explanation">
       <h1>The how of Mahjong</h1>
@@ -157,7 +167,9 @@
           </div>
         </li>
       </ul>
+    </section>
 
+    <section id="gameplay">
       <h2>Game play</h2>
 
       <p>
@@ -177,7 +189,9 @@
         tiles, they take receive the discarded tile as their 14<sup>th</sup>
         tile.
       </p>
+    </section>
 
+    <section id="rules">
       <h2>Rules around claiming discards</h2>
 
       <ul>
@@ -257,7 +271,9 @@
         <em>have</em> to declare that set, or they will not have enough tiles
         with which to form the necessary number of sets and pair.
       </p>
+    </section>
 
+    <section id="scoring">
       <h2>Scoring</h2>
 
       <p>
@@ -303,32 +319,105 @@
       </ul>
     </section>
 
-    <section id="scripts">
+    <section id="this-game">
+      <h2>The game you can play on this page</h2>
+
+      <p>
+        The game on this page is played using the Chinese Classical rule set,
+        and associated scoring. This means scoring is based on points and
+        doubles, the losers settle their scores after paying the winner, East
+        wins/pays double, and the deal does not pass to the next player if East
+        wins.
+      </p>
+
+      <p>
+        Points are awarded for the following (open/concealed):
+      </p>
+
+      <ul>
+        <li>each bonus tile: 4</li>
+        <li>pair of dragons: 2</li>
+        <li>pair of own winds: 2</li>
+        <li>pair of wind of the round: 2</li>
+        <li>pung of simples (numbers 2 through 8): 2/4</li>
+        <li>pung of terminals (numbers 1 and 9): 4/8</li>
+        <li>pung of winds: 4/8</li>
+        <li>pung of dragons: 4/8</li>
+        <li>kong of simples: 8/16</li>
+        <li>kong of terminals: 16/32</li>
+        <li>kong of winds: 16/32</li>
+        <li>kong of dragonss: 16/32</li>
+      </ul>
+
+      <p>
+        The following doubles are awarded to the winner only:
+      </p>
+
+      <ul>
+        <li>self-drawn win: 2</li>
+        <li>winning on a non-scoring pair: 2</li>
+        <li>winning on a scoring pair: 4</li>
+      </ul>
+
+      <p>
+        The following doubles are awarded:
+      </p>
+
+      <ul>
+        <li>having your own flower and season: 1</li>
+        <li>having all flowers: +1</li>
+        <li>having all seasons: +1</li>
+        <li>pung/kong of own wind: 1</li>
+        <li>pung/kong of wind of the round: 1</li>
+        <li>pung/kong of dragins: 1</li>
+      </ul>
+
+      <p>
+        The following doubles are awarded to the winner only:
+      </p>
+
+      <ul>
+        <li>chow hand (four chows and a non-scoring pair): 1</li>
+        <li>tiles from one suit and honours: 1</li>
+        <li>only tiles from a single suit: 3</li>
+        <li>all pung hand: 1</li>
+        <li>fully concealed (and self drawn) hand: 1</li>
+        <li>(self-drawn) win on the last tile from the wall</li>
+        <li>claimed win on the last discard</li>
+      </ul>
+
+      <p>
+        The following limit hands (scoring a flat 1000 points) exist:
+      </p>
+
+      <ul>
+        <li>fully concealed pung hand</li>
+        <li>all terminals: pungs and pairs of only 1 and 9 tiles</li>
+        <li>all honours: pungs and pairs of winds and dragons</li>
+        <li>all kong: four kongs and a pair</li>
+        <li>three great scholars: pung/kong of each dragon</li>
+        <li>little four winds: pung/kong of three winds, pair of last wind</li>
+        <li>big four winds: pung/kong of all winds</li>
+      </ul>
+    </section>
+
+    <section id="scripts" class="hidden">
       <script src="src/js/core/utils/prng.js"></script>
       <script src="src/config.js"></script>
-
       <script src="src/js/core/utils/utils.js"></script>
+      <script src="src/js/page/modal.js"></script>
+      <script src="src/js/core/wall.js"></script>
       <script src="src/js/core/players/tracking/tile-tracker.js"></script>
       <script src="src/js/core/players/tracking/tile-bank.js"></script>
-
       <script src="src/js/core/players/tracking/client/client-ui.js"></script>
-      <link rel="stylesheet" href="src/css/client.css" />
-
       <script src="src/js/core/players/tracking/client/rotator.js"></script>
-      <link rel="stylesheet" href="src/css/rotator.css" />
-
       <script src="src/js/core/players/player.js"></script>
-      <script src="src/js/core/wall.js"></script>
       <script src="src/js/core/players/bot.js"></script>
       <script src="src/js/core/players/human.js"></script>
       <script src="src/js/core/mgen.js"></script>
-      <!-- contains tilesNeeded() -->
-      <script src="src/js/page/modal.js"></script>
-
       <script src="src/js/core/scoring/basic.js"></script>
       <script src="src/js/core/game.js"></script>
       <script src="src/js/core/game-manager.js"></script>
-
       <!-- twitter the sparrows! -->
       <script src="src/js/page/play-or-watch.js"></script>
     </section>

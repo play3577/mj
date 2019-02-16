@@ -105,7 +105,7 @@ class TileBank {
   }
 
   sortTiles(e) {
-    this.tiles.sort(config.SORT_TILE_FN);
+    // bots do not care about having locally sorted tiles
   }
 
   getAvailableTiles() {

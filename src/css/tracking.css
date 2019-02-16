@@ -1,0 +1,27 @@
+
+.knowledge {
+  background: var(--green);
+  width: 10em;
+  height: var(--h);
+  position: relative;
+  z-index: 2;
+  right: calc(-100% - var(--sep));
+  top: calc(6.5em - calc(var(--h) / 2));
+  width: calc(4em + calc(2 * var(--sep)));
+  border: 1px solid black;
+  box-sizing: border-box;
+  padding: 0 var(--sep);
+}
+
+.tile-count {
+  height: calc(var(--h) / 34);
+  padding-left: 1px;
+}
+
+.tile-count [data-tile] {
+  display: inline-block;
+  background-size: auto 100%;
+  background-repeat: no-repeat;
+  height: calc(100% - 2px);
+  width: 25%;
+}

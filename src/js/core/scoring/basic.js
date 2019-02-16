@@ -439,8 +439,9 @@ function scoreTiles(disclosure, id, windOfTheRound, tilesLeft) {
  * the "how much does the winner get" and "how much do the
  * losers end up paying" calculations.
  */
-function settleScores(scores, winningplayer) {
+function settleScores(scores, winningplayer, eastplayer) {
   let adjustments = [0,0,0,0];
+  let eastwin = (winningplayer === eastplayer) ? 2 : 1;
 
   for(let i=0; i<scores.length; i++) {
     if (i === winningplayer) continue;
@@ -448,20 +449,32 @@ function settleScores(scores, winningplayer) {
     // every non-winner pays the winner.
     if (i !== winningplayer) {
       let wscore = scores[winningplayer].total;
-      adjustments[winningplayer] += wscore;
-      adjustments[i] -= wscore;
+      let east = (i === eastplayer) ? 2 : 1;
+      let difference = wscore * Math.max(eastwin, east);
+      adjustments[winningplayer] += difference;
+      Logger.debug(`${winningplayer} gets ${difference} from ${i}`);
+      adjustments[i] -= wscore * Math.max(eastwin, east);
+      Logger.debug(`${i} pays ${difference} to ${winningplayer}`);
     }
 
     if(!config.LOSERS_SETTLE_SCORES) continue;
 
     // If losers should settle their scores amongst
     // themselves, make that happen right here:
-    for(let j=0; j<scores.length; j++) {
-      if (j===i) continue;
+    for(let j=i+1; j<scores.length; j++) {
       if (j===winningplayer) continue;
-      adjustments[i] += (scores[i].total - scores[j].total);
+
+      let east = (i==eastplayer ? 2 : 1)
+      let difference = (scores[i].total - scores[j].total) * east;
+      Logger.debug(`${i} gets ${difference} from ${j}`);
+      adjustments[i] += difference;
+      Logger.debug(`${j} pays ${difference} to ${i}`);
+      adjustments[j] -= difference;
     }
   }
+
+  if (winningplayer === eastplayer) scores[eastplayer].log.push(`Player won as East`);
+  else scores[eastplayer].log.push(`Player lost as East`);
 
   return adjustments;
 }

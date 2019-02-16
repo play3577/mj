@@ -217,7 +217,12 @@ class ClientUI extends TileBank {
       let bank = this.playerbanks[id];
       bank.innerHTML = '';
 
-      res.concealed.forEach(t => bank.appendChild(create(t)));
+      res.bonus.forEach(t => {
+        t = create(t);
+        t.dataset.locked = 'locked';
+        t.dataset.bonus = 'bonus';
+        bank.appendChild(t);
+      });
 
       res.locked.forEach(s => {
         s.forEach(t => {
@@ -228,12 +233,7 @@ class ClientUI extends TileBank {
         });
       })
 
-      res.bonus.forEach(t => {
-        t = create(t);
-        t.dataset.locked = 'locked';
-        t.dataset.bonus = 'bonus';
-        bank.appendChild(t);
-      });
+      res.concealed.sort((a,b)=>(a-b)).forEach(t => bank.appendChild(create(t)));
 
       if (res.winner) {
         this.discards.classList.add('winner');
@@ -299,9 +299,10 @@ class ClientUI extends TileBank {
   }
 
   lockClaim(tiles) {
-    // visual set locking is handled by see()/4 for human players,
-    // we the one thing we do need to do is remove that last discard.
     this.removeLastDiscard();
+    let locknum = this.el.querySelectorAll(`[data-locked]`).length;
+    tiles.forEach(tile => (tile.dataset.locknum = locknum));
+    this.sortTiles();
   }
 
   playerDiscarded(player, tile) {
@@ -325,9 +326,10 @@ class ClientUI extends TileBank {
   }
 
   see(tiles, player) {
-    let bank = this.playerbanks[player.id];
-
     Logger.debug(`${this.id} sees ${tiles.map(t => t.dataset ? t.dataset.tile : t)} from ${player.id}`);
+
+    let bank = this.playerbanks[player.id];
+    let locknum = bank.querySelectorAll(`[data-locked]`).length;
 
     tiles.forEach(tile => {
       let face = (tile.dataset ? tile.dataset.tile : tile)|0;
@@ -341,6 +343,7 @@ class ClientUI extends TileBank {
       let e = create(face);
       if (tile.dataset && tile.dataset.hidden) e.dataset.hidden = 'hidden';
       e.dataset.locked = 'locked';
+      e.dataset.locknum = locknum;
       bank.appendChild(e);
     });
 
@@ -355,26 +358,26 @@ class ClientUI extends TileBank {
     let bank = this.playerbanks[player.id];
     let blank = create(-1);
     bank.appendChild(blank);
-    this.see(tiles, player);
+    this.see(tiles, player, true);
 
     // add a visual signal
     if (!config.BOT_PLAY) {
-      this.yellClaim(player.id, claim.claimtype);
+      this.announceClaim(player.id, claim.claimtype);
     }
   }
 
-  yellClaim(pid, claimtype) {
+  announceClaim(pid, claimtype) {
     let label = 'win';
     if (claimtype === 16) label = 'kong';
     if (claimtype === 8) label = 'pung';
     if (claimtype < 8) label = 'chow';
-    let yell = document.createElement('div');
-    yell.classList.add('yell');
-    yell.textContent = `${label}!`;
-    yell.dataset.player = pid;
-    document.querySelector('.board').appendChild(yell);
-    yell.addEventListener('transitionend ', () => {
-      yell.parentNode.removeChild(yell);
+    let ann = document.createElement('div');
+    ann.classList.add('announcement');
+    ann.textContent = `${label}!`;
+    ann.dataset.player = pid;
+    document.querySelector('.board').appendChild(ann);
+    ann.addEventListener('transitionend ', () => {
+      ann.parentNode.removeChild(ann);
     });
   }
 
@@ -398,7 +401,7 @@ class ClientUI extends TileBank {
     e = e || this.el;
     Array
     .from(e.querySelectorAll('.tile'))
-    .sort(config.SORT_TILE_FN)
+    .sort(this.tilebank_sort_function)
     .forEach(tile => e.appendChild(tile));
   }
 
@@ -429,5 +432,39 @@ class ClientUI extends TileBank {
 
   reveal() {
     Array.from(this.el.querySelectorAll(".tile")).forEach(t => {delete t.dataset.hidden;});
+  }
+
+  // Sort tiles ordered as:
+  // 1: bonus tiles
+  // 2: locked tiles, sorted
+  // 3: unlocked tiles, sorted
+  // 4: concealed tiles
+  tilebank_sort_function(a,b) {
+    let la = a.dataset.locknum;
+    let lb = b.dataset.locknum;
+
+    a = a.getTileFace();
+    b = b.getTileFace();
+
+    // 1: bonus tiles always go on the far left
+    if (a>33 || b>33) {
+      if (a>33 && b>33) return a-b;
+      if (a>33) return -1;
+      return 1;
+    }
+
+    // 2: locked tiles
+    if (la || lb) {
+      if (la && lb) return la - lb;
+      if (la) return -1;
+      return 1;
+    }
+
+    // 4 (out of order): for concealed tiles to the right
+    if (a===-1) return 1;
+    if (b===-1) return -1;
+
+    // 3: plain compare for regular tiles
+    return a - b;
   }
 }

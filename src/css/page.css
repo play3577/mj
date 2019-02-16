@@ -1,6 +1,19 @@
+:root {
+    --green: rgb(50,120,50);
+    --cream: rgb(245,240,220);
+    --blue: rgb(20,50,180);
+    --prp: rgb(70,0,70);
+    --red: rgb(207, 24, 24);
+}
+
+.hidden {
+    display: none!important;
+}
+
 html {
     background: var(--green);
 }
+
 body {
     background: white;
     width: 800px;
@@ -13,6 +26,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1 { font-size: 2rem; }
+
 h2 { font-size: 1.75rem; }
 
 p, li {
@@ -45,4 +59,12 @@ footer {
     font-family: Verdana;
     font-size: 90%;
     text-align: center;
+}
+
+#this-game ul {
+    margin: 1em
+}
+
+#this-game ul li {
+    margin: 0;
 }

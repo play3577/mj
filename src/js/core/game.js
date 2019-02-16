@@ -298,7 +298,11 @@ class Game {
 
     // And calculate the scores.
     let scores = disclosure.map((d,id) => scoreTiles(d, id, windOfTheRound, this.wall.remaining));
-    let adjustments = settleScores(scores, player.id);
+
+    // check who is currently playing east and calculate payments
+    let eastid = 0;
+    players.forEach(p => { if(p.wind === 0) eastid = p.id; });
+    let adjustments = settleScores(scores, player.id, eastid);
     players.forEach(p => p.recordScores(adjustments));
 
     // Show the score line, and the move on to the next hand.

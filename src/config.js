@@ -168,34 +168,6 @@ const config = {
         return a - b;
     },
 
-    // A tile sorting function. This will probably
-    // be migrated to somewhere else soon.
-    SORT_TILE_FN: (a,b) => {
-        try {
-        a = a.getTileFace();
-        b = b.getTileFace();
-        } catch (e) {
-            console.log('a:', a);
-            console.log('b:', b);
-            console.trace();
-            throw e;
-        }
-
-        // bonus tiles always go on the far left
-        if (a>33 || b>33) {
-            if (a>33 && b>33) return a-b;
-            if (a>33) return -1;
-            return 1;
-        }
-
-        // concealed tiles go on the right.
-        if (a===-1) return 1;
-        if (b===-1) return -1;
-
-        // everything else is sorted normally
-        return a - b;
-    },
-
     // A conversion function for turning computer
     // chow differences into claim types. This will
     // probably be migrated to somewhere else soon.

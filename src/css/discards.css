@@ -1,0 +1,51 @@
+
+
+.discards {
+  --d: calc(var(--w) - calc(2 * var(--ph)));
+  position: absolute;
+  top: var(--ph);
+  left: var(--ph);
+  width: var(--d);
+  height: var(--d);
+  background: var(--prp);
+  border: calc(3 * var(--sep)) solid var(--green);
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  color: var(--prp);
+  font-family: Arial;
+  font-weight: bold;
+  font-variant: small-caps;
+  text-shadow: 0 0 4px var(--cream);
+  overflow: hidden;
+}
+
+.discards::after {
+  position: absolute;
+  background: var(--prp);
+  opacity: 0.9;
+  box-shadow: 0 0 10px 2px var(--prp);
+  padding: 20em;
+  white-space: nowrap;
+}
+
+.discards.exhausted::after {
+  content: "NO TILES LEFT TO DEAL: ROUND IS A DRAW";
+}
+
+.discards.winner::after {
+  content: "GAME WAS WON - WINNING PLAYER IS HIGHLIGHTED";
+}
+
+.discards .countdown-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 7px;
+  background: gold;
+  width: 0%;
+  border: 3px solid var(--prp);
+  box-sizing: border-box;
+}

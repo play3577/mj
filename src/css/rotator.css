@@ -1,4 +1,4 @@
-html {
+.windicator {
   --wi: 1.5em;
   --slide: 0em;
   --speed: 0.3s;
@@ -6,9 +6,7 @@ html {
   --wotr-dim: 8em;
   --inner-dim: calc(var(--wotr-dim) / 6);
   --offset: -11.5em;
-}
 
-.windicator {
   font-family: Hiragina, 'MS Mincho', sans-serif;
   border: 3px solid gold;
   background: darkgreen;
@@ -65,26 +63,26 @@ html {
   transition-timing-function: linear;
 }
 
-.e {
+.windicator .e {
   text-indent: 1px;
 }
 
-.tc {
+.windicator .tc {
   left: 0;
   top: 0;
 }
 
-.rc {
+.windicator .rc {
   top: 0;
   left: calc(100% - calc(1.35 * var(--wi)));
 }
 
-.bc {
+.windicator .bc {
   top: calc(100% - calc(1.35 * var(--wi)));
   left: calc(100% - calc(1.35 * var(--wi)));
 }
 
-.lc {
+.windicator .lc {
   top: calc(100% - calc(1.35 * var(--wi)));
   left: 0;
 }
