@@ -67,7 +67,7 @@ modal.setScores = (hand, scores, adjustments, resolve) => {
       <td>${scores[3].total}</td>
     </tr>
     <tr>
-      <td>pay/loss</td>
+      <td>win/loss</td>
       <td>${adjustments[0]}</td>
       <td>${adjustments[1]}</td>
       <td>${adjustments[2]}</td>
