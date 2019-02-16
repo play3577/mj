@@ -297,7 +297,7 @@ class Game {
     players.forEach(p => p.endOfHand(disclosure));
 
     // And calculate the scores.
-    let scores = disclosure.map((d,id) => scoreTiles(d, id, windOfTheRound, wall.remaining));
+    let scores = disclosure.map((d,id) => scoreTiles(d, id, windOfTheRound, this.wall.remaining));
     let adjustments = settleScores(scores, player.id);
     players.forEach(p => p.recordScores(adjustments));
 
