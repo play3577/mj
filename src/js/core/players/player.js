@@ -11,7 +11,7 @@ class Player {
     this.tracker = new TileTracker(this.id);
     this.ui = new TileBank(this.id);
     this.wincount = 0;
-    this._score = 0;
+    this._score = 1000;
     this.reset();
   }
 
