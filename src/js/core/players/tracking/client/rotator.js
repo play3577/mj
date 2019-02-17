@@ -20,8 +20,6 @@ function rotateWinds(wind=false, wotr=false, hand='', draws='') {
   let p = (((h/4)|0)%4);
   let offset = (2 * p);
 
-  console.log(offset);
-
   winds.forEach(e => {
     indicator.style.setProperty('--slide', offset + 'em');
 
