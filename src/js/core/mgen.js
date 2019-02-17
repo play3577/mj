@@ -376,12 +376,21 @@ function tilesNeeded(tiles, locked=[], canChow=false, winningPattern=false) {
 };
 
 
+// ====================================
+//         TESTING CODE
+// ====================================
 
-if (typeof process !== "undefined") {
+
+if (typeof process !== "undefined") { (function() {
+
   conf = require('../../config.js')
   Logger = conf.LOGGER;
   Constants = conf.Constants;
+  module.exports = tilesNeeded;
 
+  // shortcut if this wasn't our own invocation
+  let invocation = process.argv.join(' ');
+  if (invocation.indexOf('mgen.j') === -1) return;
 
   // local:
   let hand, locked,
@@ -440,11 +449,20 @@ if (typeof process !== "undefined") {
       locked: [
         [20,22,21]
       ]
+    },
+    {
+      hand: [32,32,32],
+      locked: [
+        [1,2,3],
+        [2,3,5],
+        [5,6,7],
+        [6,6]
+      ]
     }
   ]
 
   tests.forEach((test,tid) => {
-    if (tid < 5) return;
+    if (tid < 6) return;
 
     let hand = test.hand;
     let locked = lock(test.locked);
@@ -452,8 +470,9 @@ if (typeof process !== "undefined") {
     console.log(`current hand: ${hand}`);
     console.log(`locked: ${list(locked)}`);
     console.log(`result:`);
-    console.log(tilesNeeded(hand, locked, false));
+    console.log(
+      tilesNeeded(hand, locked, false)
+    );
   });
 
-  module.exports = tilesNeeded;
-}
+})()}

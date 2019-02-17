@@ -144,13 +144,14 @@ function checkWinnerHandPatterns(scorePattern, winset, selfdraw=false, windTile,
   let concealedCount = 0;
   let kongCount = 0;
 
-  let suit = false;
+  let suit = false, tile, tilesuit;
   scorePattern.forEach(set => {
-    let tile = set[0];
+    tile = set[0];
+    tilesuit = (tile/9)|0;
 
     if (tile < 27) {
-      if (suit === false) suit = (tile/9)|0;
-      else if (suit !== (tile/9)|0) onesuit = false;
+      if (suit === false) suit = tilesuit;
+      else if (suit !== tilesuit) onesuit = false;
       if (set.some(t => t!==0 || t!==8)) {
         terminals = false;
         allterminals = false;
@@ -404,7 +405,9 @@ function scoreTiles(disclosure, id, windOfTheRound, tilesLeft) {
 
   // If this is the winner, though, then we _know_ there is at
   // least one winning path for this person to have won.
-  if (winner) openCompositions = tileInformation.winpaths;
+  if (winner) {
+    openCompositions = tileInformation.winpaths;
+  }
 
   // Run through each possible interpetation of in-hand
   // tiles, and see how much they would score, based on
@@ -481,3 +484,52 @@ function settleScores(scores, winningplayer, eastplayer) {
 
   return adjustments;
 }
+
+
+// ====================================
+//         TESTING CODE
+// ====================================
+
+
+if (typeof process !== "undefined")  { (function() {
+
+  tilesNeeded = require('../mgen.js');
+  Logger = console;
+  module.exports = scoreTiles;
+
+  // shortcut if we're merely being required
+  let invocation = process.argv.join(' ');
+  if (invocation.indexOf('chinese-classical.j') === -1) return;
+
+  function lock(sets, win) {
+    return sets.map((set,sid) => set.map(t => {
+      let dataset = { tile: t, locked: 'locked' };
+      if (sid===win) dataset.winning = 'winning';
+      return { dataset };
+    }));
+  }
+
+  let tests = [
+    {
+      id: 0,
+      wotr: 0,
+      tilesLeft: 50,
+      winner: true,
+      selfdraw: false,
+      concealed: [32,32,32],
+      locked: lock([
+        [1,2,3],
+        [2,3,4],
+        [3,4,5],
+        [6,6],
+      ], 3),
+      bonus: [],
+      wind: 1,
+    }
+  ];
+
+  tests.forEach(test => {
+    scoreTiles(test, test.id, test.wotr, test.tilesLeft);
+  });
+
+})()}
