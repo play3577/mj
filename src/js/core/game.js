@@ -5,8 +5,9 @@ class Game {
   constructor(players) {
     this.players = players;
     this.rules = Ruleset.getRuleset("ChineseClassical");
-    this.players.forEach(p => p.setRules(rules));
+    this.players.forEach(p => p.setRules(this.rules));
     this.wall = new Wall(players);
+    this.scoreHistory = [];
   }
 
   startGame() {
@@ -141,7 +142,7 @@ class Game {
     // increase the play counter;
     this.counter++;
     this.playDelay = (hand===config.PAUSE_ON_HAND && this.counter===config.PAUSE_ON_PLAY) ? 60*60*1000 : config.PLAY_INTERVAL;
-    Logger.log(`hand ${hand}, play ${this.counter}`);
+    if (!config.BOT_PLAY) Logger.log(`hand ${hand}, play ${this.counter}`);
 
     // "Draw one"
     if (!claim) this.dealTile(player);
@@ -309,6 +310,9 @@ class Game {
     players.forEach(p => { if(p.wind === 0) eastid = p.id; });
     let adjustments = this.rules.settleScores(scores, player.id, eastid);
     players.forEach(p => p.recordScores(adjustments));
+
+    // Before we move on, record this step in the game.
+    this.scoreHistory.push({ disclosure, scores, adjustments });
 
     // Show the score line, and the move on to the next hand.
     scores[player.id].winner = true;

@@ -30,7 +30,6 @@ class Player {
   setRules(rules) {
     this.rules = rules;
     this._score = this.rules.player_start_score;
-
   }
 
   handWillStart() {
