@@ -52,7 +52,9 @@ class BotPlayer extends Player {
     this.showTilesAnyway();
   }
 
-
+  /**
+   * ...docs go here...
+   */
   determineDiscard(resolve) {
     // If we were awarded a winning claim, then by the
     // time we are asked to discard, we will already be
@@ -73,7 +75,6 @@ class BotPlayer extends Player {
     let {lookout, waiting, composed, winpaths} = tilesNeeded(this.getTileFaces(), this.locked);
 
     if(winpaths > 0) {
-
       // We have indeed won! Mark this as a self-drawn win, because
       // if it was a claimed win we would have exited this function
       // already, and then let the play.js game loop discover we've
@@ -93,12 +94,19 @@ class BotPlayer extends Player {
 
     // Now then. We haven't won, let's figure out which tiles are worth keeping,
     // and which tiles are worth throwing away.
+    this.determineDiscardUsingTracker(resolve);
+  }
 
-      // TODO: can we use the lookout/composed information computed above?
+  /**
+   * ...docs go here...
+   */
+  determineDiscardUsingTracker(resolve) {
+    let tiles = this.getAvailableTiles();
+    let tileCount = [];
+    let tileValues = [];
 
     // First, let's see how many of each tile we have.
-    let tileCount = [];
-    let ids = Array.from(tiles).map(tile => {
+    let faces = Array.from(tiles).map(tile => {
       let id = tile.getTileFace();
       if (!tileCount[id]) { tileCount[id] = 0; }
       tileCount[id]++;
@@ -106,47 +114,71 @@ class BotPlayer extends Player {
     });
 
     // Cool. With that sorted out, let's start ranking
-    // tiles in terms of what they will let us form.
-    let tileValues = [];
-    ids.forEach( id => {
+    // tiles in terms of how valuable they are to us.
+    faces.forEach( tile => {
       let value = 0;
-      if (tileCount[id] >= 3) {
-        value = CLAIM.KONG;
-      } else
+      let availability = this.tracker.get(tile);
 
-      if (tileCount[id] === 2) {
-        value = CLAIM.PUNG;
-      } else
+      // values are based on "can we get more". If not, then
+      // however many tile we have is all we'll get.
 
-      if (tileCount[id] === 1) {
-        if (id < 27) {
-          let face = id % 9;
-          if (face > 0 && tileCount[id-1] > 0) {
-            // note: this works because undefined <=> 0 are all false,
-            // whereas if tileCount[id-1] is an actual number, it's
-            // going to be at least 1.
-            value = CLAIM.CHOW;
-          }
-          else if (face < 8 && tileCount[id+1] > 0) {
-            value = CLAIM.CHOW;
-          }
-        }
-      }
-      else {
-        value = this.tileValue(id);
+      if (tileCount[tile] >= 3) value = max(value, availability>0 ? 100 : 90);
+      else if (tileCount[tile] === 2) value = max(value, availability>0 ? 90 : 50);
+      else if (tileCount[tile] === 1) {
+        if (tile < 27) value = max(value, this.determineDiscardValueForChow(value, tile, tileCount));
+        value = max(value, availability ? 40 : 0);
       }
 
-      tileValues[id] = value;
+      // Record the (by definition) highest value for this tile.
+      tileValues[tile] = value;
     });
 
     // so, which tile scores the lowest?
     let tile = 0;
     let l = Number.MAX_VALUE;
     tileValues.forEach((value,pos) => { if (value < l) { l = value; tile = pos; }});
-
     let discard = this.getSingleTileFromHand(tile);
     resolve(discard);
   }
+
+  /**
+   * ...docs go here...
+   */
+  determineDiscardValueForChow(value, tile, tileCount) {
+    let face = tile % 9;
+    let m2 = tileCount[tile - 2] > 0;
+    let m1 = tileCount[tile - 1] > 0;
+    let p1 = tileCount[tile + 1] > 0;
+    let p2 = tileCount[tile + 2] > 0;
+    let m2a = this.tracker.get(tile - 2) > 0;
+    let m1a = this.tracker.get(tile - 1) > 0;
+    let p1a = this.tracker.get(tile + 1) > 0;
+    let p2a = this.tracker.get(tile + 2) > 0;
+
+    // X?? chow check
+    if (face<7) {
+      if (p1 && p2) value = max(value, 90) // already in hand
+      else if (p1 && p2a) value = max(value, 80) // possible
+      else if (p1a && p2) value = max(value, 70) // possible (gap)
+    }
+
+    // ?X? chow check
+    if (face>0 && face<8) {
+      if (m1 && p1) value = max(value, 90) // already in hand
+      else if (m1 && p1a) value = max(value, 80) // possible
+      else if (m1a && p1) value = max(value, 80) // possible
+    }
+
+    // ??X chow check
+    if (face>1) {
+      if (m2 && m1) value = max(value, 90) // already in hand
+      else if (m2 && m1a) value = max(value, 70) // possible (gap)
+      else if (m2a && m1) value = max(value, 80) // possible
+    }
+
+    return value;
+  }
+
 
   /**
    * Automated claim policy, see `tilesNeeded` in `./mgen.js`

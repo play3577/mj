@@ -136,7 +136,7 @@ class Game {
     // increase the play counter;
     this.counter++;
     this.playDelay = (hand===config.PAUSE_ON_HAND && this.counter===config.PAUSE_ON_PLAY) ? 60*60*1000 : config.PLAY_INTERVAL;
-    Logger.debug(`hand ${hand}, play ${this.counter}`);
+    Logger.log(`hand ${hand}, play ${this.counter}`);
 
     // "Draw one"
     if (!claim) this.dealTile(player);

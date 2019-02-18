@@ -223,23 +223,6 @@ class Player {
     this.ui.sortTiles();
   }
 
-  tileValue(faceValue) {
-    // This ranking is basically arbitrary, because
-    // the real value comes from having an actual
-    // strategy, which this simple implementation
-    // obviously doesn't have. Well... yet!
-    let i = parseInt(faceValue);
-    if (i < 27) {
-      return 1.0; // numerical tile
-    }
-    else if (i < 31) {
-      return 1.0; // honour tile (wind)
-    }
-    else {
-      return 1.0; // honour tile (dragon)
-    }
-  }
-
   async chowExists(pid, tile)  {
     // If this isn't a numerical tile, no chow can be formed.
     if (tile > 26)  return CLAIM.IGNORE;
