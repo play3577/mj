@@ -18,4 +18,4 @@ The following URL query parameters are supported for debugging purposes:
 
 #### I have questions
 
-I'm sure you do, feel free to [tweet at me](https://twitter.com/TheRealPomax) for shallow engagement, or file an issue over on [the issue tracker](issues) if you need deeper engagement.
+I'm sure you do: feel free to [tweet at me](https://twitter.com/TheRealPomax) for shallow engagement, or file an issue over on [the issue tracker](issues) if you need deeper engagement.
