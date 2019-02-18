@@ -7,7 +7,6 @@ const allSeasons = bonus => [38, 39, 40, 41].every(t => bonus.indexOf(t) > -1);
 
 class Ruleset {
   constructor() {
-    this.rulesets = {};
     this.init();
   }
 
