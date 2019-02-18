@@ -53,7 +53,24 @@ class BotPlayer extends Player {
   }
 
   /**
-   * ...docs go here...
+   * This is the override for the function that Player calls in order
+   * to determine which tile to remove from the hand. The `resolve` function
+   * is a promise callback that will allow the game to "unpause" itself.
+   *
+   * Bot discards are based on what can be meaningfully formed with the
+   * tiles currently in hand, and throwing out the tile that contributes
+   * the least. Tile availability based on the bot's local knowledge of
+   * which tiles might still be available in the game is used to determine
+   * whether things like pairs or chows can still be formed.
+   *
+   * Additionally, the tile value is balanced against its score potential.
+   * For example, in a one-suit hand that also has a set of a second suit,
+   * the potential payoff for getting rid of that already formed set may
+   * outweigh the fact that the tiles involved are already contributing
+   * to winning the hand.
+   *
+   * Note: returning an falsey value leads to the game understanding that
+   * as meaning this play has won.
    */
   determineDiscard(resolve) {
     // If we were awarded a winning claim, then by the
@@ -98,12 +115,14 @@ class BotPlayer extends Player {
   }
 
   /**
-   * ...docs go here...
+   * This is the second part of determineDiscard, which handles all
+   * the "we didn't just win" cases.
    */
   determineDiscardUsingTracker(resolve) {
     let tiles = this.getAvailableTiles();
     let tileCount = [];
-    let tileValues = [];
+    let immediateValue = [];
+    let potentialValue = [];
 
     // First, let's see how many of each tile we have.
     let faces = Array.from(tiles).map(tile => {
@@ -130,19 +149,29 @@ class BotPlayer extends Player {
       }
 
       // Record the (by definition) highest value for this tile.
-      tileValues[tile] = value;
+      immediateValue[tile] = value;
+
+      // Now that we know the basic values of each tile: what are the
+      // potential ramifications of discarding each? Specifically,
+      // we're interested in whether we can change our pontential
+      // score.
+      potentialValue[tile] = this.calculatePotentialScoreDifference(tile, tiles);
     });
 
-    // so, which tile scores the lowest?
+
+    // We will find the lowest scoring tile, and discard that one
     let tile = 0;
     let l = Number.MAX_VALUE;
-    tileValues.forEach((value,pos) => { if (value < l) { l = value; tile = pos; }});
-    let discard = this.getSingleTileFromHand(tile);
-    resolve(discard);
+    immediateValue
+      .map((v,tile) => this.balanceDiscardMetrics(v, potentialValue[tile]))
+      .forEach((value,pos) => { if (value < l) { l = value; tile = pos; }});
+
+    resolve(this.getSingleTileFromHand(tile));
   }
 
   /**
-   * ...docs go here...
+   * determineDiscard helper function dedicated to determining
+   * whether chows are an option or not.
    */
   determineDiscardValueForChow(value, tile, tileCount) {
     let face = tile % 9;
@@ -177,6 +206,29 @@ class BotPlayer extends Player {
     }
 
     return value;
+  }
+
+  /**
+   * This is the third part of the determineDiscard logic,
+   * which checks whether there is a marked increase in score
+   * to be had by discarding a particular tile. On its own,
+   * this would be a terrible game strategy, but by balancing
+   * the outcome against the base value in the hand, this
+   * allows bots to strategise.
+   */
+  calculatePotentialScoreDifference(tile, tiles) {
+    // ... code goes here...
+    return 0;
+  }
+
+  /**
+   * This function performs the balacing of immediate value
+   * of a tile in a hand vs. the potential increase in value
+   * of the hand on the whole if we discard this tile.
+   */
+  balanceDiscardMetrics(immediate, potential) {
+    // ... code goes here...
+    return immediate + potential;
   }
 
 
