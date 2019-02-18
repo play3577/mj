@@ -58,6 +58,9 @@ class ChineseClassical extends Ruleset {
     return adjustments;
   }
 
+  /**
+   * ...docs go here...
+   */
   _tile_score(set, windTile, windOfTheRoundTile) {
     let locked = set.locked;
     let tile = set[0];
@@ -154,63 +157,30 @@ class ChineseClassical extends Ruleset {
     return { score, doubles, log };
   }
 
-  checkWinnerHandPatterns(
-    scorePattern,
-    winset,
-    selfdraw = false,
-    windTile,
-    windOfTheRoundTile,
-    tilesLeft,
-    scoreObject
-  ) {
+  /**
+   * ...docs go here...
+   */
+  checkWinnerHandPatterns(scorePattern, winset, selfdraw = false, windTile, windOfTheRoundTile, tilesLeft, scoreObject) {
     // We start with some assumptions, and we'll
     // invalidate them as we see more sets.
 
-    let allchow = true;
-    let onesuit = true;
-    let honours = false;
-    let allhonours = true;
-    let terminals = true;
-    let allterminals = true;
-    let punghand = true;
-
-    let outonPair = true;
-    let majorPair = false;
-    let dragonPair = false;
-
-    let windPair = false;
-    let ownWindPair = false;
-    let wotrPair = false;
-    let ownWindPung = false;
-    let wotrPung = false;
-    let ownWindKong = false;
-    let wotrKong = false;
-
-    let windPungCount = 0;
-    let windKongCount = 0;
-    let dragonPungCount = 0;
-    let dragonKongCount = 0;
-    let concealedCount = 0;
-    let kongCount = 0;
-
-    let suit = false,
-      tile,
-      tilesuit;
+    let state = this.getState();
+    let tile, tilesuit;
     scorePattern.forEach(set => {
       tile = set[0];
       tilesuit = (tile / 9) | 0;
 
       if (tile < 27) {
-        if (suit === false) suit = tilesuit;
-        else if (suit !== tilesuit) onesuit = false;
+        if (state.suit === false) state.suit = tilesuit;
+        else if (state.suit !== tilesuit) state.onesuit = false;
         if (set.some(t => t !== 0 || t !== 8)) {
-          terminals = false;
-          allterminals = false;
+          state.terminals = false;
+          state.allterminals = false;
         }
-        allhonours = false;
+        state.allhonours = false;
       } else {
-        honours = true;
-        allterminals = false;
+        state.honours = true;
+        state.allterminals = false;
       }
 
       if (set.length === 2) {
@@ -219,23 +189,23 @@ class ChineseClassical extends Ruleset {
           // in the code that converts locked[] into tile number sets, that flag
           // goes missing between computing basic tile scores, and computing
           // the winning hand scores here. Super weird. FIXME: figure out why?
-          outonPair = false;
+          state.outonPair = false;
         } else {
           if (tile > 26 && tile < 31) {
-            windPair = true;
-            majorPair = true;
+            state.windPair = true;
+            state.majorPair = true;
           }
           if (tile > 30) {
-            dragonPair = true;
-            majorPair = true;
+            state.dragonPair = true;
+            state.majorPair = true;
           }
           if (tile === windTile) {
-            ownWindPair = true;
-            majorPair = true;
+            state.ownWindPair = true;
+            state.majorPair = true;
           }
           if (tile === windOfTheRoundTile) {
-            wotrPair = true;
-            majorPair = true;
+            state.wotrPair = true;
+            state.majorPair = true;
           }
         }
       }
@@ -243,27 +213,27 @@ class ChineseClassical extends Ruleset {
       if (set.length === 3) {
         if (tile === set[1]) {
           if (tile > 26 && tile < 31) {
-            windPungCount++;
-            if (tile === windTile) ownWindPung = true;
-            if (tile === windOfTheRoundTile) wotrPung = true;
+            state.windPungCount++;
+            if (tile === windTile) state.ownWindPung = true;
+            if (tile === windOfTheRoundTile) state.wotrPung = true;
           }
-          if (tile > 30) dragonPungCount++;
-          allchow = false;
-        } else punghand = false;
+          if (tile > 30) state.dragonPungCount++;
+          state.allchow = false;
+        } else state.punghand = false;
       }
 
       if (set.length === 4) {
-        kongCount++;
+        state.kongCount++;
         if (tile > 26 && tile < 31) {
-          windKongCount++; // implies pung
-          if (tile === windTile) ownWindKong = true; // implies windPunt
-          if (tile === windOfTheRoundTile) wotrKong = true; // implies wotrKong
+          state.windKongCount++; // implies pung
+          if (tile === windTile) state.ownWindKong = true; // implies windPunt
+          if (tile === windOfTheRoundTile) state.wotrKong = true; // implies wotrKong
         }
-        if (tile > 30) dragonKongCount++; // implies pung
-        allchow = false;
+        if (tile > 30) state.dragonKongCount++; // implies pung
+        state.allchow = false;
       }
 
-      if (!set.locked) concealedCount++;
+      if (!set.locked) state.concealedCount++;
     });
 
     // Now then, how many extra points and/or doubles does this hand get?
@@ -273,68 +243,68 @@ class ChineseClassical extends Ruleset {
       scoreObject.log.push(`2 points for self-drawn win`);
     }
 
-    if (outonPair) {
+    if (state.outonPair) {
       scoreObject.score += 2;
       scoreObject.log.push(`2 points for winning on a pair`);
     }
 
-    if (outonPair && majorPair) {
+    if (state.outonPair && state.majorPair) {
       scoreObject.score += 2;
       scoreObject.log.push(`2 points for winning on a major pair`);
     }
 
-    if (allchow && !majorPair) {
+    if (state.allchow && !state.majorPair) {
       scoreObject.doubles += 1;
       scoreObject.log.push(`1 double for a chow hand`);
     }
 
-    if (onesuit) {
-      if (honours) {
+    if (state.onesuit) {
+      if (state.honours) {
         scoreObject.doubles += 1;
         scoreObject.log.push(
-          `1 double for a one suit (${suit}) and honours hand`
+          `1 double for a one suit (${state.suit}) and honours hand`
         );
       } else {
         scoreObject.doubles += 3;
-        scoreObject.log.push(`3 doubles for a clean one suit hand (${suit})`);
+        scoreObject.log.push(`3 doubles for a clean one suit hand (${state.suit})`);
       }
     }
 
-    if (allterminals) {
+    if (state.allterminals) {
       scoreObject.limit = `all terminals hand`;
     }
 
-    if (allhonours) {
+    if (state.allhonours) {
       scoreObject.limit = `all honours hand`;
     }
 
-    if (punghand) {
+    if (state.punghand) {
       scoreObject.doubles += 1;
       scoreObject.log.push(`1 double for an all pung hand`);
     }
 
-    if (kongCount === 4) {
+    if (state.kongCount === 4) {
       scoreObject.limit = `All kong hand`;
     }
 
-    if (dragonPungCount + dragonKongCount === 3) {
+    if (state.dragonPungCount + state.dragonKongCount === 3) {
       scoreObject.limit = `Three great scholars (pung or kong of each dragon)`;
     }
 
-    if (windPungCount + windKongCount === 3 && windPair) {
+    if (state.windPungCount + state.windKongCount === 3 && state.windPair) {
       scoreObject.limit = `Little four winds (pung or kong of three wind, pair of last wind)`;
     }
 
-    if (windPungCount + windKongCount === 4) {
+    if (state.windPungCount + state.windKongCount === 4) {
       scoreObject.limit = `Big four winds (pung or kong of each wind)`;
     }
 
-    if (concealedCount === 5) {
+    if (state.concealedCount === 5) {
       scoreObject.doubles += 1;
       scoreObject.log.push(`1 double for a fully concealed hand`);
     }
 
-    if (concealedCount === 5 && punghand) {
+    if (state.concealedCount === 5 && state.punghand) {
       scoreObject.limit = `Fully concealed pung hand`;
     }
 
@@ -355,16 +325,7 @@ class ChineseClassical extends Ruleset {
   /**
    * Determine the tile score for a collection of sets
    */
-  getTileScore(
-    scorePattern,
-    windTile,
-    windOfTheRoundTile,
-    bonus,
-    winset,
-    winner = false,
-    selfdraw = false,
-    tilesLeft
-  ) {
+  getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset, winner = false, selfdraw = false, tilesLeft) {
     Logger.debug(scorePattern.map(s => s.locked));
 
     let result = scorePattern
@@ -423,15 +384,7 @@ class ChineseClassical extends Ruleset {
 
     // also determine points/doubles based on the full hand
     if (winner)
-      this.checkWinnerHandPatterns(
-        scorePattern,
-        winset,
-        selfdraw,
-        windTile,
-        windOfTheRoundTile,
-        tilesLeft,
-        result
-      );
+      this.checkWinnerHandPatterns(scorePattern, winset, selfdraw, windTile, windOfTheRoundTile, tilesLeft, result);
 
     if (result.limit) {
       result.score = this.limit;
@@ -452,9 +405,11 @@ class ChineseClassical extends Ruleset {
 // register as a ruleset
 Ruleset.register(ChineseClassical);
 
+
 // ====================================
 //         TESTING CODE
 // ====================================
+
 
 if (typeof process !== "undefined") {
   (function() {

@@ -37,6 +37,38 @@ class Ruleset {
   }
 
   /**
+   * All possible flags and values necessary for performing scoring, used in checkWinnerHandPatterns
+   */
+  getState() {
+    return {
+      allchow: true,
+      onesuit: true,
+      honours: false,
+      allhonours: true,
+      terminals: true,
+      allterminals: true,
+      punghand: true,
+      outonPair: true,
+      majorPair: false,
+      dragonPair: false,
+      windPair: false,
+      ownWindPair: false,
+      wotrPair: false,
+      ownWindPung: false,
+      wotrPung: false,
+      ownWindKong: false,
+      wotrKong: false,
+      windPungCount: 0,
+      windKongCount: 0,
+      dragonPungCount: 0,
+      dragonKongCount: 0,
+      concealedCount: 0,
+      kongCount: 0,
+      suit: false
+    };
+  }
+
+  /**
    * Scoring tiles means first seeing how many different
    * things can be formed with the not-revelead tiles,
    * and then for each of those things, calculate the
