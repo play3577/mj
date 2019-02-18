@@ -8,6 +8,7 @@ class Game {
   }
 
   startGame() {
+    this.GAME_START = Date.now();
     this.wind = 0;
     this.windOfTheRound = 0;
     this.hand = 0;
@@ -31,7 +32,9 @@ class Game {
           this.wind = 0;
           this.windOfTheRound++;
           if (this.windOfTheRound === 4) {
-            Logger.log(`\nfull game played.`);
+            let ms = (Date.now() - this.GAME_START);
+            let s = ((ms/10)|0)/100;
+            Logger.log(`\nfull game played. (game took ${s}s)`);
             this.hand = this.draws = '';
             rotateWinds();
             let finalScores = players.map(p => p.getScore());
@@ -290,7 +293,7 @@ class Game {
     player.winner();
 
     let play_length = (Date.now() - this.PLAY_START);
-    Logger.log(`Player ${currentPlayerId} wins round ${hand}! (game took ${play_length}ms)`);
+    Logger.log(`Player ${currentPlayerId} wins round ${hand}! (hand took ${play_length}ms)`);
 
     // Let everyone know what everyone had. It's the nice thing to do.
     let disclosure = players.map(p => p.getDisclosure());
