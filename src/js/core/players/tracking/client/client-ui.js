@@ -295,14 +295,17 @@ class ClientUI extends TileBank {
     this.sortTiles();
   }
 
-  remove(discard) {
-    this.el.removeChild(discard);
+  remove(tile) {
+    this.el.removeChild(tile);
   }
 
   lockClaim(tiles) {
     this.removeLastDiscard();
     let locknum = this.el.querySelectorAll(`[data-locked]`).length;
-    tiles.forEach(tile => (tile.dataset.locknum = locknum));
+    tiles.forEach(tile => {
+      tile.dataset.locknum = locknum;
+      this.append(tile);
+    });
     this.sortTiles();
   }
 

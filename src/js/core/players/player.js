@@ -17,6 +17,7 @@ class Player {
   reset(hand, wind, windOfTheRound) {
     this.wind = wind;
     this.windOfTheRound = windOfTheRound;
+    this.tiles = [];
     this.locked = [];
     this.bonus = [];
     this.has_won = false;
@@ -114,16 +115,27 @@ class Player {
       t = create(t);
     }
     this.latest = t;
+    if (!t.dataset.bonus) {
+      this.tiles.push(t);
+    }
     if (!claimed) {
       this.tracker.seen(t.dataset.tile);
       this.lastClaim = false;
     }
-    this.ui.append(t);
+    if (this.ui) this.ui.append(t);
     return revealed;
   }
 
   remove(tile) {
-    this.ui.remove(tile);
+    let pos = this.tiles.indexOf(tile);
+    this.tiles.splice(pos, 1);
+    if (this.ui) this.ui.remove(tile);
+  }
+
+  lockClaim(tiles) {
+    tiles.forEach(tile => this.remove(tile));
+    this.locked.push(tiles);
+    if (this.ui) this.ui.lockClaim(tiles);
   }
 
   checkKong(tile) {
@@ -191,32 +203,33 @@ class Player {
     this.ui.nextPlayer();
   }
 
+
   getAvailableTiles() {
-    return this.ui.getAvailableTiles();
+    return this.tiles;
   }
 
   getSingleTileFromHand(tile) {
-    return this.ui.getSingleTileFromHand(tile);
+    return this.tiles.find(t => (t.dataset.tile == tile));
   }
 
   getAllTilesInHand(tile) {
-    return this.ui.getAllTilesInHand(tile);
+    return this.tiles.filter(t => (t.dataset.tile == tile));
   }
 
   getTiles(allTiles) {
-    return this.ui.getTiles(allTiles);
+    return allTiles ? [...this.tiles, ...this.bonus] : this.tiles;
   }
 
   getTileFaces(allTiles) {
-    return this.ui.getTileFaces(allTiles);
+    return this.getTiles(allTiles).map(t => t.getTileFace());
+  }
+
+  getDuplicates(tile) {
+    return this.tiles.filter(t => (t.dataset.tile == tile));
   }
 
   getLockedTileFaces() {
     return this.locked.map(set => `[${set.map(v=>v.dataset.tile|0)}]${set.winning?'!':''}`);
-  }
-
-  getDuplicates(tile) {
-    return this.ui.getDuplicates(tile);
   }
 
   reveal() {
@@ -350,9 +363,7 @@ class Player {
         }
       });
 
-      this.locked.push(set);
-      this.ui.lockClaim(set);
-
+      this.lockClaim(set);
       return set;
     }
 
@@ -378,9 +389,7 @@ class Player {
       set.push(t);
     });
 
-    this.locked.push(set);
-    this.ui.lockClaim(set);
-
+    this.lockClaim(set);
     return set;
   }
 }

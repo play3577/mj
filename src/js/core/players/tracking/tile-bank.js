@@ -67,21 +67,15 @@ class TileBank {
   }
 
   append(t) {
-    if (t.dataset.bonus) {
-      this.bonus.push(t);
-    } else {
-      this.tiles.push(t);
-      this.sortTiles();
-    }
+   // bots do nothing with this signal
   }
 
   remove(tile) {
-    let pos = this.tiles.indexOf(tile);
-    this.tiles.splice(pos, 1);
+   // bots do nothing with this signal
   }
 
   lockClaim(tiles) {
-    tiles.forEach(tile => this.remove(tile));
+   // bots do nothing with this signal
   }
 
   playerDiscarded(player, tile) {
@@ -109,27 +103,27 @@ class TileBank {
   }
 
   getAvailableTiles() {
-    return this.tiles;
+    // dead function
   }
 
   getSingleTileFromHand(tile) {
-    return this.tiles.find(t => (t.dataset.tile == tile));
+    // dead function
   }
 
   getAllTilesInHand(tile) {
-    return this.tiles.filter(t => (t.dataset.tile == tile));
+    // dead function
   }
 
   getTiles(allTiles) {
-    return allTiles ? [...this.tiles, ...this.bonus] : this.tiles;
+    // dead function
   }
 
   getTileFaces(allTiles) {
-    return this.getTiles(allTiles).map(t => t.getTileFace());
+    // dead function
   }
 
   getDuplicates(tile) {
-    return this.tiles.filter(t => (t.dataset.tile == tile));
+    // dead function
   }
 
   reveal() {
