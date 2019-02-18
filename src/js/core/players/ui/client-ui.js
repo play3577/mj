@@ -4,13 +4,14 @@
  * interaction (human overrides for bots, or just plain
  * human input for... well, humans)
  */
-class ClientUI extends TileBank {
+class ClientUI {
   constructor(id) {
-    super(id);
+    this.id = id;
+    this.timeouts = [];
     this.discards = document.querySelector(".discards");
     this.playerbanks = document.querySelectorAll(".player");
     this.el = this.playerbanks[id];
-    this.timeouts = [];
+
     this.reset();
 
     // Super debug setting: allows bots to tap directly
@@ -56,6 +57,19 @@ class ClientUI extends TileBank {
     }
     this.timeouts.push(setTimeout(() => update(1), ms + 10));
   }
+
+  setRules(rules) {
+    // ...not used atm...
+  }
+
+  handWillStart() {
+    // ...not used atm...
+  }
+
+  markTilesLeft(left, dead) {
+    // ...currently handled in game.js instead...
+  }
+
 
   listenForDiscard(resolve, suggestion, lastClaim) {
     let tiles = this.getAvailableTiles();

@@ -8,12 +8,8 @@
 class HumanPlayer extends BotPlayer {
   constructor(id) {
     super(id);
-    this.mayDiscard = false;
-    this.maySendClaim = false;
-
-    // we will see the "knowledge" panel with our tracker
+    // seed the "knowledge" panel with our tracker
     this.tracker.bindTo(document.querySelector(".knowledge"));
-
     // humans need a UI to play mahjong.
     this.ui = new ClientUI(this.id);
   }

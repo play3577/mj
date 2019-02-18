@@ -9,7 +9,7 @@ class Player {
     this.el.id = id;
     this.id = id;
     this.tracker = new TileTracker(this.id);
-    this.ui = new TileBank(this.id);
+    this.ui = false;
     this.wincount = 0;
     this.reset();
   }
@@ -25,7 +25,7 @@ class Player {
     this.tracker.reset();
     this.el.innerHTML = '';
     this.el.classList.remove('winner');
-    this.ui.reset(hand, wind, windOfTheRound);
+    if (this.ui) this.ui.reset(hand, wind, windOfTheRound);
   }
 
   setRules(rules) {
@@ -34,13 +34,13 @@ class Player {
   }
 
   handWillStart() {
-    this.ui.handWillStart();
+    if (this.ui) this.ui.handWillStart();
   }
 
   markTilesLeft(left, dead) {
     this.tilesLeft = left;
     this.tilesDead = dead;
-    this.ui.markTilesLeft(left, dead);
+    if (this.ui) this.ui.markTilesLeft(left, dead);
   }
 
   getDisclosure() {
@@ -62,16 +62,16 @@ class Player {
   }
 
   endOfHand(disclosure) {
-    this.ui.endOfHand(disclosure);
+    if (this.ui) this.ui.endOfHand(disclosure);
   }
 
   endOfGame(scores) {
-    this.ui.endOfGame(scores);
+    if (this.ui) this.ui.endOfGame(scores);
   }
 
   recordScores(adjustments) {
     this._score += adjustments[this.id];
-    this.ui.recordScores(adjustments);
+    if (this.ui) this.ui.recordScores(adjustments);
   }
 
   getScore() {
@@ -79,21 +79,21 @@ class Player {
   }
 
   activate(id) {
-    this.ui.activate(id);
+    if (this.ui) this.ui.activate(id);
   }
 
   disable() {
-    this.ui.disable();
+    if (this.ui) this.ui.disable();
   }
 
   markWaiting(val) {
-    this.ui.markWaiting(val)
+    if (this.ui) this.ui.markWaiting(val)
   }
 
   markWinner() {
     this.has_won = true;
     this.wincount++;
-    this.ui.markWinner(this.wincount);
+    if (this.ui) this.ui.markWinner(this.wincount);
   }
 
   getWinCount() {
@@ -101,7 +101,7 @@ class Player {
   }
 
   winner() {
-    this.ui.winner();
+    if (this.ui) this.ui.winner();
   }
 
   append(t, claimed) {
@@ -151,7 +151,7 @@ class Player {
 
       // FIXME: this does not feel like the right place to "see" our own kong.
       //        This should be processed as part of the reveal, by everyone.
-      this.ui.see(tiles, this);
+      if (this.ui) this.ui.see(tiles, this);
 
       delete tiles[3].dataset.hidden;
       this.locked.push(tiles);
@@ -169,17 +169,17 @@ class Player {
     if (player === this) return;
     if (!tiles.map) tiles = [tiles];
     tiles.forEach(tile => this.tracker.seen(tile));
-    this.ui.see(tiles, player);
+    if (this.ui) this.ui.see(tiles, player);
   }
 
   receivedTile(player) {
-    this.ui.receivedTile(player);
+    if (this.ui) this.ui.receivedTile(player);
   }
 
   playerDiscarded(player, discard) {
     let tile = discard.dataset.tile;
     if (this.id != player.id) this.tracker.seen(tile);
-    this.ui.playerDiscarded(player, tile);
+    if (this.ui) this.ui.playerDiscarded(player, tile);
   }
 
   seeKong(tiles, player) {
@@ -196,11 +196,11 @@ class Player {
       // But we haven't seen the other tiles yet.
       this.tracker.seen(tile.dataset.tile);
     });
-    this.ui.seeClaim(tiles, player, claim);
+    if (this.ui) this.ui.seeClaim(tiles, player, claim);
   }
 
   nextPlayer() {
-    this.ui.nextPlayer();
+    if (this.ui) this.ui.nextPlayer();
   }
 
 
@@ -233,11 +233,11 @@ class Player {
   }
 
   reveal() {
-    this.ui.reveal();
+    if (this.ui) this.ui.reveal();
   }
 
   sortTiles() {
-    this.ui.sortTiles();
+    if (this.ui) this.ui.sortTiles();
   }
 
   async chowExists(pid, tile)  {
