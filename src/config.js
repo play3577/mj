@@ -21,6 +21,7 @@ const PLAY_IMMEDIATELY = (params.autoplay==='true') ? true : false;
 const FORCE_OPEN_BOT_PLAY = (params.force_open_bot_play==='true') ? true : false;
 const PLAY_INTERVAL = params.play ? params.play : 100;
 const HAND_INTERVAL = params.hand ? params.hand : 3000;
+const BOT_DELAY_BEFORE_DISCARD_ENDS = params.bot_delay ? parseInt(params.bot_delay) : 800;
 
  // Possible values for the logger's verbosity.
 const LOG_LEVELS = {
@@ -131,6 +132,7 @@ const config = {
     // This setting determines which type of play
     // is initiated if PLAY_IMMEDIATELY is true
     BOT_PLAY: true,
+    BOT_DELAY_BEFORE_DISCARD_ENDS: BOT_DELAY_BEFORE_DISCARD_ENDS,
 
     CLAIM_INTERVAL: simple.CLAIM_INTERVAL,
     PLAY_INTERVAL: simple.PLAY_INTERVAL,

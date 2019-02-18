@@ -267,6 +267,13 @@ class Game {
       }
     });
 
+    // artificial delay, if required for human play
+    if (currentpid===0 && !config.BOT_PLAY && config.BOT_DELAY_BEFORE_DISCARD_ENDS) {
+      await new Promise( resolve => {
+        setTimeout(() => resolve(), config.BOT_DELAY_BEFORE_DISCARD_ENDS);
+      });
+    }
+
     return p === -1 ? undefined : { claimtype: claim, wintype: win, p };
   }
 

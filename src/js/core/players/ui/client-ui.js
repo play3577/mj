@@ -338,7 +338,7 @@ class ClientUI {
     discard.dataset.from = player.id;
     this.discards.appendChild(discard);
 
-    if (!config.BOT_PLAY) this.startCountDown(config.CLAIM_INTERVAL);
+    if (!config.BOT_PLAY && player.id !== this.id) this.startCountDown(config.CLAIM_INTERVAL);
 
     this.sortTiles(bank);
   }
