@@ -4,6 +4,8 @@
 class Game {
   constructor(players) {
     this.players = players;
+    this.rules = Ruleset.getRuleset("ChineseClassical");
+    this.players.forEach(p => p.setRules(rules));
     this.wall = new Wall(players);
   }
 
@@ -300,12 +302,12 @@ class Game {
     players.forEach(p => p.endOfHand(disclosure));
 
     // And calculate the scores.
-    let scores = disclosure.map((d,id) => scoreTiles(d, id, windOfTheRound, this.wall.remaining));
+    let scores = disclosure.map((d,id) => this.rules.scoreTiles(d, id, windOfTheRound, this.wall.remaining));
 
     // check who is currently playing east and calculate payments
     let eastid = 0;
     players.forEach(p => { if(p.wind === 0) eastid = p.id; });
-    let adjustments = settleScores(scores, player.id, eastid);
+    let adjustments = this.rules.settleScores(scores, player.id, eastid);
     players.forEach(p => p.recordScores(adjustments));
 
     // Show the score line, and the move on to the next hand.

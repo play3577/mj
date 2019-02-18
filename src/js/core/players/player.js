@@ -11,7 +11,6 @@ class Player {
     this.tracker = new TileTracker(this.id);
     this.ui = new TileBank(this.id);
     this.wincount = 0;
-    this._score = PLAYER_STARTING_SCORE;
     this.reset();
   }
 
@@ -26,6 +25,12 @@ class Player {
     this.el.innerHTML = '';
     this.el.classList.remove('winner');
     this.ui.reset(hand, wind, windOfTheRound);
+  }
+
+  setRules(rules) {
+    this.rules = rules;
+    this._score = this.rules.player_start_score;
+
   }
 
   handWillStart() {

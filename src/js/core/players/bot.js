@@ -217,6 +217,14 @@ class BotPlayer extends Player {
    * allows bots to strategise.
    */
   calculatePotentialScoreDifference(tile, tiles) {
+
+    /*
+     - consider this tile + all tiles in its suit
+     - consider this tile + any tiles that it might form a chow with
+     - etc.
+     - how far ahead should bots look?
+    */
+
     // ... code goes here...
     return 0;
   }
