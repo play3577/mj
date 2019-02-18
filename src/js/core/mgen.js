@@ -130,8 +130,9 @@ class Pattern {
    *
    */
   recurse(processed, set, result) {
+    Logger.debug(`removing ${processed}, set:`,set);
     set.forEach(s => {
-      if (s.required) {
+      if (s.required !== false && s.required !== undefined) {
         let tile = s.required
         if (!result[tile]) result[tile] = [];
         let print = hash(s);
@@ -151,6 +152,8 @@ class Pattern {
     let tile = this.keys[0]|0;
     let count = this.tiles[tile];
 
+    Logger.debug(`expanding using ${tile} (there are ${count} of this tile)`);
+
     if (count===4) {
       // special case: if we already have four, we have all
       // the tiles that are in the game, and there isn't going
@@ -165,7 +168,9 @@ class Pattern {
         // following code would be required:
         //
         // let set = [{ required: tile, type: Constants.PAIR, tile }];
-        // this.recurse([tile], set, result);
+        //
+        let set = [];
+        this.recurse([tile], set, result);
       }
       if (count===2) {
         let set = [
@@ -458,11 +463,19 @@ if (typeof process !== "undefined") { (function() {
         [5,6,7],
         [6,6]
       ]
+    },
+    {
+      hand: [0,0,10,10,12,13,16,17,17,27,29,31,32],
+      locked: []
+    },
+    {
+      hand: [14,15,2,22,27,3,3,31,32,4,5,5,6],
+      locked: []
     }
   ]
 
   tests.forEach((test,tid) => {
-    if (tid < 6) return;
+    if (tid < 8) return;
 
     let hand = test.hand;
     let locked = lock(test.locked);

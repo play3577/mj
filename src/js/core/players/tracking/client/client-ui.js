@@ -18,6 +18,7 @@ class ClientUI extends TileBank {
     // development purposes, rather required.
     if (config.FORCE_OPEN_BOT_PLAY) {
       window.PLAYER_BANKS = this.playerbanks;
+      window.PLAYER_BANKS.sortTiles = e => this.sortTiles(e);
     }
   }
 

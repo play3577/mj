@@ -305,7 +305,7 @@ class Player {
       }
     };
 
-    let claim = this.determineClaim(pid, discard, claim => {
+    this.determineClaim(pid, discard, claim => {
       if (!overrideKickedIn) {
         clearTimeout(overrideTrigger);
         resolve(claim);

@@ -59,7 +59,7 @@ class Game {
     });
 
     // used for play debugging:
-    if (config.PAUSE_ON_HAND && hand === config.PAUSE_ON_HAND) {
+    if (config.PAUSE_ON_HAND && this.hand === config.PAUSE_ON_HAND) {
       config.HAND_INTERVAL = 60 * 60 * 1000;
     }
 

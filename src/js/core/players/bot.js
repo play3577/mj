@@ -21,10 +21,11 @@ class BotPlayer extends Player {
         bank.appendChild(t);
       })
 
-      this.locked.forEach(s => {
+      this.locked.forEach((s,sid) => {
         s.forEach(t => {
           t = create(t.dataset.tile);
           t.dataset.locked = 'locked';
+          t.dataset.locknum = sid;
           bank.appendChild(t);
         });
       })
@@ -35,6 +36,8 @@ class BotPlayer extends Player {
         t.dataset.bonus = 'bonus';
         bank.appendChild(t);
       });
+
+      window.PLAYER_BANKS.sortTiles(bank);
     }
   }
 
@@ -154,8 +157,17 @@ class BotPlayer extends Player {
 
     // build a quick list of what we might actually be interested in
     let canChow = ((pid+1)%4 == this.id);
-    let {lookout, waiting, composed} = tilesNeeded(this.getTileFaces(), this.locked, canChow);
+
+    let tiles = this.getTileFaces();
+    tiles.sort();
+
+    Logger.debug(`${this.id} determining claim for ${tile} based on ${tiles}`);
+
+    let {lookout, waiting, composed} = tilesNeeded(tiles, this.locked, canChow);
     this.markWaiting(waiting);
+
+    Logger.debug(lookout);
+    Logger.debug(composed);
 
     // is the current discard in the list of tiles we want?
     let claim = CLAIM.IGNORE, wintype;
