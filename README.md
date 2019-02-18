@@ -2,14 +2,20 @@
 
 1: we're talking real four player mahjong here. Not that solaire game your aunt plays.
 
-2: this readme is sparse because I'm going to be writing a serial-post on the whole "developing a game in the browser" practice, which is going to be much more informative than this README.md could ever be.
+2: this README.md is sparse because I'm going to be writing a serial-post on the whole "developing a game in the browser" practice, which is going to be much more informative than this README.md could ever be.
 
 The live version, which just lets you watch four bots play a round of MJ, can be found at https://pomax.github.io/mj - note that the bit play interval has been set to 200ms, instead of the 0ms they actually need to play. This lets you see the game happening, rather than loading the page to discover the bots already finished playing. Because it takes them half a second to play a full round, which is less than the time it takes to load the tile images from cache.
 
-#### URL query params
+#### Debugging using query parameters
 
-Because it's fun, you can append `?play=<num>&hand=<num>` to the URL to change the bot play speed, and the pause between hands, and you can set `autoplay=true` to start the page with bots autoplaying... so if you want to see the bots work as fast as the UI will let them, hit up https://pomax.github.io/mj/?autoplay=true&play=0&hand=0 and enjoy the fireworks.
+The following URL query parameters are supported for debugging purposes:
 
-#### Seeing play information
+- `seed=<num>` make pseudo-random number generator use this seed value
+- `autoplay=true` immediately starts a game with four bots playing each other
+- `play=<num>` number of milliseconds paused between bot actions
+- `hand=<num>` number of milliseconds paused on the score screen before starting a new hand
+- `force_open_bot_play=true` show the tiles that the "not us" bots are playing with
 
-Open your dev console. If it's not in there, it's not worth seeing unless you're literally working on the code and need to debug, instead of just inspect.
+#### I have questions
+
+I'm sure you do, feel free to [tweet at me](https://twitter.com/TheRealPomax) for shallow engagement, or file an issue over on [the issue tracker](issues) if you need deeper engagement.
