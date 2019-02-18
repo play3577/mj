@@ -168,9 +168,14 @@ class ChineseClassical extends Ruleset {
     let outonPair = true;
     let majorPair = false;
     let dragonPair = false;
+
     let windPair = false;
     let ownWindPair = false;
     let wotrPair = false;
+    let ownWindPung = false;
+    let wotrPung = false;
+    let ownWindKong = false;
+    let wotrKong = false;
 
     let windPungCount = 0;
     let windKongCount = 0;
