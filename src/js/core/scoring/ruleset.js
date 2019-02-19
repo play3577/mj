@@ -38,8 +38,9 @@ class Ruleset {
   /**
    * All possible flags and values necessary for performing scoring, used in checkWinnerHandPatterns
    */
-  getState() {
-    return {
+  getState(scorePattern, winset, selfdraw, windTile, windOfTheRoundTile, tilesLeft) {
+    // We start with some assumptions, and we'll invalidate them as we see more sets.
+    let state = {
       allchow: true,
       onesuit: true,
       honours: false,
@@ -63,8 +64,88 @@ class Ruleset {
       dragonKongCount: 0,
       concealedCount: 0,
       kongCount: 0,
-      suit: false
+      suit: false,
+      selfdraw: selfdraw,
+      lastTile: (tilesLeft<=0)
     };
+
+    // FIXME: still missing
+    //        - out on supplement tile
+    //        - out by robbing a kong
+    //        - ready after initial deal
+
+    let tile, tilesuit;
+    scorePattern.forEach(set => {
+      tile = set[0];
+      tilesuit = (tile / 9) | 0;
+
+      if (tile < 27) {
+        if (state.suit === false) state.suit = tilesuit;
+        else if (state.suit !== tilesuit) state.onesuit = false;
+        if (set.some(t => t !== 0 || t !== 8)) {
+          state.terminals = false;
+          state.allterminals = false;
+        }
+        state.allhonours = false;
+      } else {
+        state.honours = true;
+        state.allterminals = false;
+      }
+
+      if (set.length === 2) {
+        if (!winset || winset.length !== 2) {
+          // We check the winset because SOMEHOW if we set newset.winning = true
+          // in the code that converts locked[] into tile number sets, that flag
+          // goes missing between computing basic tile scores, and computing
+          // the winning hand scores here. Super weird. FIXME: figure out why?
+          state.outonPair = false;
+        } else {
+          if (tile > 26 && tile < 31) {
+            state.windPair = true;
+            state.majorPair = true;
+          }
+          if (tile > 30) {
+            state.dragonPair = true;
+            state.majorPair = true;
+          }
+          if (tile === windTile) {
+            state.ownWindPair = true;
+            state.majorPair = true;
+          }
+          if (tile === windOfTheRoundTile) {
+            state.wotrPair = true;
+            state.majorPair = true;
+          }
+        }
+      }
+
+      if (set.length === 3) {
+        if (tile === set[1]) {
+          if (tile > 26 && tile < 31) {
+            state.windPungCount++;
+            if (tile === windTile) state.ownWindPung = true;
+            if (tile === windOfTheRoundTile) state.wotrPung = true;
+          }
+          if (tile > 30) state.dragonPungCount++;
+          state.allchow = false;
+        } else state.punghand = false;
+      }
+
+      if (set.length === 4) {
+        state.kongCount++;
+        if (tile > 26 && tile < 31) {
+          state.windKongCount++; // implies pung
+          if (tile === windTile) state.ownWindKong = true; // implies windPunt
+          if (tile === windOfTheRoundTile) state.wotrKong = true; // implies wotrKong
+        }
+        if (tile > 30) state.dragonKongCount++; // implies pung
+        state.allchow = false;
+      }
+
+      if (!set.locked) state.concealedCount++;
+    });
+
+    return state;
   }
 
   /**
