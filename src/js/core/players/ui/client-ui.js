@@ -70,6 +70,15 @@ class ClientUI {
     // ...currently handled in game.js instead...
   }
 
+  async confirmKong(tile, resolve) {
+    modal.choiceInput(`Declare kong (${tile})?`, [
+      { label: 'Absolutely', value: 'yes' },
+      { label: 'No, I have plans for those tiles', value: 'no' },
+    ], result => {
+      if (result==='yes') resolve(true);
+      else resolve(false);
+    });
+  }
 
   listenForDiscard(resolve, suggestion, lastClaim) {
     let tiles = this.getAvailableTiles();

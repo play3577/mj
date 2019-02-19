@@ -133,30 +133,26 @@ class Player {
   }
 
   lockClaim(tiles) {
-    tiles.forEach(tile => this.remove(tile));
+    tiles.forEach(tile => {
+      this.remove(tile);
+      tile.dataset.locked = 'locked';
+    });
     this.locked.push(tiles);
     if (this.ui) this.ui.lockClaim(tiles);
   }
 
-  checkKong(tile) {
-    let tiles = this.getTileFaces().filter(t => t===tile);
+  async checkKong(tile) {
+    let tiles = this.getTiles().filter(t => (t.dataset.tile == tile));
     if (tiles.length === 4) {
-      tiles = tiles.map((t,pos) => {
-        let tile = this.getSingleTileFromHand(t);
-        this.remove(tile);
-        tile.dataset.locked = 'locked';
-        tile.dataset.hidden = 'hidden';
-        return tile.cloneNode();
-      });
-
-      // FIXME: this does not feel like the right place to "see" our own kong.
-      //        This should be processed as part of the reveal, by everyone.
-      if (this.ui) this.ui.see(tiles, this);
-
-      delete tiles[3].dataset.hidden;
-      this.locked.push(tiles);
-      return tiles;
+      let result = true;
+      if (this.ui) result = await new Promise(resolve => this.ui.confirmKong(tile, resolve));
+      if (result) {
+        tiles.slice(1).forEach(t => t.dataset.hidden = 'hidden');
+        this.lockClaim(tiles);
+        return tiles;
+      }
     }
+    return false;
   }
 
   // FIXME: is this function still necessary?

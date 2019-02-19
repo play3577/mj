@@ -84,7 +84,7 @@ class Game {
     let wall = this.wall;
     let players = this.players;
 
-    players.forEach(player => {
+    let runDeal = async (player, resolve) => {
       let bank = wall.get(13);
       for (let t=0, tile; t<bank.length; t++) {
         tile = bank[t];
@@ -97,7 +97,7 @@ class Game {
         }
 
         // process kong declaration
-        let kong = player.checkKong(tile);
+        let kong = await player.checkKong(tile);
         if (kong) {
           Logger.debug(`${player.id} plays self-drawn kong ${kong[0].dataset.tile} during initial tile dealing`);
           players.forEach(p => p.seeKong(kong, player));
@@ -111,7 +111,16 @@ class Game {
         //
         // Note that this also affects client-ui.js!
       }
-    });
+
+      resolve();
+    };
+
+    Promise.all([
+      new Promise(resolve => runDeal(players[0], resolve)),
+      new Promise(resolve => runDeal(players[1], resolve)),
+      new Promise(resolve => runDeal(players[2], resolve)),
+      new Promise(resolve => runDeal(players[3], resolve)),
+    ]);
   }
 
   /**
@@ -202,7 +211,7 @@ class Game {
    * dealt to that player. And of course, that supplement can
    * also be a bonus or kong tile.
    */
-  dealTileToPlayer(player, tile) {
+  async dealTileToPlayer(player, tile) {
     let players = this.players;
 
     Logger.debug(`${player.id} was given tile ${tile}`);
@@ -216,7 +225,7 @@ class Game {
 
     // if a played got a kong, and declared it, notify all
     // other players and issue a supplement tile.
-    let kong = player.checkKong(tile);
+    let kong = await player.checkKong(tile);
     if (kong) {
       Logger.debug(`${player.id} plays self-drawn kong ${kong[0].dataset.tile} during play`);
       players.forEach(p => p.seeKong(kong, player));
