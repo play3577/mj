@@ -94,18 +94,10 @@ class BotPlayer extends Player {
     if(winpaths > 0) {
       // We have indeed won! Mark this as a self-drawn win, because
       // if it was a claimed win we would have exited this function
-      // already, and then let the play.js game loop discover we've
-      // won by not discarding anything.
-      if (!this.latest.dataset.from) {
-        this.selfdraw = true;
-        console.log(`Self-drawn win for player ${this.id} on ${this.latest.dataset.tile}`);
-      } else {
-        // FIXME: the fact that we can get here means that we performed
-        //        a claim that we didn't think was a win, but it _was_
-        //        so that's a bug in determineClaim and the following
-        //        code should not be necessary when that's fixed:
-        this.locked.slice(-1)[0].winning = true;
-      }
+      // already (due to `this.has_won`), and then let the game.js
+      // game loop discover we've won by not discarding anything.
+      this.selfdraw = true;
+      console.log(`Self-drawn win for player ${this.id} on ${this.latest.dataset.tile}`);
       return resolve(undefined);
     }
 
