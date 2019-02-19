@@ -22,8 +22,8 @@ modal.choiceInput = (label, options, resolve, cancel) => {
 
   if (cancel) {
     let handleKey = evt => {
-      evt.preventDefault();
       if (evt.keyCode === 27) {
+        evt.preventDefault();
         document.removeEventListener('keydown', handleKey);
         modal.classList.add("hidden");
         cancel();
