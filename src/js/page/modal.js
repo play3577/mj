@@ -4,7 +4,7 @@ let modal = document.querySelector(".modal");
 /**
  * ...
  */
-modal.choiceInput = (label, options, resolve) => {
+modal.choiceInput = (label, options, resolve, cancel) => {
   let panel = modal.querySelector('.panel');
   panel.innerHTML = `<h1>${label}</h1>`;
 
@@ -19,6 +19,18 @@ modal.choiceInput = (label, options, resolve) => {
   });
 
   modal.classList.remove("hidden");
+
+  if (cancel) {
+    let handleKey = evt => {
+      evt.preventDefault();
+      if (evt.keyCode === 27) {
+        document.removeEventListener('keydown', handleKey);
+        modal.classList.add("hidden");
+        cancel();
+      }
+    }
+    document.addEventListener('keydown', handleKey);
+  }
 };
 
 /**

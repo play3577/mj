@@ -3,13 +3,7 @@
  */
 class ChineseClassical extends Ruleset {
   constructor() {
-    super("Chinese Classical");
-    this.init();
-  }
-
-  init() {
-    this.player_start_score = 2000;
-    this.limit = 1000;
+    super(2000, 1000);
   }
 
   /**

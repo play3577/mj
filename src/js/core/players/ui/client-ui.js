@@ -1,3 +1,25 @@
+// keyhandling maps
+const VK_LEFT = {
+  "37": true, // left cursor
+  "65": true  // 'a' key
+};
+
+const VK_RIGHT = {
+  "39": true, // right cursor
+  "68": true  // 'd' key
+};
+
+const VK_UP = {
+  "38": true, // up cursor
+  "87": true  // 'w' key
+};
+
+const VK_SIGNAL = {
+  "13": true, // enter
+  "32": true  // space
+};
+
+
 /**
  * This is a graphical interface that players can use
  * to visualise their game knowledge, and allow external
@@ -71,13 +93,14 @@ class ClientUI {
   }
 
   async confirmKong(tile, resolve) {
+    let cancel = () => resolve(false);
     modal.choiceInput(`Declare kong (${tile})?`, [
       { label: 'Absolutely', value: 'yes' },
       { label: 'No, I have plans for those tiles', value: 'no' },
     ], result => {
       if (result==='yes') resolve(true);
       else resolve(false);
-    });
+    }, cancel);
   }
 
   listenForDiscard(resolve, suggestion, lastClaim) {
@@ -99,13 +122,14 @@ class ClientUI {
     // let the user decide whether to declare a
     // win or whether to keep playing.
     if (!suggestion) {
+      let cancel = () => resolve(undefined);
       return modal.choiceInput("Declare win?", [
         { label: 'You better believe it!', value: 'win' },
         { label: 'No, I think I can do better...', value: '' },
       ], result => {
         if (result) resolve(undefined);
         else this.listenForDiscard(resolve, true);
-      });
+      }, cancel);
     }
 
     let stile = this.getSingleTileFromHand(suggestion.dataset.tile);
@@ -122,10 +146,45 @@ class ClientUI {
       resolve(e.target);
     };
 
+    // mouse interaction
     tiles.forEach(tile => {
       tile.classList.add('selectable');
       tile.addEventListener("click", pickAsDiscard);
     });
+
+    // keyboard interaction
+    let listenForKeys = (() => {
+      let tlen = tiles.length;
+      let curid = -1;
+      let currentTile = false;
+
+      return evt => {
+        let code = evt.keyCode;
+        let willBeHandled = VK_LEFT[code] || VK_RIGHT[code] || VK_UP[code] || VK_SIGNAL[code];
+        if (!willBeHandled) return;
+        evt.preventDefault();
+
+        if (currentTile) currentTile.classList.remove('highlight');
+        if (VK_LEFT[code]) {
+          curid = (currentTile === false) ? tlen - 1 : (curid === 0) ? tlen - 1 : curid - 1;
+          currentTile = tiles[curid];
+        }
+        else if (VK_RIGHT[code]) {
+          curid = (currentTile === false) ? 0 : (curid === tlen-1) ? 0 : curid + 1;
+          currentTile = tiles[curid];
+        }
+
+        currentTile.classList.add('highlight');
+
+        if (VK_UP[code] || VK_SIGNAL[code]) {
+          currentTile.classList.remove('highlight');
+          document.removeEventListener('keydown', listenForKeys);
+          pickAsDiscard({ target: currentTile });
+        }
+      };
+    })();
+
+    document.addEventListener('keydown', listenForKeys);
   }
 
   removeLastDiscard() {
@@ -178,14 +237,15 @@ class ClientUI {
     let tile = this.discards.lastChild;
     let mayChow = (((pid + 1)%4) == this.id);
 
-    let fn = evt => {
-      evt.stopPropagation();
+    let triggerClaimDialog = evt => {
+      if(evt) evt.stopPropagation();
 
       interrupt();
       this.clearTimeouts();
       let CLAIM = config.CLAIM;
 
       // let's spawn a little modal to see what the user actually wanted to do here.
+      let cancel = () => resolve({ claimtype: CLAIM.IGNORE});
       modal.choiceInput("What kind of claim are you making?", [
         { label: "Ignore", value: CLAIM.IGNORE },
         (mayChow && this.canChow(discard, CLAIM.CHOW1)) ? { label: "Chow (X**)", value: CLAIM.CHOW1 } : false,
@@ -196,7 +256,7 @@ class ClientUI {
         { label: "Win", value: CLAIM.WIN }, // Let's not pre-filter this one
       ], result => {
         tile.classList.remove('selectable');
-        tile.removeEventListener("click", fn);
+        tile.removeEventListener("click", triggerClaimDialog);
         if (result === CLAIM.WIN) {
           modal.choiceInput("How does this tile make you win?", [
             { label: "Actually, it doesn't", value: CLAIM.IGNORE },
@@ -208,26 +268,37 @@ class ClientUI {
           ], result => {
             if (result === CLAIM.IGNORE) resolve({ claimtype: CLAIM.IGNORE });
             else resolve({ claimtype: CLAIM.WIN, wintype: result });
-          });
+          }, cancel);
           return;
         }
         resolve({ claimtype: result });
-      });
+      }, cancel);
     }
 
-    tile.classList.add('selectable');
-    tile.addEventListener("click", fn);
-
-    let ignore = evt => {
+    let ignore = () => {
       interrupt();
       tile.classList.remove('selectable');
-      tile.removeEventListener("click", fn);
+      tile.removeEventListener("click", triggerClaimDialog);
       this.clearTimeouts();
       this.discards.removeEventListener("click", ignore);
       resolve(CLAIM.IGNORE);
     };
 
+    // mouse interaction
+    tile.classList.add('selectable');
+    tile.addEventListener("click", triggerClaimDialog);
     this.discards.addEventListener("click", ignore);
+
+    // keyboard interaction
+    let listenForKeys = evt => {
+      evt.preventDefault();
+      let code = evt.keyCode;
+      document.removeEventListener('keydown', listenForKeys);
+      if (VK_UP[code] || VK_SIGNAL[code]) return triggerClaimDialog();
+      return ignore();
+    };
+
+    document.addEventListener('keydown', listenForKeys);
   }
 
   endOfHand(disclosure) {

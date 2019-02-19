@@ -4,7 +4,7 @@
 class Game {
   constructor(players) {
     this.players = players;
-    this.rules = Ruleset.getRuleset("ChineseClassical");
+    this.rules = Ruleset.getRuleset("Chinese Classical");
     this.players.forEach(p => p.setRules(this.rules));
     this.wall = new Wall(players);
     this.scoreHistory = [];
@@ -22,7 +22,7 @@ class Game {
   // A function that triggers the s hand's play.
   // Unless the game is over because we've played
   // enough rounds to rotate the winds fully.
-  startHand(result = {}) {
+  async startHand(result = {}) {
     let pre = result.draw ? 'Res' : 'S';
     let players = this.players;
 
@@ -71,7 +71,7 @@ class Game {
 
     this.PLAY_START = Date.now();
 
-    this.dealTiles();
+    await this.dealTiles();
     this.preparePlay();
     this.play();
   }
@@ -80,7 +80,7 @@ class Game {
    * Dealing tiles means getting each player 13 play tiles,
    * with any bonus tiles replaced by normal tiles.
    */
-  dealTiles() {
+  async dealTiles() {
     let wall = this.wall;
     let players = this.players;
 
@@ -115,7 +115,7 @@ class Game {
       resolve();
     };
 
-    Promise.all([
+    await Promise.all([
       new Promise(resolve => runDeal(players[0], resolve)),
       new Promise(resolve => runDeal(players[1], resolve)),
       new Promise(resolve => runDeal(players[2], resolve)),

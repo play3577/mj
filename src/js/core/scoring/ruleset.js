@@ -6,14 +6,9 @@ const allFlowers = bonus => [34, 35, 36, 37].every(t => bonus.indexOf(t) > -1);
 const allSeasons = bonus => [38, 39, 40, 41].every(t => bonus.indexOf(t) > -1);
 
 class Ruleset {
-  constructor() {
-    this.init();
-  }
-
-  init() {
-    // extended by subclasses
-    this.player_start_score = 0;
-    this.limit = 0;
+  constructor(startscore, limit) {
+    this.player_start_score = startscore;
+    this.limit = limit;
   }
 
   settleScores(scores, winningplayer, eastplayer) {
@@ -229,6 +224,19 @@ class Ruleset {
   }
 }
 
-Ruleset.rulesets = {};
-Ruleset.register = RulesetClass => (Ruleset.rulesets[RulesetClass.name] = new RulesetClass());
-Ruleset.getRuleset = name => Ruleset.rulesets[name];
+/**
+ * Set up ruleset registration/fetching by name. Note that
+ * we add spaces in between camelcasing to make things
+ * easier to work with: `Ruleset.getRuleset("Chinese Classical")`
+ * is just friendlier for human code maintainers/editors.
+ */
+(() => {
+  let rulesets = {};
+
+  Ruleset.register = function(RulesetClass) {
+    let naturalName = RulesetClass.name.replace(/([a-z])([A-Z])/g, (_, b, c) => `${b} ${c}`);
+    rulesets[naturalName] = new RulesetClass();
+  };
+
+  Ruleset.getRuleset = name => rulesets[name];
+})();
