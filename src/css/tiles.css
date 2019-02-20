@@ -16,6 +16,7 @@
   background-repeat: no-repeat;
 }
 
+.tile.new { border-bottom: 3px solid lime; }
 .tile.highlight, .tile.selectable:hover { box-shadow: 0 0 3px 3px lime; position: relative; z-index: 10; }
 .tile.suggestion { border-top: 3px solid var(--prp); }
 .tile.discard { box-shadow: 0 0 3px 0 var(--cream); }

@@ -140,6 +140,7 @@ class ClientUI {
       stile.classList.remove('suggestion');
       stile.removeAttribute('title');
       tiles.forEach(tile => {
+        tile.classList.remove('new');
         tile.classList.remove('selectable');
         tile.removeEventListener("click", pickAsDiscard);
       });
@@ -386,6 +387,15 @@ class ClientUI {
   }
 
   append(t) {
+    let old = this.el.querySelector('.tile.new');
+    if (old) {
+      old.classList.remove('new');
+      old.removeAttribute('title');
+    }
+    if (!t.dataset.locked) {
+      t.classList.add('new');
+      t.setAttribute('title', 'latest tile');
+    }
     this.el.appendChild(t);
     this.sortTiles();
   }
