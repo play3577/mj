@@ -159,8 +159,6 @@ class ChineseClassical extends Ruleset {
   checkWinnerHandPatterns(scorePattern, winset, selfdraw = false, windTile, windOfTheRoundTile, tilesLeft, scoreObject) {
     let state = this.getState(scorePattern, winset, selfdraw, windTile, windOfTheRoundTile, tilesLeft);
 
-    console.log("state", state);
-
     if (state.selfdraw) {
       scoreObject.score += 2;
       scoreObject.log.push(`2 points for self-drawn win`);

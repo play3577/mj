@@ -137,7 +137,7 @@ class Ruleset {
         state.allchow = false;
       }
 
-      if (!set.locked) state.concealedCount++;
+      if (!set.locked || set.concealed) state.concealedCount++;
     });
 
     return state;
