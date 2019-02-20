@@ -165,6 +165,7 @@ class ClientUI {
         evt.preventDefault();
 
         if (currentTile) currentTile.classList.remove('highlight');
+
         if (VK_LEFT[code]) {
           curid = (currentTile === false) ? tlen - 1 : (curid === 0) ? tlen - 1 : curid - 1;
           currentTile = tiles[curid];
@@ -174,7 +175,7 @@ class ClientUI {
           currentTile = tiles[curid];
         }
 
-        currentTile.classList.add('highlight');
+        if (currentTile) currentTile.classList.add('highlight');
 
         if (VK_UP[code] || VK_SIGNAL[code]) {
           currentTile.classList.remove('highlight');
@@ -508,7 +509,6 @@ class ClientUI {
   }
 
   getSingleTileFromHand(tile) {
-    console.debug('searching for',tile,'in hand');
     return this.el.querySelector(`.tile[data-tile='${tile}']:not([data-locked]`);
   }
 
