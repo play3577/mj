@@ -100,10 +100,6 @@ class Player {
     return this.wincount;
   }
 
-  winner() {
-    if (this.ui) this.ui.winner();
-  }
-
   append(t, claimed) {
     //console.debug(`appending ${t} (${claimed})`);
     let revealed = false;
@@ -327,7 +323,7 @@ class Player {
     set.locked = true;
 
     if (claimtype === CLAIM.WIN) {
-      this.markWinner();
+//      this.markWinner();
       set.winning = true;
       claimtype = claim.wintype;
       if (claimtype === CLAIM.CHOW) {

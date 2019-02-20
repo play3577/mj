@@ -17,7 +17,6 @@ if (typeof window !== "undefined") {
 }
 
 const DEBUG = (params.debug==='true') ? true : false;
-
 if (!DEBUG) console.debug = () => {};
 
 const SEED = params.seed ? parseInt(params.seed) : 0;
@@ -26,6 +25,7 @@ const FORCE_OPEN_BOT_PLAY = (params.force_open_bot_play==='true') ? true : false
 const PLAY_INTERVAL = params.play ? params.play : 100;
 const HAND_INTERVAL = params.hand ? params.hand : 3000;
 const BOT_DELAY_BEFORE_DISCARD_ENDS = params.bot_delay ? parseInt(params.bot_delay) : 300;
+const WALL_HACK = params.wall_hack ? params.wall_hack : false;
 
 // The simple config is for settings I
 // personally change a lot during development.
@@ -170,7 +170,16 @@ const config = {
     // separation of concern and force bots to
     // update the player's ui, even though they
     // normally would have no way to access it.
-    FORCE_OPEN_BOT_PLAY: FORCE_OPEN_BOT_PLAY
+    FORCE_OPEN_BOT_PLAY: FORCE_OPEN_BOT_PLAY,
+
+
+    // Turning on wall hacks will set the wall
+    // to very specific walls for debugging
+    // purposes. This option simple fixes the
+    // wall to a pattern on reset() so you can't
+    // play a game if you use this. You just
+    // get to debug a very specific situation.
+    WALL_HACK: WALL_HACK
 };
 
 // this namespacing drives me nuts

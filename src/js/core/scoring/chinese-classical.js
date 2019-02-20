@@ -159,6 +159,8 @@ class ChineseClassical extends Ruleset {
   checkWinnerHandPatterns(scorePattern, winset, selfdraw = false, windTile, windOfTheRoundTile, tilesLeft, scoreObject) {
     let state = this.getState(scorePattern, winset, selfdraw, windTile, windOfTheRoundTile, tilesLeft);
 
+    console.log("state", state);
+
     if (state.selfdraw) {
       scoreObject.score += 2;
       scoreObject.log.push(`2 points for self-drawn win`);
@@ -244,7 +246,7 @@ class ChineseClassical extends Ruleset {
   /**
    * Determine the tile score for a collection of sets
    */
-  getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset, winner = false, selfdraw = false, tilesLeft) {
+  getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset, winner=false, selfdraw=false, tilesLeft) {
     let result = scorePattern
       .map(set => this._tile_score(set, windTile, windOfTheRoundTile))
       .reduce(
@@ -300,13 +302,13 @@ class ChineseClassical extends Ruleset {
     result.wotd = windOfTheRoundTile;
 
     // also determine points/doubles based on the full hand
-    if (winner)
-      this.checkWinnerHandPatterns(scorePattern, winset, selfdraw, windTile, windOfTheRoundTile, tilesLeft, result);
+    if (winner) this.checkWinnerHandPatterns(scorePattern, winset, selfdraw, windTile, windOfTheRoundTile, tilesLeft, result);
 
     if (result.limit) {
       result.score = this.limit;
       result.doubles = 0;
       result.total = this.limit;
+      result.log.push(`Limit hand: ${result.limit}`);
     } else {
       result.total = result.score * 2 ** result.doubles;
       if (result.total > this.limit) {

@@ -19,6 +19,10 @@ class Wall {
     this.dead = false;
     this.remaining = this.tiles.length - this.dead;
     console.debug(`using wall:\n[${this.tiles}]`);
+
+    if (config.WALL_HACK) {
+      WallHack.set(this, WallHack.hacks[config.WALL_HACK]);
+    }
   }
 
   get(howmany=1) {
@@ -36,3 +40,33 @@ class Wall {
     this.ui.textContent = `${this.remaining} tiles left`;
   }
 }
+
+/**
+ * We need a way to debug play with specific walls, so...
+ */
+const WallHack = {
+  hacks: {
+    self_drawn_win: [
+      // human player hand
+      1,1,1,
+      2,2,2,
+      3,3,3,
+      4,4,4,
+      5,
+
+      // bot player hands
+      16,16,16,17,17,17,18,18,18,19,19,19,  5,
+      11,11,11,12,12,12,13,13,13,14,14,14,  15,
+      6,6,6,7,7,7,8,8,8,9,9,9,              10,
+
+      // winning tile for player 0
+      5,
+
+      // rest of the fake wall
+      22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22,
+      22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22
+    ]
+  },
+
+  set(wall, tiles) { wall.tiles = tiles.slice(0); }
+};

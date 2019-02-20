@@ -121,24 +121,29 @@ class ClientUI {
     // If the bot knows we have a winning hand,
     // let the user decide whether to declare a
     // win or whether to keep playing.
-    if (!suggestion) {
+    if (suggestion === undefined) {
       let cancel = () => resolve(undefined);
       return modal.choiceInput("Declare win?", [
         { label: 'You better believe it!', value: 'win' },
         { label: 'No, I think I can do better...', value: '' },
       ], result => {
         if (result) resolve(undefined);
-        else this.listenForDiscard(resolve, true);
+        else this.listenForDiscard(resolve, false);
       }, cancel);
     }
 
-    let stile = this.getSingleTileFromHand(suggestion.dataset.tile);
-    stile.classList.add('suggestion');
-    stile.setAttribute('title','Bot-recommended discard.');
+    let stile = false;
+    if (suggestion) {
+      stile = this.getSingleTileFromHand(suggestion.dataset.tile);
+      stile.classList.add('suggestion');
+      stile.setAttribute('title','Bot-recommended discard.');
+    }
 
     let pickAsDiscard = e => {
-      stile.classList.remove('suggestion');
-      stile.removeAttribute('title');
+      if (stile) {
+        stile.classList.remove('suggestion');
+        stile.removeAttribute('title');
+      }
       tiles.forEach(tile => {
         tile.classList.remove('new');
         tile.classList.remove('selectable');
@@ -293,6 +298,8 @@ class ClientUI {
 
     // keyboard interaction
     let listenForKeys = evt => {
+      let willBeHandled = (VK_UP[code] || VK_SIGNAL[code]);
+      if (!willBeHandled) return;
       evt.preventDefault();
       let code = evt.keyCode;
       document.removeEventListener('keydown', listenForKeys);
@@ -379,9 +386,6 @@ class ClientUI {
 
   markWinner(wincount) {
     this.el.dataset.wincount = wincount;
-  }
-
-  winner() {
     this.el.classList.add('winner');
     this.el.classList.remove('active');
   }

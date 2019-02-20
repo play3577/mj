@@ -89,9 +89,9 @@ class BotPlayer extends Player {
 
     // If we have concealed tiles still, did the tile we just received
     // actually make us win?
-    let {lookout, waiting, composed, winpaths} = tilesNeeded(this.getTileFaces(), this.locked);
+    let { winpaths } = tilesNeeded(this.getTileFaces(), this.locked);
 
-    if(winpaths > 0) {
+    if(winpaths.length > 0) {
       // We have indeed won! Mark this as a self-drawn win, because
       // if it was a claimed win we would have exited this function
       // already (due to `this.has_won`), and then let the game.js

@@ -309,7 +309,7 @@ class Game {
     let currentPlayerId = this.currentPlayerId;
     let windOfTheRound = this.windOfTheRound;
 
-    player.winner();
+    player.markWinner();
 
     let play_length = (Date.now() - this.PLAY_START);
     console.log(`Player ${currentPlayerId} wins round ${hand}! (hand took ${play_length}ms)`);
