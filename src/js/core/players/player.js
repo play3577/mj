@@ -105,7 +105,7 @@ class Player {
   }
 
   append(t, claimed) {
-    Logger.debug(`appending ${t} (${claimed})`);
+    //console.debug(`appending ${t} (${claimed})`);
     let revealed = false;
     if (typeof t !== 'object') {
       if (t > 33) {

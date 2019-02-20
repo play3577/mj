@@ -37,7 +37,7 @@ class Game {
           if (this.windOfTheRound === 4) {
             let ms = (Date.now() - this.GAME_START);
             let s = ((ms/10)|0)/100;
-            Logger.log(`\nfull game played. (game took ${s}s)`);
+            console.log(`\nfull game played. (game took ${s}s)`);
             this.hand = this.draws = '';
             rotateWinds();
             let finalScores = players.map(p => p.getScore());
@@ -45,7 +45,7 @@ class Game {
             return;
           }
         }
-      } else Logger.debug(`Winner player was East, winds will not rotate.`);
+      } else console.debug(`Winner player was East, winds will not rotate.`);
     }
 
     if (!result.draw) {
@@ -53,8 +53,8 @@ class Game {
       this.draws = 0;
     } else this.draws++;
 
-    Logger.log(`\n${pre}tarting hand ${this.hand}.`); // Starting hand / Restarting hand
-    Logger.debug("Rotated winds:", this.wind, this.windOfTheRound);
+    console.log(`\n${pre}tarting hand ${this.hand}.`); // Starting hand / Restarting hand
+    console.debug("Rotated winds:", this.wind, this.windOfTheRound);
     rotateWinds(this.wind, this.windOfTheRound, this.hand, this.draws);
 
     this.wall.reset();
@@ -99,7 +99,7 @@ class Game {
         // process kong declaration
         let kong = await player.checkKong(tile);
         if (kong) {
-          Logger.debug(`${player.id} plays self-drawn kong ${kong[0].dataset.tile} during initial tile dealing`);
+          console.debug(`${player.id} plays self-drawn kong ${kong[0].dataset.tile} during initial tile dealing`);
           players.forEach(p => p.seeKong(kong, player));
           bank.push(wall.get());
         }
@@ -151,7 +151,7 @@ class Game {
     // increase the play counter;
     this.counter++;
     this.playDelay = (hand===config.PAUSE_ON_HAND && this.counter===config.PAUSE_ON_PLAY) ? 60*60*1000 : config.PLAY_INTERVAL;
-    if (!config.BOT_PLAY) Logger.log(`hand ${hand}, play ${this.counter}`);
+    if (!config.BOT_PLAY) console.log(`hand ${hand}, play ${this.counter}`);
 
     // "Draw one"
     if (!claim) this.dealTile(player);
@@ -182,7 +182,7 @@ class Game {
 
     // No claims: have we run out of tiles?
     if (wall.dead) {
-      Logger.log(`Hand ${hand} is a draw.`);
+      console.log(`Hand ${hand} is a draw.`);
       players.forEach(p => p.endOfHand());
       return setTimeout(() => this.startHand({ draw: true }), this.playDelay);
     }
@@ -214,8 +214,8 @@ class Game {
   async dealTileToPlayer(player, tile) {
     let players = this.players;
 
-    Logger.debug(`${player.id} was given tile ${tile}`);
-    Logger.debug(`dealing ${tile} to player ${player.id}`);
+    console.debug(`${player.id} was given tile ${tile}`);
+    console.debug(`dealing ${tile} to player ${player.id}`);
 
     let revealed = player.append(tile);
     players.forEach(p => p.receivedTile(player));
@@ -227,9 +227,9 @@ class Game {
     // other players and issue a supplement tile.
     let kong = await player.checkKong(tile);
     if (kong) {
-      Logger.debug(`${player.id} plays self-drawn kong ${kong[0].dataset.tile} during play`);
+      console.debug(`${player.id} plays self-drawn kong ${kong[0].dataset.tile} during play`);
       players.forEach(p => p.seeKong(kong, player));
-      Logger.debug(`Dealing ${player.id} a supplement tile.`);
+      console.debug(`Dealing ${player.id} a supplement tile.`);
       this.dealTile(player);
     }
   }
@@ -239,7 +239,7 @@ class Game {
    */
   processDiscard(player) {
     let discard = this.discard;
-    Logger.debug(`${player.id} discarded ${discard.dataset.tile}`);
+    console.debug(`${player.id} discarded ${discard.dataset.tile}`);
     player.removeDiscard(discard);
     discard.dataset.from = player.id;
     delete discard.dataset.hidden;
@@ -294,7 +294,7 @@ class Game {
    */
   processClaim(player, claim) {
     let discard = this.discard;
-    Logger.debug(`${claim.p} wants ${discard.dataset.tile} for ${claim.claimtype}`);
+    console.debug(`${claim.p} wants ${discard.dataset.tile} for ${claim.claimtype}`);
     player.disable();
     setTimeout(() => this.play(claim), this.playDelay);
   }
@@ -312,7 +312,7 @@ class Game {
     player.winner();
 
     let play_length = (Date.now() - this.PLAY_START);
-    Logger.log(`Player ${currentPlayerId} wins round ${hand}! (hand took ${play_length}ms)`);
+    console.log(`Player ${currentPlayerId} wins round ${hand}! (hand took ${play_length}ms)`);
 
     // Let everyone know what everyone had. It's the nice thing to do.
     let disclosure = players.map(p => p.getDisclosure());

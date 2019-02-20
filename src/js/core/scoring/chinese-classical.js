@@ -24,9 +24,9 @@ class ChineseClassical extends Ruleset {
         let east = i === eastplayer ? 2 : 1;
         let difference = wscore * Math.max(eastwin, east);
         adjustments[winningplayer] += difference;
-        Logger.debug(`${winningplayer} gets ${difference} from ${i}`);
+        console.debug(`${winningplayer} gets ${difference} from ${i}`);
         adjustments[i] -= wscore * Math.max(eastwin, east);
-        Logger.debug(`${i} pays ${difference} to ${winningplayer}`);
+        console.debug(`${i} pays ${difference} to ${winningplayer}`);
       }
 
       if (!config.LOSERS_SETTLE_SCORES) continue;
@@ -38,9 +38,9 @@ class ChineseClassical extends Ruleset {
 
         let east = i == eastplayer ? 2 : 1;
         let difference = (scores[i].total - scores[j].total) * east;
-        Logger.debug(`${i} gets ${difference} from ${j}`);
+        console.debug(`${i} gets ${difference} from ${j}`);
         adjustments[i] += difference;
-        Logger.debug(`${j} pays ${difference} to ${i}`);
+        console.debug(`${j} pays ${difference} to ${i}`);
         adjustments[j] -= difference;
       }
     }
@@ -243,7 +243,7 @@ class ChineseClassical extends Ruleset {
    * Determine the tile score for a collection of sets
    */
   getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset, winner = false, selfdraw = false, tilesLeft) {
-    Logger.debug(scorePattern.map(s => s.locked));
+    console.debug(scorePattern.map(s => s.locked));
 
     let result = scorePattern
       .map(set => this._tile_score(set, windTile, windOfTheRoundTile))

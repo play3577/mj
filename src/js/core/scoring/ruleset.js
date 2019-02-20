@@ -163,13 +163,13 @@ class Ruleset {
     let windTile = getWindTile(disclosure.wind);
     let windOfTheRoundTile = getWindTile(windOfTheRound);
 
-    Logger.debug(`player ${id}`);
-    Logger.debug(disclosure);
+    console.debug(`player ${id}`);
+    console.debug(disclosure);
 
     // And then let's see what our tile-examining
     // algorithm has to say about the tiles we have.
     let tileInformation = tilesNeeded(tiles, locked);
-    Logger.debug(tileInformation);
+    console.debug(tileInformation);
 
     let openCompositions = tileInformation.composed;
 
@@ -196,7 +196,7 @@ class Ruleset {
     // tiles, and see how much they would score, based on
     // the getTileScore() function up above.
     let possibleScores = openCompositions.map(chain => {
-      Logger.debug(`testing ${id}, chain:`, chain);
+      console.debug(`testing ${id}, chain:`, chain);
 
       let scorePattern = chain.map(s => {
         let terms = s.split('-');
@@ -219,7 +219,7 @@ class Ruleset {
     // And then make sure we award each player the highest
     // score they're elligible for.
     let finalScore = possibleScores.sort( (a,b) => { a = a.total; b = b.total; return a - b; }).slice(-1)[0];
-    Logger.debug(finalScore);
+    console.debug(finalScore);
     return finalScore;
   }
 }

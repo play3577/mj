@@ -264,13 +264,10 @@ class BotPlayer extends Player {
     let tiles = this.getTileFaces();
     tiles.sort();
 
-    Logger.debug(`${this.id} determining claim for ${tile} based on ${tiles}`);
+    console.debug(`${this.id} determining claim for ${tile} based on ${tiles}`);
 
     let {lookout, waiting, composed} = tilesNeeded(tiles, this.locked, canChow);
     this.markWaiting(waiting);
-
-    Logger.debug(lookout);
-    Logger.debug(composed);
 
     // is the current discard in the list of tiles we want?
     let claim = CLAIM.IGNORE, wintype;

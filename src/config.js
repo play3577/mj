@@ -16,23 +16,16 @@ if (typeof window !== "undefined") {
         .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {});
 }
 
+const DEBUG = (params.debug==='true') ? true : false;
+
+if (!DEBUG) console.debug = () => {};
+
 const SEED = params.seed ? parseInt(params.seed) : 0;
 const PLAY_IMMEDIATELY = (params.autoplay==='true') ? true : false;
 const FORCE_OPEN_BOT_PLAY = (params.force_open_bot_play==='true') ? true : false;
 const PLAY_INTERVAL = params.play ? params.play : 100;
 const HAND_INTERVAL = params.hand ? params.hand : 3000;
 const BOT_DELAY_BEFORE_DISCARD_ENDS = params.bot_delay ? parseInt(params.bot_delay) : 800;
-
- // Possible values for the logger's verbosity.
-const LOG_LEVELS = {
-    // least verbose
-    LOG: 0,
-    WARN: 1,
-    ERROR: 2,
-    // most verbose
-    DEBUG: 3
-};
-
 
 // The simple config is for settings I
 // personally change a lot during development.
@@ -47,10 +40,6 @@ const simple = {
         379859036, // there seem to be an inordinate amount of draws
         752896630, // turn 1 winner has some scorePatterns that are waaaaay too long
     ],
-
-    // In increasing level of verbosity, we
-    // can use LOG, WARN, ERROR, or DEBUG.
-    LOG_LEVEL: LOG_LEVELS.LOG,
 
     // The number of milliseconds between
     // players taking their turn.
@@ -123,9 +112,6 @@ const config = {
     // any code that needs to randomise data.
     PRNG: new Random(simple.SEED),
 
-    // Log verbosity
-    LOG_LEVEL: simple.LOG_LEVEL,
-
     // page choice on load
     PLAY_IMMEDIATELY: simple.PLAY_IMMEDIATELY,
 
@@ -186,21 +172,6 @@ const config = {
     // normally would have no way to access it.
     FORCE_OPEN_BOT_PLAY: FORCE_OPEN_BOT_PLAY
 };
-
-
-// Declare our logger as part of the config
-
-let LOG_LEVEL = simple.LOG_LEVEL;
-
-const Logger = {
-    log:   (...args) => { if(LOG_LEVEL >= LOG_LEVELS.LOG) console.log.apply(console, args); },
-    warn:  (...args) => { if(LOG_LEVEL >= LOG_LEVELS.WARN) console.warn.apply(console, args); },
-    error: (...args) => { if(LOG_LEVEL >= LOG_LEVELS.ERROR) console.error.apply(console, args); },
-    debug: (...args) => { if(LOG_LEVEL >= LOG_LEVELS.DEBUG) console.debug.apply(console, args); },
-    trace: () => { console.trace(); }
-};
-
-config.LOGGER = Logger;
 
 // this namespacing drives me nuts
 const max = Math.max;

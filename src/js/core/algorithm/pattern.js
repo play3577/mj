@@ -127,7 +127,7 @@ class Pattern {
    *
    */
   recurse(processed, set, result) {
-    Logger.debug(`removing ${processed}, set:`,set);
+    //console.debug(`removing ${processed}, set:`,set);
     set.forEach(s => {
       if (s.required !== false && s.required !== undefined) {
         let tile = s.required
@@ -149,7 +149,7 @@ class Pattern {
     let tile = this.keys[0]|0;
     let count = this.tiles[tile];
 
-    Logger.debug(`expanding using ${tile} (there are ${count} of this tile)`);
+    //console.debug(`expanding using ${tile} (there are ${count} of this tile)`);
 
     if (count===4) {
       // special case: if we already have four, we have all
@@ -243,7 +243,7 @@ class Pattern {
    * with the current list of tiles.
    */
   determineWin(paths=[], results=[], single=[], pair=[], set=[]) {
-    Logger.debug(`called with:`, pair, set, `- local tiles:`, this.tiles);
+    //console.debug(`called with:`, pair, set, `- local tiles:`, this.tiles);
 
     if (!this.keys.length) {
       // It's possible the very first call is already for a complete,
@@ -262,7 +262,7 @@ class Pattern {
     let head = [];
     let toRemove = [];
 
-    Logger.debug(`evaluating tile`,tile);
+    //console.debug(`evaluating tile`,tile);
 
     if (count>3) {
       head=[`4k-${tile}`];

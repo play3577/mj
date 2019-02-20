@@ -18,7 +18,7 @@ class Wall {
     this.deadSize = 16;
     this.dead = false;
     this.remaining = this.tiles.length - this.dead;
-    Logger.debug(`using wall:\n[${this.tiles}]`);
+    console.debug(`using wall:\n[${this.tiles}]`);
   }
 
   get(howmany=1) {

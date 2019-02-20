@@ -406,7 +406,7 @@ class ClientUI {
   playerDiscarded(player, tile) {
     let bank = this.playerbanks[player.id];
 
-    Logger.debug(`${this.id} sees discard ${tile} from ${player.id}`);
+    console.debug(`${this.id} sees discard ${tile} from ${player.id}`);
 
     if (player.id != this.id) {
       let blank = bank.querySelector(`[data-tile="-1"]`);
@@ -424,7 +424,7 @@ class ClientUI {
   }
 
   see(tiles, player) {
-    Logger.debug(`${this.id} sees ${tiles.map(t => t.dataset ? t.dataset.tile : t)} from ${player.id}`);
+    console.debug(`${this.id} sees ${tiles.map(t => t.dataset ? t.dataset.tile : t)} from ${player.id}`);
 
     let bank = this.playerbanks[player.id];
     let locknum = bank.querySelectorAll(`[data-locked]`).length;
@@ -508,7 +508,7 @@ class ClientUI {
   }
 
   getSingleTileFromHand(tile) {
-    Logger.debug('searching for',tile,'in hand');
+    console.debug('searching for',tile,'in hand');
     return this.el.querySelector(`.tile[data-tile='${tile}']:not([data-locked]`);
   }
 
