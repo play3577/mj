@@ -18,4 +18,3 @@
     if (config.PLAY_IMMEDIATELY) play();
     else offerChoice();
 }());
-

@@ -114,7 +114,7 @@ class BotPlayer extends Player {
     let tiles = this.getAvailableTiles();
     let tileCount = [];
     let immediateValue = [];
-    let potentialValue = [];
+    let tileStats = [];
 
     // First, let's see how many of each tile we have.
     let faces = Array.from(tiles).map(tile => {
@@ -126,7 +126,7 @@ class BotPlayer extends Player {
 
     // Cool. With that sorted out, let's start ranking
     // tiles in terms of how valuable they are to us.
-    faces.forEach( tile => {
+    faces.forEach(tile => {
       let value = 0;
       let availability = this.tracker.get(tile);
 
@@ -147,7 +147,7 @@ class BotPlayer extends Player {
       // potential ramifications of discarding each? Specifically,
       // we're interested in whether we can change our pontential
       // score.
-      potentialValue[tile] = this.calculatePotentialScoreDifference(tile, tiles);
+      tileStats[tile] = this.getLookoutStats(tile);
     });
 
 
@@ -155,7 +155,7 @@ class BotPlayer extends Player {
     let tile = 0;
     let l = Number.MAX_VALUE;
     immediateValue
-      .map((v,tile) => this.balanceDiscardMetrics(v, potentialValue[tile]))
+      .map((v,tile) => this.balanceDiscardMetrics(v, tileStats[tile]))
       .forEach((value,pos) => { if (value < l) { l = value; tile = pos; }});
 
     resolve(this.getSingleTileFromHand(tile));
@@ -201,24 +201,39 @@ class BotPlayer extends Player {
   }
 
   /**
-   * This is the third part of the determineDiscard logic,
-   * which checks whether there is a marked increase in score
-   * to be had by discarding a particular tile. On its own,
-   * this would be a terrible game strategy, but by balancing
-   * the outcome against the base value in the hand, this
-   * allows bots to strategise.
+   * This is a simple stats gathering function that we can use
+   * to understand the effect of removing a tile from a hand,
+   * by looking the stats prior to, and after removal.
    */
-  calculatePotentialScoreDifference(tile, tiles) {
+  getLookoutStats(tile) {
+    let tiles = this.getTileFaces();
+    let pos = tiles.indexOf(tile);
+    tiles.splice(pos, 1);
+    let testPattern = new Pattern(tiles, true);
+    let lookout = testPattern.expand();
 
-    /*
-     - consider this tile + all tiles in its suit
-     - consider this tile + any tiles that it might form a chow with
-     - etc.
-     - how far ahead should bots look?
-    */
+    let stats = {
+      chowCount: 0,
+      pungCount: 0,
+      suit: [0, 0, 0],
+      winds: 0,
+      dragons: 0,
+    };
 
-    // ... code goes here...
-    return 0;
+    let suit;
+
+    tiles.forEach(tile => {
+      if (tile <= 26) { suit = (tile/9)|0; stats.suit[suit]++; }
+      if (tile > 26 && tile < 31) stats.winds++;
+      if (tile > 31 && tile < 34) stats.dragons++;
+    });
+
+    lookout.forEach((v,tile) => {
+      if (v >= CLAIM.CHOW && v < CLAIM.PUNG) stats.chowCount++;
+      if (v >= CLAIM.PUNG && v < CLAIM.WIN) stats.pungCount++; // we're counting kongs as pungs
+    });
+
+    return stats;
   }
 
   /**
@@ -226,9 +241,13 @@ class BotPlayer extends Player {
    * of a tile in a hand vs. the potential increase in value
    * of the hand on the whole if we discard this tile.
    */
-  balanceDiscardMetrics(immediate, potential) {
-    // ... code goes here...
-    return immediate + potential;
+  balanceDiscardMetrics(baseScore, stats) {
+    // convert the stats object to a 0-100 score based
+    // on the bot's play profile, then balance that
+    // against the base score for just "trying to form
+    // a winning hand".
+
+    return baseScore;
   }
 
 

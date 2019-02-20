@@ -19,3 +19,9 @@ The following URL query parameters are supported for debugging purposes:
 #### I have questions
 
 I'm sure you do: feel free to [tweet at me](https://twitter.com/TheRealPomax) for shallow engagement, or file an issue over on [the issue tracker](https://github.com/Pomax/mj/issues) if you need deeper engagement.
+
+#### Code stats
+
+- HTML: ~485 LoC
+- CSS: ~600 LoC
+- JS: ~3300 LoC
