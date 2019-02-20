@@ -16,7 +16,7 @@ The following URL query parameters are supported for debugging purposes:
 - `play=<num>` number of milliseconds paused between bot actions
 - `hand=<num>` number of milliseconds paused on the score screen before starting a new hand
 - `force_open_bot_play=true` show the tiles that the "not us" bots are playing with
-- `wall_hack=<wall hack name>` override the wall instantiation to always be one specific pattern. See `core/wall.js`.
+- `wall_hack=<wall hack name>` override the wall instantiation to always be one specific pattern. See [`core/wall.js`](https://github.com/Pomax/mj/blob/master/src/js/core/wall.js).
 
 #### I have questions
 
