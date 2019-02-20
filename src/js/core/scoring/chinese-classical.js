@@ -265,6 +265,7 @@ class ChineseClassical extends Ruleset {
         }
       );
 
+    let name = config.TILE_NAMES;
     let hasOwnFlower = false;
     let hasOwnSeason = false;
     bonus.forEach(tile => {

@@ -91,9 +91,11 @@ class Player {
   }
 
   markWinner() {
-    this.has_won = true;
-    this.wincount++;
-    if (this.ui) this.ui.markWinner(this.wincount);
+    if (!this.has_won) {
+      this.has_won = true;
+      this.wincount++;
+      if (this.ui) this.ui.markWinner(this.wincount);
+    }
   }
 
   getWinCount() {
@@ -323,9 +325,9 @@ class Player {
     set.locked = true;
 
     if (claimtype === CLAIM.WIN) {
-//      this.markWinner();
+      this.markWinner();
+      if (!set.winning) claimtype = claim.wintype; // prevent double counting!
       set.winning = true;
-      claimtype = claim.wintype;
       if (claimtype === CLAIM.CHOW) {
         claimtype = convertSubtypeToClaim(claimtype);
       }
