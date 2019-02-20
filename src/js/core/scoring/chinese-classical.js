@@ -15,6 +15,8 @@ class ChineseClassical extends Ruleset {
     let adjustments = [0, 0, 0, 0];
     let eastwin = winningplayer === eastplayer ? 2 : 1;
 
+    console.debug(`%cSettling payment`, `color: red`);
+
     for (let i = 0; i < scores.length; i++) {
       if (i === winningplayer) continue;
 
@@ -243,8 +245,6 @@ class ChineseClassical extends Ruleset {
    * Determine the tile score for a collection of sets
    */
   getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset, winner = false, selfdraw = false, tilesLeft) {
-    console.debug(scorePattern.map(s => s.locked));
-
     let result = scorePattern
       .map(set => this._tile_score(set, windTile, windOfTheRoundTile))
       .reduce(

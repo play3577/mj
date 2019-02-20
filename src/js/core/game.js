@@ -53,7 +53,7 @@ class Game {
       this.draws = 0;
     } else this.draws++;
 
-    console.log(`\n${pre}tarting hand ${this.hand}.`); // Starting hand / Restarting hand
+    console.log(`\n%c${pre}tarting hand ${this.hand}.`, `color: red; font-weight: bold; font-size: 120%; border-bottom: 1px solid black;`); // Starting hand / Restarting hand
     console.debug("Rotated winds:", this.wind, this.windOfTheRound);
     rotateWinds(this.wind, this.windOfTheRound, this.hand, this.draws);
 
@@ -151,7 +151,7 @@ class Game {
     // increase the play counter;
     this.counter++;
     this.playDelay = (hand===config.PAUSE_ON_HAND && this.counter===config.PAUSE_ON_PLAY) ? 60*60*1000 : config.PLAY_INTERVAL;
-    if (!config.BOT_PLAY) console.log(`hand ${hand}, play ${this.counter}`);
+    console.log(`%chand ${hand}, play ${this.counter}`, `color: red; font-weight: bold;`);
 
     // "Draw one"
     if (!claim) this.dealTile(player);
@@ -313,6 +313,8 @@ class Game {
 
     let play_length = (Date.now() - this.PLAY_START);
     console.log(`Player ${currentPlayerId} wins round ${hand}! (hand took ${play_length}ms)`);
+
+    console.log(`%cCalculating scores...`, `color: red`);
 
     // Let everyone know what everyone had. It's the nice thing to do.
     let disclosure = players.map(p => p.getDisclosure());
