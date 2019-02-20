@@ -104,6 +104,58 @@ const Constants = {
 };
 
 
+// Tile names...
+const TILE_NAMES = {
+    "0": 'bamboo 1',
+    "1": 'bamboo 2',
+    "2": 'bamboo 3',
+    "3": 'bamboo 4',
+    "4": 'bamboo 5',
+    "5": 'bamboo 6',
+    "6": 'bamboo 7',
+    "7": 'bamboo 8',
+    "8": 'bamboo 9',
+    "9": 'characters 1',
+    "10": 'characters 2',
+    "11": 'characters 3',
+    "12": 'characters 4',
+    "13": 'characters 5',
+    "14": 'characters 6',
+    "15": 'characters 7',
+    "16": 'characters 8',
+    "17": 'characters 9',
+    "18": 'dots 1',
+    "19": 'dots 2',
+    "20": 'dots 3',
+    "21": 'dots 4',
+    "22": 'dots 5',
+    "23": 'dots 6',
+    "24": 'dots 7',
+    "25": 'dots 8',
+    "26": 'dots 9',
+    "27": 'East',
+    "28": 'South',
+    "29": 'West',
+    "30": 'North',
+    "31": 'Green dragon',
+    "32": 'Red dragon',
+    "33": 'White dragon',
+    "38": 'spring',
+    "39": 'summer',
+    "40": 'fall',
+    "41": 'winter',
+    "34": 'orchid',
+    "35": 'plum',
+    "36": 'chrysanthemum',
+    "37": 'bamboo'
+};
+
+const SUIT_NAMES = {
+    "0": "bamboo",
+    "1": "characters",
+    "2": "dots"
+}
+
 // And then rest of the configuration.
 const config = {
     SEED: simple.SEED,
@@ -147,6 +199,10 @@ const config = {
 
     // See above
     Constants,
+
+    // See above
+    TILE_NAMES,
+    SUIT_NAMES,
 
     // A score sorting function. This will probably
     // be migrated to somewhere else soon.

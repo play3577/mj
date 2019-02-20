@@ -58,6 +58,8 @@ class ChineseClassical extends Ruleset {
    * ...docs go here...
    */
   _tile_score(set, windTile, windOfTheRoundTile) {
+    let name = config.TILE_NAMES;
+
     let locked = set.locked;
     let tile = set[0];
 
@@ -69,15 +71,15 @@ class ChineseClassical extends Ruleset {
     if (set.length === 2) {
       if (tile > 30) {
         score += 2;
-        log.push(`2 for pair of dragons (${tile})`);
+        log.push(`2 for pair of dragons (${name[tile]})`);
       }
       if (tile === windTile) {
         score += 2;
-        log.push(`2 for pair of own wind (${tile})`);
+        log.push(`2 for pair of own wind (${name[tile]})`);
       }
       if (tile === windOfTheRoundTile) {
         score += 2;
-        log.push(`2 for pair of wind of the round (${tile})`);
+        log.push(`2 for pair of wind of the round (${name[tile]})`);
       }
     }
 
@@ -93,28 +95,28 @@ class ChineseClassical extends Ruleset {
           if (tile % 9 === 0 || tile % 9 === 8) {
             score += locked ? 4 : 8;
             log.push(
-              `${locked ? 4 : 8} for ${prefix}pung of terminals (${tile})`
+              `${locked ? 4 : 8} for ${prefix}pung of terminals (${name[tile]})`
             );
           } else {
             score += locked ? 2 : 4;
-            log.push(`${locked ? 2 : 4} for ${prefix}pung of simple (${tile})`);
+            log.push(`${locked ? 2 : 4} for ${prefix}pung of simple (${name[tile]})`);
           }
         } else if (tile < 31) {
           score += locked ? 4 : 8;
-          log.push(`${locked ? 4 : 8} for ${prefix}pung of winds (${tile})`);
+          log.push(`${locked ? 4 : 8} for ${prefix}pung of winds (${name[tile]})`);
           if (tile === windTile) {
             doubles += 1;
-            log.push(`1 double for a pung of player's own wind (${tile})`);
+            log.push(`1 double for a pung of player's own wind (${name[tile]})`);
           }
           if (tile === windOfTheRoundTile) {
             doubles += 1;
-            log.push(`1 double for a pung of wind of the round (${tile})`);
+            log.push(`1 double for a pung of wind of the round (${name[tile]})`);
           }
         } else {
           score += locked ? 4 : 8;
-          log.push(`${locked ? 4 : 8} for ${prefix}pung of dragons (${tile})`);
+          log.push(`${locked ? 4 : 8} for ${prefix}pung of dragons (${name[tile]})`);
           doubles += 1;
-          log.push(`1 double for a pung of dragons (${tile})`);
+          log.push(`1 double for a pung of dragons (${name[tile]})`);
         }
       }
     }
@@ -125,15 +127,15 @@ class ChineseClassical extends Ruleset {
         if (tile % 9 === 0 || tile % 9 === 8) {
           score += locked ? 16 : 32;
           log.push(
-            `${locked ? 16 : 32} for ${prefix}kong of terminals (${tile})`
+            `${locked ? 16 : 32} for ${prefix}kong of terminals (${name[tile]})`
           );
         } else {
           score += locked ? 8 : 16;
-          log.push(`${locked ? 8 : 16} for ${prefix}kong of simple (${tile})`);
+          log.push(`${locked ? 8 : 16} for ${prefix}kong of simple (${name[tile]})`);
         }
       } else if (tile < 31) {
         score += locked ? 16 : 32;
-        log.push(`${locked ? 16 : 32} for ${prefix}kong of winds (${tile})`);
+        log.push(`${locked ? 16 : 32} for ${prefix}kong of winds (${name[tile]})`);
         if (tile === windTile) {
           doubles += 1;
           log.push(`1 double for a kong of player's own wind`);
@@ -144,9 +146,9 @@ class ChineseClassical extends Ruleset {
         }
       } else {
         score += locked ? 16 : 32;
-        log.push(`${locked ? 16 : 32} for ${prefix}kong of dragons (${tile})`);
+        log.push(`${locked ? 16 : 32} for ${prefix}kong of dragons (${name[tile]})`);
         doubles += 1;
-        log.push(`1 double for a kong of dragons (${tile})`);
+        log.push(`1 double for a kong of dragons (${name[tile]})`);
       }
     }
 
@@ -157,6 +159,8 @@ class ChineseClassical extends Ruleset {
    * ...docs go here...
    */
   checkWinnerHandPatterns(scorePattern, winset, selfdraw = false, windTile, windOfTheRoundTile, tilesLeft, scoreObject) {
+    let suits = config.SUIT_NAMES;
+
     let state = this.getState(scorePattern, winset, selfdraw, windTile, windOfTheRoundTile, tilesLeft);
 
     if (state.selfdraw) {
@@ -183,11 +187,11 @@ class ChineseClassical extends Ruleset {
       if (state.honours) {
         scoreObject.doubles += 1;
         scoreObject.log.push(
-          `1 double for a one suit (${state.suit}) and honours hand`
+          `1 double for a one suit (${suits[state.suit]}) and honours hand`
         );
       } else {
         scoreObject.doubles += 3;
-        scoreObject.log.push(`3 doubles for a clean one suit hand (${state.suit})`);
+        scoreObject.log.push(`3 doubles for a clean one suit hand (${suits[state.suit]})`);
       }
     }
 
@@ -265,7 +269,7 @@ class ChineseClassical extends Ruleset {
     let hasOwnSeason = false;
     bonus.forEach(tile => {
       result.score += 4;
-      result.log.push(`4 for bonus tile (${tile})`);
+      result.log.push(`4 for bonus tile (${name[tile]})`);
 
       if (ownFlower(tile, windTile)) {
         hasOwnFlower = true;

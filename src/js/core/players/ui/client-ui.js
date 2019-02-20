@@ -94,7 +94,7 @@ class ClientUI {
 
   async confirmKong(tile, resolve) {
     let cancel = () => resolve(false);
-    modal.choiceInput(`Declare kong (${tile})?`, [
+    modal.choiceInput(`Declare kong (${config.TILE_NAMES[tile]})?`, [
       { label: 'Absolutely', value: 'yes' },
       { label: 'No, I have plans for those tiles', value: 'no' },
     ], result => {
