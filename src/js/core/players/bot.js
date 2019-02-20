@@ -25,7 +25,7 @@ class BotPlayer extends Player {
         s.forEach(t => {
           t = create(t.dataset.tile);
           t.dataset.locked = 'locked';
-          t.dataset.locknum = sid;
+          t.dataset.locknum = 1 + sid;
           bank.appendChild(t);
         });
       })

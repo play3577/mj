@@ -410,7 +410,7 @@ class ClientUI {
 
   lockClaim(tiles) {
     this.removeLastDiscard();
-    let locknum = this.el.querySelectorAll(`[data-locked]`).length;
+    let locknum = 1 + this.el.querySelectorAll(`[data-locked]`).length;
     tiles.forEach(tile => {
       tile.dataset.locknum = locknum;
       this.append(tile);
@@ -442,7 +442,7 @@ class ClientUI {
     console.debug(`${this.id} sees ${tiles.map(t => t.dataset ? t.dataset.tile : t)} from ${player.id}`);
 
     let bank = this.playerbanks[player.id];
-    let locknum = bank.querySelectorAll(`[data-locked]`).length;
+    let locknum = 1 + bank.querySelectorAll(`[data-locked]`).length;
 
     tiles.forEach(tile => {
       let face = (tile.dataset ? tile.dataset.tile : tile)|0;
@@ -568,7 +568,7 @@ class ClientUI {
 
     // 2: locked tiles
     if (la || lb) {
-      if (la && lb) return la - lb;
+      if (la && lb) return (la===lb) ? a - b : la - lb;
       if (la) return -1;
       return 1;
     }
