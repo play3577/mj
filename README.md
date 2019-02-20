@@ -10,11 +10,13 @@ The live version, which just lets you watch four bots play a round of MJ, can be
 
 The following URL query parameters are supported for debugging purposes:
 
+- `debug=true` turns on extended debug logging
 - `seed=<num>` make pseudo-random number generator use this seed value
 - `autoplay=true` immediately starts a game with four bots playing each other
 - `play=<num>` number of milliseconds paused between bot actions
 - `hand=<num>` number of milliseconds paused on the score screen before starting a new hand
 - `force_open_bot_play=true` show the tiles that the "not us" bots are playing with
+- `wall_hack=<wall hack name>` override the wall instantiation to always be one specific pattern. See `core/wall.js`.
 
 #### I have questions
 
