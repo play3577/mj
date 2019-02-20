@@ -10,15 +10,17 @@ The live version, which just lets you watch four bots play a round of MJ, can be
 
 The following URL query parameters are supported for debugging purposes:
 
+- `debug=true` turns on extended debug logging
 - `seed=<num>` make pseudo-random number generator use this seed value
 - `autoplay=true` immediately starts a game with four bots playing each other
 - `play=<num>` number of milliseconds paused between bot actions
 - `hand=<num>` number of milliseconds paused on the score screen before starting a new hand
 - `force_open_bot_play=true` show the tiles that the "not us" bots are playing with
+- `wall_hack=<wall hack name>` override the wall instantiation to always be one specific pattern. See [`core/wall.js`](https://github.com/Pomax/mj/blob/master/src/js/core/wall.js).
 
-#### I have questions
+#### I have questions..?
 
-I'm sure you do: feel free to [tweet at me](https://twitter.com/TheRealPomax) for shallow engagement, or file an issue over on [the issue tracker](https://github.com/Pomax/mj/issues) if you need deeper engagement.
+That's great, I'd be happy to answer them! Feel free to [tweet at me](https://twitter.com/TheRealPomax) for shallow engagement, or file an issue over on [the issue tracker](https://github.com/Pomax/mj/issues) if you need deeper engagement.
 
 #### Code stats
 
