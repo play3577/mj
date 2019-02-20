@@ -457,6 +457,7 @@ class ClientUI {
     let bank = this.playerbanks[player.id];
     let blank = create(-1);
     bank.appendChild(blank);
+    this.removeLastDiscard();
     this.see(tiles, player, true);
 
     // add a visual signal
