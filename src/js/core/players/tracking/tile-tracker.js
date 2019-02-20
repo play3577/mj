@@ -18,7 +18,7 @@ class TileTracker {
       console.trace();
       throw new Error('why is the tracker being given an HTML element?');
     }
-    if (this.id == 2) {
+    if (this.id == 0) {
       console.debug(`Player ${this.id} removing ${tile} from available tiles.`);
     }
     this.tiles[tile]--;
