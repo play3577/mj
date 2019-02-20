@@ -1,25 +1,3 @@
-// keyhandling maps
-const VK_LEFT = {
-  "37": true, // left cursor
-  "65": true  // 'a' key
-};
-
-const VK_RIGHT = {
-  "39": true, // right cursor
-  "68": true  // 'd' key
-};
-
-const VK_UP = {
-  "38": true, // up cursor
-  "87": true  // 'w' key
-};
-
-const VK_SIGNAL = {
-  "13": true, // enter
-  "32": true  // space
-};
-
-
 /**
  * This is a graphical interface that players can use
  * to visualise their game knowledge, and allow external
@@ -27,12 +5,13 @@ const VK_SIGNAL = {
  * human input for... well, humans)
  */
 class ClientUI {
-  constructor(id) {
-    this.id = id;
+  constructor(player) {
+    this.player = player;
+    this.id = player.id;
     this.timeouts = [];
     this.discards = document.querySelector(".discards");
     this.playerbanks = document.querySelectorAll(".player");
-    this.el = this.playerbanks[id];
+    this.el = this.playerbanks[this.id];
 
     this.reset();
 
@@ -265,14 +244,38 @@ class ClientUI {
         tile.classList.remove('selectable');
         tile.removeEventListener("click", triggerClaimDialog);
         if (result === CLAIM.WIN) {
-          modal.choiceInput("How does this tile make you win?", [
+          // determine how this player could actually win on this tile.
+          let { lookout } = tilesNeeded(this.player.getTileFaces(), this.player.locked);
+          console.log(lookout);
+
+          let winOptions = { pair: false, chow: false, pung: false };
+          let claimList = lookout[discard.dataset.tile];
+
+          console.log(claimList);
+
+          if (claimList) {
+            claimList.forEach(type => {
+              if (parseInt(type) === CLAIM.WIN) {
+                let subtype = parseInt(type.split('s')[1]);
+                if (subtype === CLAIM.PAIR) winOptions.pair = true;
+                if (subtype >= CLAIM.CHOW && subtype < CLAIM.PUNG) winOptions.chow = true;
+                if (subtype >= CLAIM.PUNG) winOptions.pung = true;
+              }
+            });
+          }
+
+          console.log(winOptions);
+
+          let options = [
             { label: "Actually, it doesn't", value: CLAIM.IGNORE },
-            this.haveSingle(discard) ? { label: "Pair", value: CLAIM.PAIR } : false,
-            this.canChow(discard, CLAIM.CHOW1) ? { label: "Chow (X**)", value: CLAIM.CHOW1 } : false,
-            this.canChow(discard, CLAIM.CHOW2) ? { label: "Chow (*X*)", value: CLAIM.CHOW2 } : false,
-            this.canChow(discard, CLAIM.CHOW3) ? { label: "Chow (**X)", value: CLAIM.CHOW3 } : false,
-            this.canPung(discard) ? { label: "Pung", value: CLAIM.PUNG } : false
-          ], result => {
+            winOptions.pair ? { label: "Pair", value: CLAIM.PAIR } : false,
+            winOptions.chow && this.canChow(discard, CLAIM.CHOW1) ? { label: "Chow (X**)", value: CLAIM.CHOW1 } : false,
+            winOptions.chow && this.canChow(discard, CLAIM.CHOW2) ? { label: "Chow (*X*)", value: CLAIM.CHOW2 } : false,
+            winOptions.chow && this.canChow(discard, CLAIM.CHOW3) ? { label: "Chow (**X)", value: CLAIM.CHOW3 } : false,
+            winOptions.pung ? { label: "Pung", value: CLAIM.PUNG } : false
+          ];
+
+          modal.choiceInput("How does this tile make you win?", options, result => {
             if (result === CLAIM.IGNORE) resolve({ claimtype: CLAIM.IGNORE });
             else resolve({ claimtype: CLAIM.WIN, wintype: result });
           }, cancel);
@@ -298,10 +301,10 @@ class ClientUI {
 
     // keyboard interaction
     let listenForKeys = evt => {
+      let code = evt.keyCode;
       let willBeHandled = (VK_UP[code] || VK_SIGNAL[code]);
       if (!willBeHandled) return;
       evt.preventDefault();
-      let code = evt.keyCode;
       document.removeEventListener('keydown', listenForKeys);
       if (VK_UP[code] || VK_SIGNAL[code]) return triggerClaimDialog();
       return ignore();

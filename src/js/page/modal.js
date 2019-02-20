@@ -1,3 +1,25 @@
+// keyhandling maps
+const VK_LEFT = {
+  "37": true, // left cursor
+  "65": true  // 'a' key
+};
+
+const VK_RIGHT = {
+  "39": true, // right cursor
+  "68": true  // 'd' key
+};
+
+const VK_UP = {
+  "38": true, // up cursor
+  "87": true  // 'w' key
+};
+
+const VK_SIGNAL = {
+  "13": true, // enter
+  "32": true  // space
+};
+
+
 // Simple general purpose modal
 let modal = document.querySelector(".modal");
 
