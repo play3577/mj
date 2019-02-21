@@ -238,8 +238,5 @@ const config = {
     WALL_HACK: WALL_HACK
 };
 
-// this namespacing drives me nuts
-const max = Math.max;
-
 // in node context?
 if(typeof process !== "undefined") module.exports = config;

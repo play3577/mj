@@ -6,6 +6,8 @@
 class BotPlayer extends Player {
   constructor(id) {
     super(id);
+    this.personality = new Personality();
+    this.personality.goBig();
   }
 
   showTilesAnyway() {
@@ -247,9 +249,8 @@ class BotPlayer extends Player {
     // on the bot's play profile, then balance that
     // against the base score for just "trying to form
     // a winning hand".
-    console.log(stats);
-
-    return baseScore;
+    let personalityScore = this.personality.getStatScore(stats);
+    return (baseScore + personalityScore) / 2;
   }
 
 
