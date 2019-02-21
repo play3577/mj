@@ -132,6 +132,7 @@ modal.setScores = (hand, scores, adjustments, resolve) => {
     resolve();
   });
   panel.appendChild(ok);
+  ok.focus();
 
   // Auto-dismiss the score panel during bot play,
   // UNLESS the user interacts with the modal.
