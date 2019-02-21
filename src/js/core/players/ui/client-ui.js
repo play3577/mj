@@ -155,7 +155,7 @@ class ClientUI {
 
       return evt => {
         let code = evt.keyCode;
-        let willBeHandled = VK_LEFT[code] || VK_RIGHT[code] || VK_UP[code] || VK_SIGNAL[code];
+        let willBeHandled = (VK_LEFT[code] || VK_RIGHT[code] || VK_UP[code] || VK_SIGNAL[code] || VK_START[code] || VK_END[code]);
         if (!willBeHandled) return;
         evt.preventDefault();
 

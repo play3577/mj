@@ -213,6 +213,7 @@ class BotPlayer extends Player {
     let lookout = testPattern.expand();
 
     let stats = {
+      discard: tile,
       chowCount: 0,
       pungCount: 0,
       suit: [0, 0, 0],
@@ -246,6 +247,7 @@ class BotPlayer extends Player {
     // on the bot's play profile, then balance that
     // against the base score for just "trying to form
     // a winning hand".
+    console.log(stats);
 
     return baseScore;
   }
