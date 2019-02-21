@@ -72,6 +72,8 @@ class ClientUI {
   }
 
   async confirmKong(tile, resolve) {
+    if (config.BOT_PLAY) return resolve(true);
+
     let cancel = () => resolve(false);
     modal.choiceInput(`Declare kong (${config.TILE_NAMES[tile]})?`, [
       { label: 'Absolutely', value: 'yes' },
