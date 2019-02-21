@@ -147,16 +147,16 @@ class ClientUI {
     // keyboard interaction
     let listenForKeys = (() => {
       let tlen = tiles.length;
-      let curid = -1;
-      let currentTile = false;
+      let currentTile = this.el.querySelector('.new');
+      let curid = Array.from(tiles).indexOf(currentTile);
+
+      currentTile.classList.add('highlight');
 
       return evt => {
         let code = evt.keyCode;
         let willBeHandled = VK_LEFT[code] || VK_RIGHT[code] || VK_UP[code] || VK_SIGNAL[code];
         if (!willBeHandled) return;
         evt.preventDefault();
-
-        if (currentTile) currentTile.classList.remove('highlight');
 
         if (VK_LEFT[code]) {
           curid = (currentTile === false) ? tlen - 1 : (curid === 0) ? tlen - 1 : curid - 1;
@@ -165,6 +165,7 @@ class ClientUI {
           curid = (currentTile === false) ? 0 : (curid === tlen-1) ? 0 : curid + 1;
         }
 
+        currentTile.classList.remove('highlight');
         currentTile = tiles[curid];
         currentTile.classList.add('highlight');
 
