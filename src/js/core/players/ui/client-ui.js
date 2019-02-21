@@ -118,18 +118,25 @@ class ClientUI {
       stile.setAttribute('title','Bot-recommended discard.');
     }
 
+    let cleanup = [];
+
     let pickAsDiscard = e => {
       if (stile) {
         stile.classList.remove('suggestion');
         stile.removeAttribute('title');
       }
+      cleanup.forEach(fn => fn());
+      resolve(e.target);
+    };
+
+    // cleanup for the click listeners
+    cleanup.push(() => {
       tiles.forEach(tile => {
         tile.classList.remove('new');
         tile.classList.remove('selectable');
         tile.removeEventListener("click", pickAsDiscard);
       });
-      resolve(e.target);
-    };
+    })
 
     // mouse interaction
     tiles.forEach(tile => {
@@ -153,22 +160,25 @@ class ClientUI {
 
         if (VK_LEFT[code]) {
           curid = (currentTile === false) ? tlen - 1 : (curid === 0) ? tlen - 1 : curid - 1;
-          currentTile = tiles[curid];
         }
         else if (VK_RIGHT[code]) {
           curid = (currentTile === false) ? 0 : (curid === tlen-1) ? 0 : curid + 1;
-          currentTile = tiles[curid];
         }
 
-        if (currentTile) currentTile.classList.add('highlight');
+        currentTile = tiles[curid];
+        currentTile.classList.add('highlight');
 
         if (VK_UP[code] || VK_SIGNAL[code]) {
           currentTile.classList.remove('highlight');
-          document.removeEventListener('keydown', listenForKeys);
           pickAsDiscard({ target: currentTile });
         }
       };
     })();
+
+    // cleanup for the key listener
+    cleanup.push(() => {
+      document.removeEventListener('keydown', listenForKeys);
+    });
 
     document.addEventListener('keydown', listenForKeys);
   }
@@ -302,7 +312,7 @@ class ClientUI {
     // keyboard interaction
     let listenForKeys = evt => {
       let code = evt.keyCode;
-      let willBeHandled = (VK_UP[code] || VK_SIGNAL[code]);
+      let willBeHandled = (VK_LEFT[code] || VK_RIGHT[code] || VK_UP[code] || VK_SIGNAL[code]);
       if (!willBeHandled) return;
       evt.preventDefault();
       document.removeEventListener('keydown', listenForKeys);
