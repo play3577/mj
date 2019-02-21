@@ -1,34 +1,18 @@
-// keyhandling maps
-const VK_LEFT = {
-  "37": true, // left cursor
-  "65": true  // 'a' key
-};
-
-const VK_RIGHT = {
-  "39": true, // right cursor
-  "68": true  // 'd' key
-};
-
-const VK_UP = {
-  "38": true, // up cursor
-  "87": true  // 'w' key
-};
-
-const VK_SIGNAL = {
-  "13": true, // enter
-  "32": true  // space
-};
-
 
 // Simple general purpose modal
 let modal = document.querySelector(".modal");
 
 /**
- * ...
+ * This modal offers a label and a set of button choices
+ * to pick from. Buttons can be navigated with the
+ * cursor keys for one handed play.
  */
 modal.choiceInput = (label, options, resolve, cancel) => {
   let panel = modal.querySelector('.panel');
   panel.innerHTML = `<h1>${label}</h1>`;
+
+  let bid = 0;
+  let btns = [];
 
   options.filter(v=>v).forEach(data => {
     let btn = document.createElement("button");
@@ -37,10 +21,24 @@ modal.choiceInput = (label, options, resolve, cancel) => {
       modal.classList.add("hidden");
       resolve(data.value);
     });
+    btn.addEventListener("keydown", e => {
+      let code = e.keyCode;
+      let willBeHandled = (VK_UP[code] || VK_DOWN[code] || VK_START[code] || VK_END[code]);
+      if (!willBeHandled) return;
+      e.preventDefault();
+      if (VK_UP[code]) bid = (bid===0) ? btns.length - 1 : bid - 1;
+      if (VK_DOWN[code]) bid = (bid===btns.length - 1) ? 0 : bid + 1;
+      if (VK_START[code]) bid = 0;
+      if (VK_END[code]) bid = btns.length - 1;
+      btns[bid].focus();
+    });
     panel.appendChild(btn);
   });
 
   modal.classList.remove("hidden");
+
+  btns = panel.querySelectorAll(`button`);
+  btns[bid].focus();
 
   if (cancel) {
     let handleKey = evt => {

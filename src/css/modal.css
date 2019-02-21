@@ -41,6 +41,22 @@
   display: block;
   width: 100%;
   white-space: nowrap;
+  background: #bbb;
+}
+
+.modal .panel button:active,
+.modal .panel button:focus {
+  background: #EEE;
+  box-shadow: 0 0 3px 0 var(--prp);
+}
+
+button::-moz-focus-inner {
+  border: 0;
+}
+
+button, button:active, button:focus {
+  outline: none!important;
+  outline: 0!important;
 }
 
 .modal .panel button + button {

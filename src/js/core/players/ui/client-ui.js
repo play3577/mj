@@ -148,7 +148,8 @@ class ClientUI {
     let listenForKeys = (() => {
       let tlen = tiles.length;
       let currentTile = this.el.querySelector('.new');
-      let curid = Array.from(tiles).indexOf(currentTile);
+      let curid = currentTile ? Array.from(tiles).indexOf(currentTile) : 0;
+      if (curid===0) currentTile = tiles[0];
 
       currentTile.classList.add('highlight');
 
@@ -158,12 +159,10 @@ class ClientUI {
         if (!willBeHandled) return;
         evt.preventDefault();
 
-        if (VK_LEFT[code]) {
-          curid = (currentTile === false) ? tlen - 1 : (curid === 0) ? tlen - 1 : curid - 1;
-        }
-        else if (VK_RIGHT[code]) {
-          curid = (currentTile === false) ? 0 : (curid === tlen-1) ? 0 : curid + 1;
-        }
+        if (VK_LEFT[code]) curid = (currentTile === false) ? tlen - 1 : (curid === 0) ? tlen - 1 : curid - 1;
+        if (VK_RIGHT[code]) curid = (currentTile === false) ? 0 : (curid === tlen-1) ? 0 : curid + 1;
+        if (VK_START[code]) curid = 0;
+        if (VK_END[code]) curid = tlen-1;
 
         currentTile.classList.remove('highlight');
         currentTile = tiles[curid];
