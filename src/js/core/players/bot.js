@@ -7,7 +7,6 @@ class BotPlayer extends Player {
   constructor(id) {
     super(id);
     this.personality = new Personality();
-    this.personality.goBig();
   }
 
   showTilesAnyway() {
