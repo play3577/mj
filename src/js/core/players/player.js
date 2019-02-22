@@ -139,15 +139,30 @@ class Player {
     if (this.ui) this.ui.lockClaim(tiles);
   }
 
-  async checkKong(tile) {
-    let tiles = this.getTiles().filter(t => (t.dataset.tile == tile));
-    if (tiles.length === 4) {
-      let result = true;
-      if (this.ui) result = await new Promise(resolve => this.ui.confirmKong(tile, resolve));
-      if (result) {
-        tiles.slice(1).forEach(t => t.dataset.hidden = 'hidden');
-        this.lockClaim(tiles);
-        return tiles;
+  async checkKong() {
+    // does this player have a kong in hand that needs to be declared?
+    let tiles = this.getTileFaces();
+    let counts = new Array(34).fill(0);
+    tiles.forEach(t => counts[t]++);
+    for (let tile=0, e=34, count; tile<e; tile++) {
+      count = counts[tile];
+      if (count===4) {
+        let result = true;
+        console.log(`${this.id} we're holding a kong of ${tile}, no question`);
+
+        if (this.ui) {
+          console.log(`${this.id} consulting UI`);
+          result = await new Promise( (resolve,reject) => {
+            this.ui.checkKong(tile, resolve)
+          });
+          console.log(`${this.id} UI result:`, result);
+        }
+
+        if (result === true) {
+          let tiles = this.tiles.filter(t => t.dataset.tile==tile);
+          this.lockClaim(tiles);
+          return tiles;
+        }
       }
     }
     return false;

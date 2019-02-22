@@ -86,6 +86,7 @@ class Game {
 
     let runDeal = async (player, resolve) => {
       let bank = wall.get(13);
+
       for (let t=0, tile; t<bank.length; t++) {
         tile = bank[t];
         players.forEach(p => p.receivedTile(player));
@@ -95,23 +96,25 @@ class Game {
           players.forEach(p => p.see(revealed, player));
           bank.push(wall.get());
         }
-
-        // process kong declaration
-        let kong = await player.checkKong(tile);
-        if (kong) {
-          console.debug(`${player.id} plays self-drawn kong ${kong[0].dataset.tile} during initial tile dealing`);
-          players.forEach(p => p.seeKong(kong, player));
-          bank.push(wall.get());
-        }
-
-        // At this point, a player should be able to decide whether or not to
-        // declare any kongs they might have in their hand. While unlikely, it
-        // is entirely possible for this to lead to a player declaring four
-        // kongs before play has even started. We will add this in later.
-        //
-        // Note that this also affects client-ui.js!
       }
 
+      // Resolve kongs in hand for as long as necessary.
+      let kong;
+      do {
+        kong = await player.checkKong();
+        if (kong) {
+          console.debug(`${player.id} plays kong ${kong[0].dataset.tile} during initial tile dealing`);
+          players.forEach(p => p.seeKong(kong, player));
+          // deal supplement tile(s) for as long as necessary
+          let revealed = false;
+          do {
+            let tile = wall.get();
+            players.forEach(p => p.receivedTile(player));
+            revealed = player.append(tile);
+            if (revealed) players.forEach(p => p.see(revealed, player));
+          } while (revealed);
+        }
+      } while (kong);
       resolve();
     };
 
