@@ -20,7 +20,13 @@ class HumanPlayer extends BotPlayer {
     super.determineDiscard(suggestion => {
       if (config.BOT_PLAY) return resolve(suggestion);
       this.ui.listenForDiscard(discard => {
-        // special handling for self-declared kongs:
+
+        // If we're discarding, even if our bot superclass
+        // determined we were holding a selfdrawn win, we
+        // are not claiming a win and so need to unset this:
+        if (discard) this.selfdraw = false;
+
+        // Special handling for self-declared kongs:
         if (discard && discard.exception === CLAIM.KONG) {
           let kong = discard.kong;
 
@@ -30,7 +36,8 @@ class HumanPlayer extends BotPlayer {
           // melded kong from existing pung:
           else this.meldKong(kong[0]);
         }
-        // and then fall through to the original resolution function
+
+        // And then fall through to the original resolution function
         resolve(discard);
       }, suggestion, this.lastClaim);
     });

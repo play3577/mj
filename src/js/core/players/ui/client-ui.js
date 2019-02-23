@@ -150,7 +150,7 @@ class ClientUI {
     // keyboard interaction
     let listenForKeys = (() => {
       let tlen = tiles.length;
-      let currentTile = this.el.querySelector('.new');
+      let currentTile = this.el.querySelector('.latest');
       let curid = currentTile ? Array.from(tiles).indexOf(currentTile) : 0;
       if (curid===0) currentTile = tiles[0];
 
@@ -427,8 +427,8 @@ class ClientUI {
     this.playerbanks.forEach(b => b.classList.remove('active'));
     this.playerbanks[id].classList.add('active');
     if (id != this.id) {
-      let latest = this.el.querySelector('.tile.new');
-      if (latest) latest.classList.remove('new');
+      let latest = this.el.querySelector('.tile.latest');
+      if (latest) latest.classList.remove('latest');
     }
   }
 
@@ -448,13 +448,13 @@ class ClientUI {
   }
 
   append(t) {
-    let old = this.el.querySelector('.tile.new');
+    let old = this.el.querySelector('.tile.latest');
     if (old) {
-      old.classList.remove('new');
+      old.classList.remove('latest');
       old.removeAttribute('title');
     }
     if (!t.dataset.locked) {
-      t.classList.add('new');
+      t.classList.add('latest');
       t.setAttribute('title', 'latest tile');
     }
     this.el.appendChild(t);
@@ -513,6 +513,8 @@ class ClientUI {
     if (melded) {
       console.trace();
       console.log(`finding locked set to meld ${tile} into.`);
+
+      // TODO: DOES THIS STILL APPLY? MAKE WALL HACK
     }
 
     // create a new locked set

@@ -20,7 +20,7 @@
   margin-top: calc(calc(var(--ph) / 6));
 }
 
-.tile.new {
+.tile.latest {
   border-bottom: 3px solid lime;
 }
 

@@ -57,6 +57,7 @@ class Player {
       wincount: this.getWinCount(),
       // If this player has won, did they self-draw their winning tile?
       selfdraw: this.has_won ? this.selfdraw : false,
+      selftile: (this.has_won && this.selfdraw) ? this.getLatestTile() : false,
       // If this player has won, the last-claimed tile can matter.
       final: this.has_won ? this.latest.dataset.tile : false
     };
@@ -104,7 +105,6 @@ class Player {
   }
 
   append(t, claimed) {
-    //console.debug(`appending ${t} (${claimed})`);
     let revealed = false;
     if (typeof t !== 'object') {
       if (t > 33) {
@@ -247,6 +247,12 @@ class Player {
 
   getLockedTileFaces() {
     return this.locked.map(set => `[${set.map(v=>v.dataset.tile|0)}]${set.winning?'!':''}`);
+  }
+
+  getLatestTile() {
+    let filtered = this.tiles.filter(t => t.classList.contains('latest'));
+    if (filtered.length) return filtered[0];
+    return false;
   }
 
   reveal() {

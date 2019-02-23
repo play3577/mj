@@ -25,7 +25,7 @@ class Ruleset {
     // extended by subclasses
   }
 
-  getTileScore(scorePattern,windTile,windOfTheRoundTile,bonus,winset,winner = false,selfdraw = false,tilesLeft) {
+  getTileScore(scorePattern,windTile,windOfTheRoundTile,bonus,winset,winner=false,selfdraw=false,selftile=false,tilesLeft) {
     // extended by subclasses
     return { score: 0, doubles: 0, total: 0, limit: undefined, log: ['master ruleset does not perform any scoring'] };
   }
@@ -33,7 +33,7 @@ class Ruleset {
   /**
    * All possible flags and values necessary for performing scoring, used in checkWinnerHandPatterns
    */
-  getState(scorePattern, winset, selfdraw, windTile, windOfTheRoundTile, tilesLeft) {
+  getState(scorePattern, winset, selfdraw, selftile, windTile, windOfTheRoundTile, tilesLeft) {
     // We start with some assumptions, and we'll invalidate them as we see more sets.
     let state = {
       allchow: true,
@@ -88,13 +88,15 @@ class Ruleset {
       }
 
       if (set.length === 2) {
-        if (!winset || winset.length !== 2) {
-          // We check the winset because SOMEHOW if we set newset.winning = true
-          // in the code that converts locked[] into tile number sets, that flag
-          // goes missing between computing basic tile scores, and computing
-          // the winning hand scores here. Super weird. FIXME: figure out why?
+        if (winset && winset.length !== 2) {
           state.outonPair = false;
-        } else {
+        }
+        else if (!winset && selfdraw && set[0] === selftile) {
+          state.outonPair = true;
+        }
+        else {
+          state.outonPair = false;
+
           if (tile > 26 && tile < 31) {
             state.windPair = true;
             state.majorPair = true;
@@ -156,6 +158,7 @@ class Ruleset {
     // Let's get the administrative data:
     let winner = disclosure.winner;
     let selfdraw = disclosure.selfdraw;
+    let selftile = disclosure.selftile ? disclosure.selftile.getTileFace() : false;
     let tiles = disclosure.concealed;
     let locked = disclosure.locked;
     let bonus = disclosure.bonus;
@@ -197,15 +200,7 @@ class Ruleset {
 
     // If this is the winner, though, then we _know_ there is at
     // least one winning path for this person to have won.
-    if (winner) {
-
-      // FIXME: by doing this rebinding, we lose the concealment
-      //        information that we set up for our locked tile
-      //        above so we need to fix the `Pattern.determineWin()`
-      //        function such that it preserves that information.
-
-      openCompositions = tileInformation.winpaths;
-    }
+    if (winner) openCompositions = tileInformation.winpaths;
 
     // Run through each possible interpetation of in-hand
     // tiles, and see how much they would score, based on
@@ -225,7 +220,7 @@ class Ruleset {
         return set;
       }).concat(winner ? [] : locked);
 
-      return this.getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset, winner, selfdraw, tilesLeft);
+      return this.getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset, winner, selfdraw, selftile, tilesLeft);
     });
 
 
