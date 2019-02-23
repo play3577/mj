@@ -60,6 +60,12 @@
   z-index: 0;
   right: var(--sep);
 }
+
+.finished .player::after {
+  z-index: 100;
+}
+
+
 .player:nth-child(1) {
   --xp: calc(var(--ph) - var(--w));
   transform: rotate(var(--p1)) translate(var(--xp), 0);

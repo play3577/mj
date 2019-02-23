@@ -24,6 +24,7 @@
 
 .discards::after {
   position: absolute;
+  z-index: 10;
   background: var(--prp);
   opacity: 0.9;
   box-shadow: 0 0 10px 2px var(--prp);

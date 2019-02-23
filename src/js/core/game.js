@@ -11,6 +11,7 @@ class Game {
   }
 
   startGame() {
+    document.querySelector(`.board`).classList.remove(`finished`);
     this.GAME_START = Date.now();
     this.wind = 0;
     this.windOfTheRound = 0;
@@ -38,6 +39,7 @@ class Game {
             let ms = (Date.now() - this.GAME_START);
             let s = ((ms/10)|0)/100;
             console.log(`\nfull game played. (game took ${s}s)`);
+            document.querySelector(`.board`).classList.add(`finished`);
             this.hand = this.draws = '';
             rotateWinds();
             let finalScores = players.map(p => p.getScore());
@@ -80,6 +82,7 @@ class Game {
    * Resolve kongs in hand for as long as necessary.
    */
   async resolveKongs(player, resolve) {
+    let players = this.players;
     let kong;
     do {
       kong = await player.checkKong();
@@ -89,7 +92,7 @@ class Game {
         // deal supplement tile(s) for as long as necessary
         let revealed = false;
         do {
-          let tile = wall.get();
+          let tile = this.wall.get();
           players.forEach(p => p.receivedTile(player));
           revealed = player.append(tile);
           if (revealed) players.forEach(p => p.see(revealed, player));

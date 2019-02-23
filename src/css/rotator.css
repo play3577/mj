@@ -13,6 +13,7 @@
   width: var(--wotr-dim);
   height: var(--wotr-dim);
   position: absolute;
+  z-index: 2;
   top: calc(50% - calc(var(--wotr-dim) / 2));
   left: calc(50% - calc(var(--wotr-dim) / 2));
   transform: rotate(45deg);
