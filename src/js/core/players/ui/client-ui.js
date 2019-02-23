@@ -170,7 +170,7 @@ class ClientUI {
 
       return evt => {
         let code = evt.keyCode;
-        let willBeHandled = (VK_LEFT[code] || VK_RIGHT[code] || VK_UP[code] || VK_SIGNAL[code] || VK_START[code] || VK_END[code]);
+        let willBeHandled = (VK_LEFT[code] || VK_RIGHT[code] || VK_UP[code] || VK_DOWN[code] || VK_SIGNAL[code] || VK_START[code] || VK_END[code]);
         if (!willBeHandled) return;
         evt.preventDefault();
 
@@ -187,6 +187,24 @@ class ClientUI {
           currentTile.classList.remove('highlight');
           pickAsDiscard({ target: currentTile });
         }
+
+        if (VK_DOWN[code]) {
+          modal.choiceInput("Declaring a kong or win?", [
+            { label: "cancel", value: CLAIM.IGNORE },
+            { label: "kong", value: CLAIM.KONG },
+            { label: "win", value: CLAIM.WIN }
+          ], result => {
+            if (result === CLAIM.KONG) {
+              currentTile.exception = CLAIM.KONG;
+              currentTile.kong = [...this.getAllTilesInHand(currentTile.dataset.tile)];;
+              currentTile.classList.remove('highlight');
+              pickAsDiscard({ target: currentTile });
+            }
+            if (result === CLAIM.WIN) {
+              pickAsDiscard({ target: undefined });
+            }
+          });
+        }
       };
     })();
 
@@ -199,7 +217,9 @@ class ClientUI {
   }
 
   removeLastDiscard() {
-    this.discards.removeChild(this.discards.lastChild);
+    if (this.discards.lastChild) {
+      this.discards.removeChild(this.discards.lastChild);
+    }
   }
 
   nextPlayer() {
@@ -446,6 +466,15 @@ class ClientUI {
     this.sortTiles();
   }
 
+  meldKong(tile) {
+    // find another tile like this, but locked, which can only be a pung.
+    let other = this.el.querySelector(`.tile[data-locked][data-tile='${tile.dataset.tile}']`);
+    tile.dataset.locknum = other.dataset.locknum;
+    tile.dataset.locked = 'locked';
+    this.el.appendChild(tile);
+    this.sortTiles();
+  }
+
   playerDiscarded(player, tile) {
     let bank = this.playerbanks[player.id];
 
@@ -466,27 +495,36 @@ class ClientUI {
     this.sortTiles(bank);
   }
 
-  see(tiles, player) {
-    console.debug(`${this.id} sees ${tiles.map(t => t.dataset ? t.dataset.tile : t)} from ${player.id}`);
+  see(tiles, player, melded=false) {
+    console.debug(`${this.id} sees ${tiles.map(t => t.dataset ? t.dataset.tile : t)} from ${player.id} (melded: ${melded})`);
 
     let bank = this.playerbanks[player.id];
-    let locknum = 1 + bank.querySelectorAll(`[data-locked]`).length;
 
-    tiles.forEach(tile => {
-      let face = (tile.dataset ? tile.dataset.tile : tile)|0;
+    // find the existing locked set and ammend
+    if (melded) {
+      console.trace();
+      console.log(`finding locked set to meld ${tile} into.`);
+    }
 
-      if (player.id != this.id) {
-        // remove a "blank" tile to replace with the one we're seeing.
-        let blank = bank.querySelector(`[data-tile="-1"]`);
-        if (blank) bank.removeChild(blank);
-      }
+    // create a new locked set
+    else {
+      let locknum = 1 + bank.querySelectorAll(`[data-locked]`).length;
+      tiles.forEach(tile => {
+        let face = (tile.dataset ? tile.dataset.tile : tile)|0;
 
-      let e = create(face);
-      if (tile.dataset && tile.dataset.hidden) e.dataset.hidden = 'hidden';
-      e.dataset.locked = 'locked';
-      e.dataset.locknum = locknum;
-      bank.appendChild(e);
-    });
+        if (player.id != this.id) {
+          // remove a "blank" tile to replace with the one we're seeing.
+          let blank = bank.querySelector(`[data-tile="-1"]`);
+          if (blank) bank.removeChild(blank);
+        }
+
+        let e = create(face);
+        if (tile.dataset && tile.dataset.hidden) e.dataset.hidden = 'hidden';
+        e.dataset.locked = 'locked';
+        e.dataset.locknum = locknum;
+        bank.appendChild(e);
+      });
+    }
 
     this.sortTiles(bank);
   }
@@ -500,7 +538,7 @@ class ClientUI {
     let blank = create(-1);
     bank.appendChild(blank);
     this.removeLastDiscard();
-    this.see(tiles, player, true);
+    this.see(tiles, player);
 
     // add a visual signal
     if (!config.BOT_PLAY) {

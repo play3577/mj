@@ -130,13 +130,23 @@ class Player {
     if (this.ui) this.ui.remove(tile);
   }
 
-  lockClaim(tiles) {
+  lockClaim(tiles, concealed=false) {
+    // There is a `concealed` because someone can declare a concealedkong - FIXME: work that logic in
     tiles.forEach(tile => {
       this.remove(tile);
       tile.dataset.locked = 'locked';
     });
     this.locked.push(tiles);
     if (this.ui) this.ui.lockClaim(tiles);
+  }
+
+  meldKong(tile) {
+    this.remove(tile);
+    let set = this.locked.find(set => (set[0].dataset.tile === tile.dataset.tile));
+    let meld = set[0].cloneNode();
+    meld.dataset.melded = 'melded';
+    set.push(meld);
+    if (this.ui) this.ui.meldKong(tile);
   }
 
   async checkKong() {
@@ -148,14 +158,12 @@ class Player {
       count = counts[tile];
       if (count===4) {
         let result = true;
-        console.log(`${this.id} we're holding a kong of ${tile}, no question`);
+        // console.debug(`${this.id} we're holding a kong of ${tile}, no question`);
 
         if (this.ui) {
-          console.log(`${this.id} consulting UI`);
           result = await new Promise( (resolve,reject) => {
             this.ui.checkKong(tile, resolve)
           });
-          console.log(`${this.id} UI result:`, result);
         }
 
         if (result === true) {
@@ -168,17 +176,16 @@ class Player {
     return false;
   }
 
-  // FIXME: is this function still necessary?
-  // Does it matter that it was a discard?
   removeDiscard(discard) {
+    // FIXME: is this function still necessary? Does it matter that it was a discard?
     this.remove(discard);
   }
 
-  see(tiles, player) {
+  see(tiles, player, melded) {
     if (player === this) return;
     if (!tiles.map) tiles = [tiles];
     tiles.forEach(tile => this.tracker.seen(tile));
-    if (this.ui) this.ui.see(tiles, player);
+    if (this.ui) this.ui.see(tiles, player, melded);
   }
 
   receivedTile(player) {
@@ -191,7 +198,7 @@ class Player {
     if (this.ui) this.ui.playerDiscarded(player, tile);
   }
 
-  seeKong(tiles, player) {
+  seeKong(tiles, player, melded) {
     this.see(tiles.map(t => t.dataset.tile), player, false, true);
   }
 

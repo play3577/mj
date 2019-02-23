@@ -98,7 +98,7 @@ class BotPlayer extends Player {
       // already (due to `this.has_won`), and then let the game.js
       // game loop discover we've won by not discarding anything.
       this.selfdraw = true;
-      console.log(`Self-drawn win for player ${this.id} on ${this.latest.dataset.tile}`);
+      console.debug(`Self-drawn win for player ${this.id} on ${this.latest.dataset.tile}`);
       return resolve(undefined);
     }
 

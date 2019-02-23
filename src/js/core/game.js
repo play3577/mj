@@ -154,7 +154,7 @@ class Game {
     // increase the play counter;
     this.counter++;
     this.playDelay = (hand===config.PAUSE_ON_HAND && this.counter===config.PAUSE_ON_PLAY) ? 60*60*1000 : config.PLAY_INTERVAL;
-    console.log(`%chand ${hand}, play ${this.counter}`, `color: red; font-weight: bold;`);
+    if (config.DEBUG) console.log(`%chand ${hand}, play ${this.counter}`, `color: red; font-weight: bold;`);
 
     // "Draw one"
     if (!claim) this.dealTile(player);
@@ -170,11 +170,38 @@ class Game {
     }
 
     // "Play one"
-    if (discard) discard.classList.remove('discard');
-    discard = this.discard = await new Promise(resolve => player.getDiscard(resolve));
+    do {
+      if (discard) discard.classList.remove('discard');
 
-    // Did anyone win?
-    if (!discard) return this.processWin(player);
+      discard = this.discard = await new Promise(resolve => player.getDiscard(resolve));
+
+      // Did anyone win?
+      if (!discard) {
+        return this.processWin(player);
+      }
+
+      // no winner, but did this player declare/meld a kong?
+      if (discard.exception === CLAIM.KONG) {
+        let kong = discard.kong;
+        let melded = (kong.length === 1);
+
+        console.debug(`${player.id} ${melded ? `melds`:`plays`} kong ${kong}`);
+        players.forEach(p => p.seeKong(kong, player, melded));
+
+        // deal supplement tile(s) for as long as necessary
+        let revealed = false;
+        do {
+          let tile = wall.get();
+          players.forEach(p => p.receivedTile(player));
+          revealed = player.append(tile);
+          if (revealed) players.forEach(p => p.see(revealed, player));
+        } while (revealed);
+
+        // Then set the discard to `false` so that we enter the
+        // "waiting for discard from player" state again.
+        discard = false;
+      }
+    } while (!discard); // note: we exit the function on a "no discard" win.
 
     // No winner - process the discard.
     this.processDiscard(player);
@@ -316,8 +343,6 @@ class Game {
 
     let play_length = (Date.now() - this.PLAY_START);
     console.log(`Player ${currentPlayerId} wins round ${hand}! (hand took ${play_length}ms)`);
-
-    console.log(`%cCalculating scores...`, `color: red`);
 
     // Let everyone know what everyone had. It's the nice thing to do.
     let disclosure = players.map(p => p.getDisclosure());

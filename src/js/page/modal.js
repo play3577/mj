@@ -22,6 +22,7 @@ modal.choiceInput = (label, options, resolve, cancel) => {
       resolve(data.value);
     });
     btn.addEventListener("keydown", e => {
+      e.stopPropagation();
       let code = e.keyCode;
       let willBeHandled = (VK_UP[code] || VK_DOWN[code] || VK_START[code] || VK_END[code]);
       if (!willBeHandled) return;

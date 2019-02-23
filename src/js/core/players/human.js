@@ -19,7 +19,20 @@ class HumanPlayer extends BotPlayer {
     // it would suggest we throw away:
     super.determineDiscard(suggestion => {
       if (config.BOT_PLAY) return resolve(suggestion);
-      this.ui.listenForDiscard(resolve, suggestion, this.lastClaim);
+      this.ui.listenForDiscard(discard => {
+        // special handling for self-declared kongs:
+        if (discard && discard.exception === CLAIM.KONG) {
+          let kong = discard.kong;
+
+          // fully concealed kong!
+          if (kong.length === 4) this.lockClaim(kong, true);
+
+          // melded kong from existing pung:
+          else this.meldKong(kong[0]);
+        }
+        // and then fall through to the original resolution function
+        resolve(discard);
+      }, suggestion, this.lastClaim);
     });
   }
 

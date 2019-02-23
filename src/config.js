@@ -158,6 +158,7 @@ const SUIT_NAMES = {
 
 // And then rest of the configuration.
 const config = {
+    DEBUG: DEBUG,
     SEED: simple.SEED,
 
     // The pseudo-random number generator used by
