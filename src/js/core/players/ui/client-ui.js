@@ -129,7 +129,7 @@ class ClientUI {
 
     let stile = false;
     if (suggestion) {
-      stile = this.getSingleTileFromHand(suggestion.dataset.tile);
+      stile = this.getSingleTileFromHand(suggestion.getTileFace());
       stile.classList.add('suggestion');
       stile.setAttribute('title','Bot-recommended discard.');
     }
@@ -190,20 +190,34 @@ class ClientUI {
         }
 
         if (VK_DOWN[code]) {
-          modal.choiceInput("Declaring a kong or win?", [
-            { label: "cancel", value: CLAIM.IGNORE },
-            { label: "kong", value: CLAIM.KONG },
-            { label: "win", value: CLAIM.WIN }
-          ], result => {
+          let face = currentTile.getTileFace();
+          let allInHand = this.getAllTilesInHand(face);
+          let canKong = false;
+
+          // do we have a concealed kong?
+          if (allInHand.length === 4) canKong = true;
+          // can we meld a kong?
+          else if (this.player.locked.some(set => set.every(t => t.getTileFace()==face))) canKong = true;
+
+          // can we win?
+          let { winpaths } = tilesNeeded(this.player.getTileFaces(), this.player.locked);
+          let canWin = winpaths.length > 0;
+
+          // build the self-declare options for this action
+          let options = [
+            { label: "on second thought, never mind", value: CLAIM.IGNORE },
+            canKong ? { label: "I'm declaring a kong", value: CLAIM.KONG } : false,
+            canWin ? { label: "I just won", value: CLAIM.WIN } : false
+          ].filter(v=>v);
+
+          modal.choiceInput("Declaring a kong or win?", options, result => {
             if (result === CLAIM.KONG) {
               currentTile.exception = CLAIM.KONG;
-              currentTile.kong = [...this.getAllTilesInHand(currentTile.dataset.tile)];;
+              currentTile.kong = [...allInHand];;
               currentTile.classList.remove('highlight');
               pickAsDiscard({ target: currentTile });
             }
-            if (result === CLAIM.WIN) {
-              pickAsDiscard({ target: undefined });
-            }
+            if (result === CLAIM.WIN) pickAsDiscard({ target: undefined });
           });
         }
       };
@@ -228,22 +242,22 @@ class ClientUI {
   }
 
   haveSingle(tile) {
-    let tiles = this.getAllTilesInHand(tile.dataset ? tile.dataset.tile : tile);
+    let tiles = this.getAllTilesInHand(tile.dataset ? tile.getTileFace() : tile);
     return tiles.length >= 1;
   }
 
   canPung(tile) {
-    let tiles = this.getAllTilesInHand(tile.dataset ? tile.dataset.tile : tile);
+    let tiles = this.getAllTilesInHand(tile.dataset ? tile.getTileFace() : tile);
     return tiles.length >= 2;
   }
 
   canKong(tile) {
-    let tiles = this.getAllTilesInHand(tile.dataset ? tile.dataset.tile : tile);
+    let tiles = this.getAllTilesInHand(tile.dataset ? tile.getTileFace() : tile);
     return tiles.length === 3;
   }
 
   canChow(tile, type) {
-    tile = (tile.dataset ? tile.dataset.tile : tile) |0;
+    tile = (tile.dataset ? tile.getTileFace() : tile);
     if (tile > 26) return false;
     let face = tile % 9;
     let t1, t2;
@@ -263,6 +277,42 @@ class ClientUI {
       t2 = tile - 1;
     }
     return this.getSingleTileFromHand(t1) && this.getSingleTileFromHand(t2);
+  }
+
+  /**
+   * Can be trigger both during discard and claim phases.
+   */
+  spawnWinDialog(resolve) {
+    // determine how this player could actually win on this tile.
+    let { lookout } = tilesNeeded(this.player.getTileFaces(), this.player.locked);
+
+    let winOptions = { pair: false, chow: false, pung: false };
+    let claimList = lookout[discard.getTileFace()];
+
+    if (claimList) {
+      claimList.forEach(type => {
+        if (parseInt(type) === CLAIM.WIN) {
+          let subtype = parseInt(type.split('s')[1]);
+          if (subtype === CLAIM.PAIR) winOptions.pair = true;
+          if (subtype >= CLAIM.CHOW && subtype < CLAIM.PUNG) winOptions.chow = true;
+          if (subtype >= CLAIM.PUNG) winOptions.pung = true;
+        }
+      });
+    }
+
+    let options = [
+      { label: "Actually, it doesn't", value: CLAIM.IGNORE },
+      winOptions.pair ? { label: "Pair", value: CLAIM.PAIR } : false,
+      winOptions.chow && this.canChow(discard, CLAIM.CHOW1) ? { label: "Chow (X**)", value: CLAIM.CHOW1 } : false,
+      winOptions.chow && this.canChow(discard, CLAIM.CHOW2) ? { label: "Chow (*X*)", value: CLAIM.CHOW2 } : false,
+      winOptions.chow && this.canChow(discard, CLAIM.CHOW3) ? { label: "Chow (**X)", value: CLAIM.CHOW3 } : false,
+      winOptions.pung ? { label: "Pung", value: CLAIM.PUNG } : false
+    ];
+
+    modal.choiceInput("How does this tile make you win?", options, result => {
+      if (result === CLAIM.IGNORE) resolve({ claimtype: CLAIM.IGNORE });
+      else resolve({ claimtype: CLAIM.WIN, wintype: result });
+    }, cancel);
   }
 
   listenForClaim(pid, discard, resolve, interrupt) {
@@ -289,44 +339,7 @@ class ClientUI {
       ], result => {
         tile.classList.remove('selectable');
         tile.removeEventListener("click", triggerClaimDialog);
-        if (result === CLAIM.WIN) {
-          // determine how this player could actually win on this tile.
-          let { lookout } = tilesNeeded(this.player.getTileFaces(), this.player.locked);
-          console.log(lookout);
-
-          let winOptions = { pair: false, chow: false, pung: false };
-          let claimList = lookout[discard.dataset.tile];
-
-          console.log(claimList);
-
-          if (claimList) {
-            claimList.forEach(type => {
-              if (parseInt(type) === CLAIM.WIN) {
-                let subtype = parseInt(type.split('s')[1]);
-                if (subtype === CLAIM.PAIR) winOptions.pair = true;
-                if (subtype >= CLAIM.CHOW && subtype < CLAIM.PUNG) winOptions.chow = true;
-                if (subtype >= CLAIM.PUNG) winOptions.pung = true;
-              }
-            });
-          }
-
-          console.log(winOptions);
-
-          let options = [
-            { label: "Actually, it doesn't", value: CLAIM.IGNORE },
-            winOptions.pair ? { label: "Pair", value: CLAIM.PAIR } : false,
-            winOptions.chow && this.canChow(discard, CLAIM.CHOW1) ? { label: "Chow (X**)", value: CLAIM.CHOW1 } : false,
-            winOptions.chow && this.canChow(discard, CLAIM.CHOW2) ? { label: "Chow (*X*)", value: CLAIM.CHOW2 } : false,
-            winOptions.chow && this.canChow(discard, CLAIM.CHOW3) ? { label: "Chow (**X)", value: CLAIM.CHOW3 } : false,
-            winOptions.pung ? { label: "Pung", value: CLAIM.PUNG } : false
-          ];
-
-          modal.choiceInput("How does this tile make you win?", options, result => {
-            if (result === CLAIM.IGNORE) resolve({ claimtype: CLAIM.IGNORE });
-            else resolve({ claimtype: CLAIM.WIN, wintype: result });
-          }, cancel);
-          return;
-        }
+        if (result === CLAIM.WIN) return this.spawnWinDialog(resolve);
         resolve({ claimtype: result });
       }, cancel);
     }
@@ -377,11 +390,11 @@ class ClientUI {
         bank.appendChild(t);
       });
 
-      let locknum = 1 + this.el.querySelectorAll(`[data-locked]`).length;
+      let locknum = 1 + this.getLockedTiles(bank).length;
 
       res.locked.forEach(s => {
         s.forEach(t => {
-          let n = create(t.dataset.tile);
+          let n = create(t.getTileFace());
           n.dataset.locked = 'locked';
           n.dataset.locknum = locknum;
           if (t.dataset.winning) n.dataset.winning = 'winning';
@@ -467,7 +480,7 @@ class ClientUI {
 
   lockClaim(tiles) {
     this.removeLastDiscard();
-    let locknum = 1 + this.el.querySelectorAll(`[data-locked]`).length;
+    let locknum = 1 + this.getLockedTiles().length;
     tiles.forEach(tile => {
       tile.dataset.locknum = locknum;
       this.append(tile);
@@ -477,7 +490,7 @@ class ClientUI {
 
   meldKong(tile) {
     // find another tile like this, but locked, which can only be a pung.
-    let other = this.el.querySelector(`.tile[data-locked][data-tile='${tile.dataset.tile}']`);
+    let other = this.el.querySelector(`.tile[data-locked][data-tile='${tile.getTileFace()}']`);
     tile.dataset.locknum = other.dataset.locknum;
     tile.dataset.locked = 'locked';
     this.el.appendChild(tile);
@@ -505,7 +518,7 @@ class ClientUI {
   }
 
   see(tiles, player, melded=false) {
-    console.debug(`${this.id} sees ${tiles.map(t => t.dataset ? t.dataset.tile : t)} from ${player.id} (melded: ${melded})`);
+    console.debug(`${this.id} sees ${tiles.map(t => t.dataset ? t.getTileFace() : t)} from ${player.id} (melded: ${melded})`);
 
     let bank = this.playerbanks[player.id];
 
@@ -519,7 +532,7 @@ class ClientUI {
     else {
       let locknum = 1 + bank.querySelectorAll(`[data-locked]`).length;
       tiles.forEach(tile => {
-        let face = (tile.dataset ? tile.dataset.tile : tile)|0;
+        let face = (tile.dataset ? tile.getTileFace() : tile);
 
         if (player.id != this.id) {
           // remove a "blank" tile to replace with the one we're seeing.
@@ -586,12 +599,16 @@ class ClientUI {
     this.sortTiles(bank);
   }
 
-  sortTiles(e) {
-    e = e || this.el;
+  sortTiles(bank) {
+    bank = (bank||this.el);
     Array
-    .from(e.querySelectorAll('.tile'))
+    .from(bank.querySelectorAll('.tile'))
     .sort(this.tilebank_sort_function)
-    .forEach(tile => e.appendChild(tile));
+    .forEach(tile => bank.appendChild(tile));
+  }
+
+  getLockedTiles(bank) {
+    return (bank||this.el).querySelectorAll('.tile[data-locked]');
   }
 
   getAvailableTiles() {

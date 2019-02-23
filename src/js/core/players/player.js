@@ -151,6 +151,9 @@ class Player {
   }
 
   async checkKong() {
+    // players with a UI get to decide what to do on their own turn.
+    if (this.ui) return false;
+
     // does this player have a kong in hand that needs to be declared?
     let tiles = this.getTileFaces();
     let counts = new Array(34).fill(0);
@@ -158,20 +161,9 @@ class Player {
     for (let tile=0, e=34, count; tile<e; tile++) {
       count = counts[tile];
       if (count===4) {
-        let result = true;
-        // console.debug(`${this.id} we're holding a kong of ${tile}, no question`);
-
-        if (this.ui) {
-          result = await new Promise( (resolve,reject) => {
-            this.ui.checkKong(tile, resolve)
-          });
-        }
-
-        if (result === true) {
-          let tiles = this.tiles.filter(t => t.dataset.tile==tile);
-          this.lockClaim(tiles);
-          return tiles;
-        }
+        let tiles = this.tiles.filter(t => t.dataset.tile==tile);
+        this.lockClaim(tiles);
+        return tiles;
       }
     }
     return false;

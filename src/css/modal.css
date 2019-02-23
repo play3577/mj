@@ -44,15 +44,22 @@
   width: 100%;
   white-space: nowrap;
   background: #DDD;
-  opacity: 0.5;
 }
 
 .modal .panel button:only-of-type,
 .modal .panel button:active,
 .modal .panel button:focus {
-  opacity: 1;
+  --light: rgb(130, 181, 238);
+  --dark: rgb(42, 42, 135);
+  border: 3px solid;
+  border-radius: 3px;
+  border-left-color: var(--light);
+  border-top-color: var(--light);
+  border-right-color: var(--dark);
+  border-bottom-color: var(--dark);
 }
 
+/*
 button::-moz-focus-inner {
   border: 0;
 }
@@ -61,6 +68,8 @@ button, button:active, button:focus {
   outline: none!important;
   outline: 0!important;
 }
+*/
+
 
 .modal .panel button + button {
   margin-top: 3px;

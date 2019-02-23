@@ -77,6 +77,30 @@ class Game {
   }
 
   /**
+   * Resolve kongs in hand for as long as necessary.
+   */
+  async resolveKongs(player, resolve) {
+    let kong;
+    do {
+      kong = await player.checkKong();
+      if (kong) {
+        console.debug(`${player.id} plays kong ${kong[0].dataset.tile} during initial tile dealing`);
+        players.forEach(p => p.seeKong(kong, player));
+        // deal supplement tile(s) for as long as necessary
+        let revealed = false;
+        do {
+          let tile = wall.get();
+          players.forEach(p => p.receivedTile(player));
+          revealed = player.append(tile);
+          if (revealed) players.forEach(p => p.see(revealed, player));
+        } while (revealed);
+      }
+    } while (kong);
+
+    resolve();
+  }
+
+  /**
    * Dealing tiles means getting each player 13 play tiles,
    * with any bonus tiles replaced by normal tiles.
    */
@@ -98,23 +122,6 @@ class Game {
         }
       }
 
-      // Resolve kongs in hand for as long as necessary.
-      let kong;
-      do {
-        kong = await player.checkKong();
-        if (kong) {
-          console.debug(`${player.id} plays kong ${kong[0].dataset.tile} during initial tile dealing`);
-          players.forEach(p => p.seeKong(kong, player));
-          // deal supplement tile(s) for as long as necessary
-          let revealed = false;
-          do {
-            let tile = wall.get();
-            players.forEach(p => p.receivedTile(player));
-            revealed = player.append(tile);
-            if (revealed) players.forEach(p => p.see(revealed, player));
-          } while (revealed);
-        }
-      } while (kong);
       resolve();
     };
 
@@ -142,6 +149,14 @@ class Game {
       new Promise(resolve => players[1].handWillStart(resolve)),
       new Promise(resolve => players[2].handWillStart(resolve)),
       new Promise(resolve => players[3].handWillStart(resolve)),
+    ]);
+
+    // resolve kongs for each player
+    await Promise.all([
+      new Promise(resolve => this.resolveKongs(players[0], resolve)),
+      new Promise(resolve => this.resolveKongs(players[1], resolve)),
+      new Promise(resolve => this.resolveKongs(players[2], resolve)),
+      new Promise(resolve => this.resolveKongs(players[3], resolve)),
     ]);
   }
 
@@ -351,7 +366,7 @@ class Game {
     player.markWinner();
 
     let play_length = (Date.now() - this.PLAY_START);
-    console.log(`Player ${currentPlayerId} wins round ${hand}! (hand took ${play_length}ms)`);
+    console.log(`Player ${currentPlayerId} wins hand ${hand}! (hand took ${play_length}ms)`);
 
     // Let everyone know what everyone had. It's the nice thing to do.
     let disclosure = players.map(p => p.getDisclosure());
