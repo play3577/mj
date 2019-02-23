@@ -64,26 +64,33 @@ class ChineseClassical extends Ruleset {
     let tile = set[0];
 
     let log = [];
+    let value;
     let score = 0;
     let doubles = 0;
+
+    // Kongs get to change this prefix, because they can be one
+    // of three forms, with one being both locked AND concealed
+    // (namely, a locked kong formed out of a concealed pung).
+    let prefix = (locked && !set.concealed) ? "" : "concealed ";
 
     // Pairs
     if (set.length === 2) {
       if (tile > 30) {
-        score += 2;
-        log.push(`2 for pair of dragons (${name[tile]})`);
+        value = 2;
+        score += value;
+        log.push(`${value} for pair of dragons (${name[tile]})`);
       }
       if (tile === windTile) {
-        score += 2;
-        log.push(`2 for pair of own wind (${name[tile]})`);
+        value = 2;
+        score += value;
+        log.push(`${value} for pair of own wind (${name[tile]})`);
       }
       if (tile === windOfTheRoundTile) {
-        score += 2;
-        log.push(`2 for pair of wind of the round (${name[tile]})`);
+        value = 2;
+        score += value;
+        log.push(`${value} for pair of wind of the round (${name[tile]})`);
       }
     }
-
-    const prefix = locked ? "" : "concealed ";
 
     // Triplets
     if (set.length === 3) {
@@ -93,17 +100,18 @@ class ChineseClassical extends Ruleset {
       if (s1 === tile) {
         if (tile < 27) {
           if (tile % 9 === 0 || tile % 9 === 8) {
-            score += locked ? 4 : 8;
-            log.push(
-              `${locked ? 4 : 8} for ${prefix}pung of terminals (${name[tile]})`
-            );
+            value = locked ? 4 : 8;
+            score + value;
+            log.push(`${value} for ${prefix}pung of terminals (${name[tile]})`);
           } else {
-            score += locked ? 2 : 4;
-            log.push(`${locked ? 2 : 4} for ${prefix}pung of simple (${name[tile]})`);
+            value = locked ? 4 : 8;
+            score + value;
+            log.push(`${value} for ${prefix}pung of simple (${name[tile]})`);
           }
         } else if (tile < 31) {
-          score += locked ? 4 : 8;
-          log.push(`${locked ? 4 : 8} for ${prefix}pung of winds (${name[tile]})`);
+          value = locked ? 4 : 8;
+          score += value
+          log.push(`${value} for ${prefix}pung of winds (${name[tile]})`);
           if (tile === windTile) {
             doubles += 1;
             log.push(`1 double for a pung of player's own wind (${name[tile]})`);
@@ -113,8 +121,9 @@ class ChineseClassical extends Ruleset {
             log.push(`1 double for a pung of wind of the round (${name[tile]})`);
           }
         } else {
-          score += locked ? 4 : 8;
-          log.push(`${locked ? 4 : 8} for ${prefix}pung of dragons (${name[tile]})`);
+          value = locked ? 4 : 8;
+          score += value
+          log.push(`${value} for ${prefix}pung of dragons (${name[tile]})`);
           doubles += 1;
           log.push(`1 double for a pung of dragons (${name[tile]})`);
         }
@@ -123,19 +132,34 @@ class ChineseClassical extends Ruleset {
 
     // goodness, a kong!
     if (set.length === 4) {
+
+      // Is this a melded kong (locked, not concealed), a
+      // claimed kong (locked, concealed=3 for pung), or
+      // a self-drawn kong (locked, concealed=4 for kong)?
+      let ccount = set.concealed;
+
+      if (!ccount) {
+        prefix = `melded `
+      } else if (ccount ===3) {
+        prefix = `claimed `
+      } else if (ccount ===3) {
+        prefix = `concealed `
+      }
+
       if (tile < 27) {
         if (tile % 9 === 0 || tile % 9 === 8) {
-          score += locked ? 16 : 32;
-          log.push(
-            `${locked ? 16 : 32} for ${prefix}kong of terminals (${name[tile]})`
-          );
+          value = (locked || ccount===3) ? 16 : 32;
+          score += value;
+          log.push(`${value} for ${prefix}kong of terminals (${name[tile]})`);
         } else {
-          score += locked ? 8 : 16;
-          log.push(`${locked ? 8 : 16} for ${prefix}kong of simple (${name[tile]})`);
+          value = (locked || ccount===3) ? 8 : 16;
+          score += value;
+          log.push(`${value} for ${prefix}kong of simple (${name[tile]})`);
         }
       } else if (tile < 31) {
-        score += locked ? 16 : 32;
-        log.push(`${locked ? 16 : 32} for ${prefix}kong of winds (${name[tile]})`);
+        value = (locked || ccount===3) ? 16 : 32;
+        score += value;
+        log.push(`${value} for ${prefix}kong of winds (${name[tile]})`);
         if (tile === windTile) {
           doubles += 1;
           log.push(`1 double for a kong of player's own wind`);
@@ -145,8 +169,9 @@ class ChineseClassical extends Ruleset {
           log.push(`1 double for a kong of wind of the round`);
         }
       } else {
-        score += locked ? 16 : 32;
-        log.push(`${locked ? 16 : 32} for ${prefix}kong of dragons (${name[tile]})`);
+        value = (locked || ccount===3) ? 16 : 32;;
+        score += value;
+        log.push(`${value} for ${prefix}kong of dragons (${name[tile]})`);
         doubles += 1;
         log.push(`1 double for a kong of dragons (${name[tile]})`);
       }

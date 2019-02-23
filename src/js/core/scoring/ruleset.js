@@ -206,17 +206,26 @@ class Ruleset {
     // tiles, and see how much they would score, based on
     // the getTileScore() function up above.
     let possibleScores = openCompositions.map(chain => {
+
+      // turn the winpath string representations for sets
+      // back into actual sets of tile face numbers, tagged
+      // with the appropriate locked/concealed information:
       let scorePattern = chain.map(s => {
         let terms = s.split('-');
         let c = terms[0];
         let count = parseInt(c);
         let tile = parseInt(terms[1]);
-        let locked = (terms[2] && terms[2]==='!');
 
         let set;
         if (s.indexOf('c') > -1) set = [tile, tile+1, tile+2];
         else set = [tile, tile, tile, tile].slice(0,count);
-        set.locked = locked;
+
+        if (terms[2]) {
+          let cl = terms[2];
+          if (cl === '!') set.locked = locked;
+          else set.concealed = (cl|0);
+        }
+
         return set;
       }).concat(winner ? [] : locked);
 
