@@ -177,11 +177,6 @@ class Player {
     return false;
   }
 
-  removeDiscard(discard) {
-    // FIXME: is this function still necessary? Does it matter that it was a discard?
-    this.remove(discard);
-  }
-
   see(tiles, player, melded) {
     if (player === this) return;
     if (!tiles.map) tiles = [tiles];

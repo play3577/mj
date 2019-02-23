@@ -297,7 +297,7 @@ class Game {
   processDiscard(player) {
     let discard = this.discard;
     console.debug(`${player.id} discarded ${discard.dataset.tile}`);
-    player.removeDiscard(discard);
+    player.remove(discard);
     discard.dataset.from = player.id;
     delete discard.dataset.hidden;
     this.players.forEach(p => p.playerDiscarded(player, discard));
