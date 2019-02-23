@@ -132,11 +132,19 @@ class Player {
   }
 
   lockClaim(tiles, concealed=false) {
-    // There is a `concealed` because someone can declare a concealedkong - FIXME: work that logic in
+    let kong = (tiles.length === 4);
+
     tiles.forEach(tile => {
       this.remove(tile);
       tile.dataset.locked = 'locked';
+      if(kong) tile.dataset.concealed = 'concealed';
     });
+
+    // claimed kong = concealed pung
+    if (kong && !concealed) {
+      delete tiles[0].dataset.concealed;
+    }
+
     this.locked.push(tiles);
     if (this.ui) this.ui.lockClaim(tiles);
   }
