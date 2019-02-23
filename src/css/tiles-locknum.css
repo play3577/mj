@@ -1,0 +1,15 @@
+/**
+ * This file purely exists to get separation between locked sets.
+ * Since locked sets are based on `locknum` data attributes, we
+ * can't just use conditional logical because... well... CSS
+ *
+ * However, there can only be so many tiles in a locked hand,
+ * so we can specify the margin we need, and then have some JS
+ * generate the rest of the stylesheet.
+ */
+
+ .tile { --mr: 5px; }
+ .tile:not([data-locknum]) + .tile[data-locknum] { margin-left: var(--mr); }
+ .tile[data-locknum] + .tile:not([data-locknum]) { margin-left: var(--mr); }
+
+ /* continued in src/js/page/tiles-locknum.js */

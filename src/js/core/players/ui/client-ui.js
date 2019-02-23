@@ -64,7 +64,8 @@ class ClientUI {
   }
 
   handWillStart(resolve) {
-    modal.choiceInput('Ready to start playing?', [{ label: "ready!", value: false}], resolve);
+    if (config.BOT_PLAY) return resolve();
+    modal.choiceInput('Ready to start playing?', [{label: "ready!",value: false}], resolve);
   }
 
   markTilesLeft(left, dead) {
@@ -376,14 +377,18 @@ class ClientUI {
         bank.appendChild(t);
       });
 
+      let locknum = 1 + this.el.querySelectorAll(`[data-locked]`).length;
+
       res.locked.forEach(s => {
         s.forEach(t => {
           let n = create(t.dataset.tile);
           n.dataset.locked = 'locked';
+          n.dataset.locknum = locknum;
           if (t.dataset.winning) n.dataset.winning = 'winning';
           bank.appendChild(n);
         });
-      })
+        locknum += s.length;
+      });
 
       res.concealed.sort((a,b)=>(a-b)).forEach(t => bank.appendChild(create(t)));
 

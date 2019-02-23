@@ -5,10 +5,12 @@
   align-items: center;
   position: absolute;
   z-index: 100;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+
+  /* visually constrain to discard panel */
+  top: var(--ph);
+  left: var(--ph);
+  right: var(--ph);
+  bottom: var(--ph);
 }
 
 .modal .panel {
@@ -41,13 +43,13 @@
   display: block;
   width: 100%;
   white-space: nowrap;
-  background: #bbb;
+  background: #DDD;
+  opacity: 0.5;
 }
 
 .modal .panel button:active,
 .modal .panel button:focus {
-  background: #EEE;
-  box-shadow: 0 0 3px 0 var(--prp);
+  opacity: 1;
 }
 
 button::-moz-focus-inner {
