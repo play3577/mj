@@ -63,8 +63,8 @@ class ClientUI {
     // ...not used atm...
   }
 
-  handWillStart() {
-    // ...not used atm...
+  handWillStart(resolve) {
+    modal.choiceInput('Ready to start playing?', [{ label: "ready!", value: false}], resolve);
   }
 
   markTilesLeft(left, dead) {
@@ -421,6 +421,10 @@ class ClientUI {
   activate(id) {
     this.playerbanks.forEach(b => b.classList.remove('active'));
     this.playerbanks[id].classList.add('active');
+    if (id != this.id) {
+      let latest = this.el.querySelector('.tile.new');
+      if (latest) latest.classList.remove('new');
+    }
   }
 
   disable() {

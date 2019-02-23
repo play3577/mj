@@ -72,7 +72,7 @@ class Game {
     this.PLAY_START = Date.now();
 
     await this.dealTiles();
-    this.preparePlay();
+    await this.preparePlay();
     this.play();
   }
 
@@ -118,7 +118,7 @@ class Game {
       resolve();
     };
 
-    await Promise.all([
+    return Promise.all([
       new Promise(resolve => runDeal(players[0], resolve)),
       new Promise(resolve => runDeal(players[1], resolve)),
       new Promise(resolve => runDeal(players[2], resolve)),
@@ -129,11 +129,20 @@ class Game {
   /**
    * Set up and run the main game loop.
    */
-  preparePlay() {
+  async preparePlay() {
     this.currentPlayerId = (this.wind % 4);
     this.discard = undefined;
     this.counter = 0;
-    this.players.forEach(p => p.handWillStart());
+
+    let players = this.players;
+
+    // wait for "ready" from each player
+    await Promise.all([
+      new Promise(resolve => players[0].handWillStart(resolve)),
+      new Promise(resolve => players[1].handWillStart(resolve)),
+      new Promise(resolve => players[2].handWillStart(resolve)),
+      new Promise(resolve => players[3].handWillStart(resolve)),
+    ]);
   }
 
   /**

@@ -33,8 +33,9 @@ class Player {
     this._score = this.rules.player_start_score;
   }
 
-  handWillStart() {
-    if (this.ui) this.ui.handWillStart();
+  handWillStart(resolve) {
+    if (this.ui) this.ui.handWillStart(resolve);
+    else resolve();
   }
 
   markTilesLeft(left, dead) {
