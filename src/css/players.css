@@ -57,6 +57,7 @@
   box-shadow: 0 0 4px 0 var(--prp);
   padding: 2px 5px;
   position: absolute;
+  z-index: 0;
   right: var(--sep);
 }
 .player:nth-child(1) {

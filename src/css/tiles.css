@@ -8,6 +8,8 @@
   min-height: var(--lh);
   max-width: var(--lw);
   max-height: var(--lh);
+  position: relative;
+  z-index: 1; /* ends up over the score box if we have lots of tiles */
   border-radius: calc(0.05 * var(--ph));
   border: 1px solid black;
   background-color: rgb(245, 245, 245);
