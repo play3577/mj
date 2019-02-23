@@ -19,6 +19,7 @@ modal.choiceInput = (label, options, resolve, cancel) => {
     btn.textContent = data.label;
     btn.addEventListener("click", e => {
       modal.classList.add("hidden");
+      document.removeEventListener('focus', gainFocus);
       resolve(data.value);
     });
     btn.addEventListener("keydown", e => {
@@ -39,7 +40,7 @@ modal.choiceInput = (label, options, resolve, cancel) => {
   modal.classList.remove("hidden");
 
   btns = panel.querySelectorAll(`button`);
-  btns[bid].focus();
+  const gainFocus = () => btns[bid].focus();
 
   if (cancel) {
     let handleKey = evt => {
@@ -52,6 +53,9 @@ modal.choiceInput = (label, options, resolve, cancel) => {
     }
     document.addEventListener('keydown', handleKey);
   }
+
+  document.addEventListener('focus', gainFocus);
+  gainFocus();
 };
 
 /**
@@ -130,6 +134,7 @@ modal.setScores = (hand, scores, adjustments, resolve) => {
   ok.textContent = 'OK';
   ok.addEventListener('click', () => {
     modal.classList.add("hidden");
+    document.removeEventListener('focus', gainFocus);
     resolve();
   });
   panel.appendChild(ok);
@@ -141,5 +146,9 @@ modal.setScores = (hand, scores, adjustments, resolve) => {
   panel.addEventListener('click', () => (dismiss = ()=>{}));
 
   modal.classList.remove("hidden");
-  ok.focus();
+
+  const gainFocus = () => ok.focus();
+  document.addEventListener('focus', gainFocus);
+  gainFocus();
+
 };
