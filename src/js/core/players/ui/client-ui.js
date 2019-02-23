@@ -269,7 +269,7 @@ class ClientUI {
   /**
    * Can be trigger both during discard and claim phases.
    */
-  spawnWinDialog(resolve) {
+  spawnWinDialog(discard, resolve) {
     // determine how this player could actually win on this tile.
     let { lookout } = tilesNeeded(this.player.getTileFaces(), this.player.locked);
 
@@ -326,7 +326,7 @@ class ClientUI {
       ], result => {
         tile.classList.remove('selectable');
         tile.removeEventListener("click", triggerClaimDialog);
-        if (result === CLAIM.WIN) return this.spawnWinDialog(resolve);
+        if (result === CLAIM.WIN) return this.spawnWinDialog(discard, resolve);
         resolve({ claimtype: result });
       }, cancel);
     }
