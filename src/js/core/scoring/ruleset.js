@@ -163,16 +163,29 @@ class Ruleset {
     let windTile = getWindTile(disclosure.wind);
     let windOfTheRoundTile = getWindTile(windOfTheRound);
 
+    // Move kong tile concealments out of the tile datasets
+    // and into the sets themselves, instead.
+    locked = locked.map(set => {
+      if (set.length === 4) {
+        let ccount = set.reduce((tally,t) => tally + (t.dataset.concealed ? 1 : 0), 0);
+        if (ccount >= 3) set.concealed = `${ccount}`;
+      }
+      return set;
+    });
+
     // And then let's see what our tile-examining
     // algorithm has to say about the tiles we have.
     let tileInformation = tilesNeeded(tiles, locked);
-
     let openCompositions = tileInformation.composed;
 
+    // Then, flatten the locked sets from tile elements
+    // to simple numerical arrays, but with the set
+    // properties (locked/concealed) preserved:
     locked = locked.map(set => {
       let winning = !!set[0].dataset.winning;
-      let newset = set.map(s => parseInt(s.dataset.tile))
+      let newset = set.map(t => t.getTileFace());
       newset.locked = 'locked';
+      if (set.concealed) newset.concealed = set.concealed;
       if (winning) winset = newset;
       return newset;
     });
@@ -185,6 +198,12 @@ class Ruleset {
     // If this is the winner, though, then we _know_ there is at
     // least one winning path for this person to have won.
     if (winner) {
+
+      // FIXME: by doing this rebinding, we lose the concealment
+      //        information that we set up for our locked tile
+      //        above so we need to fix the `Pattern.determineWin()`
+      //        function such that it preserves that information.
+
       openCompositions = tileInformation.winpaths;
     }
 

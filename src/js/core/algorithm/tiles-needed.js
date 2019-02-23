@@ -36,7 +36,9 @@ function tilesNeeded(tiles, locked=[], canChow=false) {
     u = u.dataset ? u.dataset.tile : u;
     if (t !== u) return `3c-${t}-!`;
 
-    return (s.length===3) ? `3p-${t}-!` : `4k-${t}-!`;
+    if (s.length===3) return `3p-${t}-!`;
+
+    if (s.length===4) return `4k-${t}-${s.concealed ? s.concealed : `!`}`;
   }).filter(v => v);
 
   // Then figure out which tiles we might be on the lookout
@@ -49,6 +51,7 @@ function tilesNeeded(tiles, locked=[], canChow=false) {
   let {results, paths} = p.copy().determineWin([], [], [], pair, locked);
 
   let winpaths = (results.win || []).map(path => ['2p-' + path.pair[0], ...path.set]);
+
   delete results.win;
   let winner = (winpaths.length > 0);
   let waiting = (results.length > 0);
