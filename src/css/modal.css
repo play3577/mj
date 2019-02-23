@@ -47,6 +47,7 @@
   opacity: 0.5;
 }
 
+.modal .panel button:only-of-type,
 .modal .panel button:active,
 .modal .panel button:focus {
   opacity: 1;
