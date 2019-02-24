@@ -1,13 +1,18 @@
 # Mahjong. In the browser.
 
-1: we're talking real four player mahjong here. Not that solaire game your aunt used to play on "Yahoo! games".
+1: We're talking real four player mahjong here. Not the one player solitair game. That "game" has literally nothing to do with mahjong.
 
-2: this README.md is sparse because I'm going to be writing a serial-post on the whole "developing a game in the browser" practice, which is going to be much more informative than this README.md could ever be.
+2: This README.md has been kept sparse pending a set of full length development articles that walk through going from "having an idea" to "having finished writing a fully functional game". 
 
 The live version, which is effectively done (with tweaks of course are still happening), can be found at https://pomax.github.io/mj and uses "Chinese Classical" rules for play and scoring.
 
 ![A screenshot of what the live game looks like when set to autoplay](https://user-images.githubusercontent.com/177243/53303363-53589780-381e-11e9-8e2b-8702e56fd303.png)
 
+#### This is a pure HTML, CSS, and JavaScript game
+
+That means there are no bundlers, no web app packaging, no CSS preprocessors or JS transpiling, just an index.html, a bunch of CSS files, and a bunch of JS files. If you can load the page, you now have a full copy of the game that you can save to your desktop and congratulations, you now have your own copy "installed" without every having to install anything.
+
+I can hear you think "but... then isn't it horribly inefficient?" to which I'm just going to point out that this game has a PageSpeed ranking of 97, so: not even remotely.
 
 #### Debugging using query parameters
 
