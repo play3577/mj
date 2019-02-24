@@ -13,7 +13,7 @@
   * Changes: if no seed (or seed=0) is provided, use a random seed.
   */
 function Random(seed) {
-  this._seed = seed ? seed % 2147483647 : (Math.random()*2147483647)|0;
+  this._seed = seed ? seed % 2147483647 : random(2147483647);
   console.log(`using random seed ${this._seed}`);
   if (this._seed <= 0) this._seed += 2147483646;
 }

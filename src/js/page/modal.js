@@ -22,7 +22,11 @@ function makePanel(name) {
 function close() {
   let panel = panels.pop();
   if (panel) modal.removeChild(panel);
-  if (panels.length) panels[panels.length - 1].style.display = "block";
+  if (panels.length) {
+    let panel = panels[panels.length - 1]
+    panel.style.display = "block";
+    if (panel.gainFocus) panel.gainFocus();
+  }
   else modal.classList.add("hidden");
 }
 
@@ -43,7 +47,7 @@ modal.choiceInput = (label, options, resolve, cancel) => {
     btn.textContent = data.label;
     btn.addEventListener("click", e => {
       close();
-      document.removeEventListener('focus', gainFocus);
+      document.removeEventListener('focus', panel.gainFocus);
       resolve(data.value);
     });
     btn.addEventListener("keydown", e => {
@@ -64,7 +68,7 @@ modal.choiceInput = (label, options, resolve, cancel) => {
   modal.classList.remove("hidden");
 
   btns = panel.querySelectorAll(`button`);
-  const gainFocus = () => btns[bid].focus();
+  panel.gainFocus = () => btns[bid].focus();
 
   if (cancel) {
     let handleKey = evt => {
@@ -78,8 +82,8 @@ modal.choiceInput = (label, options, resolve, cancel) => {
     document.addEventListener('keydown', handleKey);
   }
 
-  document.addEventListener('focus', gainFocus);
-  gainFocus();
+  document.addEventListener('focus', panel.gainFocus);
+  panel.gainFocus();
 };
 
 /**
@@ -109,6 +113,7 @@ function showScoreDetails(pid, log) {
   ok.textContent = 'OK';
   ok.addEventListener('click', close);
   panel.appendChild(ok);
+  ok.focus();
 }
 
 /**
@@ -187,7 +192,7 @@ modal.setScores = (hand, scores, adjustments, resolve) => {
   ok.textContent = 'OK';
   ok.addEventListener('click', () => {
     close();
-    document.removeEventListener('focus', gainFocus);
+    document.removeEventListener('focus', panel.gainFocus);
     resolve();
   });
   panel.appendChild(ok);
@@ -196,12 +201,14 @@ modal.setScores = (hand, scores, adjustments, resolve) => {
   // UNLESS the user interacts with the modal.
   let dismiss = () => ok.click();
   if(config.BOT_PLAY) setTimeout(() => dismiss(), config.HAND_INTERVAL);
-  panel.addEventListener('click', () => (dismiss = ()=>{}));
+  panel.addEventListener('click', () => {
+    dismiss = () => {};
+    panel.gainFocus();
+  });
 
   modal.classList.remove("hidden");
 
-  const gainFocus = () => ok.focus();
-  document.addEventListener('focus', gainFocus);
-  gainFocus();
-
+  panel.gainFocus = () => ok.focus();
+  document.addEventListener('focus', panel.gainFocus);
+  panel.gainFocus();
 };
