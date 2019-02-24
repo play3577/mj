@@ -6,6 +6,8 @@
 
 The live version, which is effectively done (with tweaks of course are still happening), can be found at https://pomax.github.io/mj and uses "Chinese Classical" rules for play and scoring.
 
+![image](https://user-images.githubusercontent.com/177243/53303347-273d1680-381e-11e9-8356-9c3968335274.png)
+
 #### Debugging using query parameters
 
 The following URL query parameters are supported for debugging purposes:
