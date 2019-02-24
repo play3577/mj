@@ -11,5 +11,7 @@
  .tile { --mr: 5px; }
  .tile:not([data-locknum]) + .tile[data-locknum] { margin-left: var(--mr); }
  .tile[data-locknum] + .tile:not([data-locknum]) { margin-left: var(--mr); }
+ .tile[data-bonus] + .tile:not([data-locked]) { margin-left: var(--mr); }
+
 
  /* continued in src/js/page/tiles-locknum.js */

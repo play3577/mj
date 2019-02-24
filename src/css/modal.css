@@ -5,6 +5,7 @@
   align-items: center;
   position: absolute;
   z-index: 100;
+  font-family: Helvetica, sans-serif;
 
   /* visually constrain to discard panel */
   top: var(--ph);
@@ -44,8 +45,7 @@
   width: 100%;
   white-space: nowrap;
   background: #DDD;
-  font-family: Helvetica;
-  font-size: 1.1rem;
+  font-size: 100%;
 }
 
 .modal .panel button:only-of-type,

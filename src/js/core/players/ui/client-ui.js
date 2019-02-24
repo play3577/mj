@@ -315,9 +315,9 @@ class ClientUI {
     let options = [
       { label: "Actually, it doesn't", value: CLAIM.IGNORE },
       winOptions.pair ? { label: "Pair", value: CLAIM.PAIR } : false,
-      winOptions.chow && this.canChow(discard, CLAIM.CHOW1) ? { label: "Chow (X**)", value: CLAIM.CHOW1 } : false,
-      winOptions.chow && this.canChow(discard, CLAIM.CHOW2) ? { label: "Chow (*X*)", value: CLAIM.CHOW2 } : false,
-      winOptions.chow && this.canChow(discard, CLAIM.CHOW3) ? { label: "Chow (**X)", value: CLAIM.CHOW3 } : false,
+      winOptions.chow && this.canChow(discard, CLAIM.CHOW1) ? { label: "Chow (▮▯▯)", value: CLAIM.CHOW1 } : false,
+      winOptions.chow && this.canChow(discard, CLAIM.CHOW2) ? { label: "Chow (▯▮▯)", value: CLAIM.CHOW2 } : false,
+      winOptions.chow && this.canChow(discard, CLAIM.CHOW3) ? { label: "Chow (▯▯▮)", value: CLAIM.CHOW3 } : false,
       winOptions.pung ? { label: "Pung", value: CLAIM.PUNG } : false
     ];
 
@@ -342,9 +342,9 @@ class ClientUI {
       let cancel = () => resolve({ claimtype: CLAIM.IGNORE});
       modal.choiceInput("What kind of claim are you making?", [
         { label: "Ignore", value: CLAIM.IGNORE },
-        (mayChow && this.canChow(discard, CLAIM.CHOW1)) ? { label: "Chow (X**)", value: CLAIM.CHOW1 } : false,
-        (mayChow && this.canChow(discard, CLAIM.CHOW2)) ? { label: "Chow (*X*)", value: CLAIM.CHOW2 } : false,
-        (mayChow && this.canChow(discard, CLAIM.CHOW3)) ? { label: "Chow (**X)", value: CLAIM.CHOW3 } : false,
+        (mayChow && this.canChow(discard, CLAIM.CHOW1)) ? { label: "Chow (▮▯▯)", value: CLAIM.CHOW1 } : false,
+        (mayChow && this.canChow(discard, CLAIM.CHOW2)) ? { label: "Chow (▯▮▯)", value: CLAIM.CHOW2 } : false,
+        (mayChow && this.canChow(discard, CLAIM.CHOW3)) ? { label: "Chow (▯▯▮)", value: CLAIM.CHOW3 } : false,
         this.canPung(discard) ? { label: "Pung", value: CLAIM.PUNG } : false,
         this.canKong(discard) ? { label: "Kong", value: CLAIM.KONG } : false,
         { label: "Win", value: CLAIM.WIN }, // Let's not pre-filter this one
