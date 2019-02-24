@@ -60,7 +60,7 @@ class ClientUI {
   }
 
   setRules(rules) {
-    // ...not used atm...
+    // ...not used at the moment, but could be useful a "view rules" dialog...
   }
 
   handWillStart(resolve) {
@@ -69,7 +69,7 @@ class ClientUI {
   }
 
   markTilesLeft(left, dead) {
-    // ...currently handled in game.js instead...
+    // ...currently handled in game.js but should really be handled here...
   }
 
   async confirmKong(tile, resolve) {
@@ -86,7 +86,20 @@ class ClientUI {
   }
 
   listenForDiscard(resolve, suggestion, lastClaim) {
+    let listenForInput = true;
     let tiles = this.getAvailableTiles();
+    let latestTile = this.getLatestTile();
+    let currentTile = latestTile;
+    let curid = currentTile ? Array.from(tiles).indexOf(currentTile) : 0;
+    if (curid===0) currentTile = tiles[0];
+
+    let suggestedTile = false;
+
+    if (suggestion) {
+      suggestedTile = this.getSingleTileFromHand(suggestion.getTileFace());
+      suggestedTile.classList.add('suggestion');
+      suggestedTile.setAttribute('title','Bot-recommended discard.');
+    }
 
     // If we have no tiles left to discard, that's
     // an automatic win declaration.
@@ -114,40 +127,48 @@ class ClientUI {
       }, cancel);
     }
 
-    let stile = false;
-    if (suggestion) {
-      stile = this.getSingleTileFromHand(suggestion.getTileFace());
-      stile.classList.add('suggestion');
-      stile.setAttribute('title','Bot-recommended discard.');
-    }
-
     let cleanup = [];
 
     // The actual discard function that resolves this
     // entire user action.
     let pickAsDiscard = e => {
-      if (stile) {
-        stile.classList.remove('suggestion');
-        stile.removeAttribute('title');
+      listenForInput = false;
+      if (suggestedTile) {
+        suggestedTile.classList.remove('suggestion');
+        suggestedTile.removeAttribute('title');
+      }
+      if (latestTile) {
+        latestTile.classList.remove('latest')
       }
       cleanup.forEach(fn => fn());
+      let tile = e.target;
+      tile.classList.remove('highlight');
       resolve(e.target);
     };
 
-    // declaration using mouse = long press
     let evtStart = e => {
+      // declaration using mouse = long press
+      if (e.which !== 1) return;
       setTimeout(() => {
+        if (!listenForInput) return;
         e.stopPropagation();
         e.target.removeEventListener("click", pickAsDiscard);
         this.spawnDeclarationModal(this.getLatestTile(), pickAsDiscard);
       }, 1000);
     };
 
+    let highlightTile = e => {
+      tiles.forEach(tile => tile.classList.remove('highlight'));
+      currentTile = e.target;
+      currentTile.classList.add('highlight');
+      curid = Array.from(tiles).indexOf(currentTile);
+    };
+
     // cleanup for the click listeners
     cleanup.push(() => {
       tiles.forEach(tile => {
-        tile.classList.remove('new');
         tile.classList.remove('selectable');
+        tile.removeEventListener("mouseover", highlightTile);
         tile.removeEventListener("click", pickAsDiscard);
         tile.removeEventListener("mousedown", evtStart);
         tile.removeEventListener("touchstart", evtStart);
@@ -157,6 +178,7 @@ class ClientUI {
     // mouse interaction
     tiles.forEach(tile => {
       tile.classList.add('selectable');
+      tile.addEventListener("mouseover", highlightTile);
       tile.addEventListener("click", pickAsDiscard);
       tile.addEventListener("mousedown", evtStart);
       tile.addEventListener("touchstart", evtStart);
@@ -165,9 +187,6 @@ class ClientUI {
     // keyboard interaction
     let listenForKeys = (() => {
       let tlen = tiles.length;
-      let currentTile = this.el.querySelector('.latest');
-      let curid = currentTile ? Array.from(tiles).indexOf(currentTile) : 0;
-      if (curid===0) currentTile = tiles[0];
 
       currentTile.classList.add('highlight');
 
@@ -182,9 +201,8 @@ class ClientUI {
         if (VK_START[code]) curid = 0;
         if (VK_END[code]) curid = tlen-1;
 
-        currentTile.classList.remove('highlight');
         currentTile = tiles[curid];
-        currentTile.classList.add('highlight');
+        highlightTile({ target: currentTile });
 
         if (VK_UP[code] || VK_SIGNAL[code]) {
           currentTile.classList.remove('highlight');

@@ -26,8 +26,7 @@
   border-bottom: 3px solid lime;
 }
 
-.tile.highlight,
-.tile.selectable:hover {
+.tile.selectable.highlight {
   box-shadow: 0 0 3px 3px lime;
   position: relative;
   z-index: 10;
