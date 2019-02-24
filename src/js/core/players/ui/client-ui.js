@@ -139,7 +139,6 @@ class ClientUI {
       setTimeout(() => {
         e.stopPropagation();
         e.target.removeEventListener("click", pickAsDiscard);
-        e.target.removeEventListener("mousedown", evtStart);
         this.spawnDeclarationModal(this.getLatestTile(), pickAsDiscard);
       }, 1000);
     };
@@ -151,14 +150,16 @@ class ClientUI {
         tile.classList.remove('selectable');
         tile.removeEventListener("click", pickAsDiscard);
         tile.removeEventListener("mousedown", evtStart);
+        tile.removeEventListener("touchstart", evtStart);
       });
-    })
+    });
 
     // mouse interaction
     tiles.forEach(tile => {
       tile.classList.add('selectable');
       tile.addEventListener("click", pickAsDiscard);
       tile.addEventListener("mousedown", evtStart);
+      tile.addEventListener("touchstart", evtStart);
     });
 
     // keyboard interaction
