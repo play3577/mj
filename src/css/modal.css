@@ -61,48 +61,56 @@
   border-bottom-color: var(--dark);
 }
 
-/*
-button::-moz-focus-inner {
-  border: 0;
-}
-
-button, button:active, button:focus {
-  outline: none!important;
-  outline: 0!important;
-}
-*/
-
-
 .modal .panel button + button {
   margin-top: 3px;
 }
 
-.modal .panel table tr th {
+.modal .panel.score-breakdown table {
+  width: 100%;
+  padding: 1em;
+  margin-bottom: 1em;
+}
+
+.modal .panel.score-breakdown table tr th {
   border-bottom: 1px solid black;
 }
 
-.modal .panel table tr:nth-last-child(2) td {
+.modal .panel.score-breakdown table tr th:first-child,
+.modal .panel.score-breakdown table tr td:first-child {
+    text-align: left;
+}
+
+.modal .panel.score-breakdown table tr th:last-child,
+.modal .panel.score-breakdown table tr td:last-child {
+    text-align: center;
+}
+
+.modal .panel.scores table tr th {
+  border-bottom: 1px solid black;
+}
+
+.modal .panel.scores table tr:nth-last-child(2) td {
   border-top: 1px solid black;
 }
 
-.modal .panel table tr th:first-child,
-.modal .panel table tr:last-child td:first-child {
+.modal .panel.scores table tr th:first-child,
+.modal .panel.scores table tr:last-child td:first-child {
   border: none;
 }
 
-.modal .panel table tr td {
+.modal .panel.scores table tr td {
   text-align: right;
 }
 
-.modal .panel table tr th,
-.modal .panel table tr td:first-child {
+.modal .panel.scores table tr th,
+.modal .panel.scores table tr td:first-child {
   font-family: Verdana;
   text-align: center;
   font-weight: bold;
   font-variant: small-caps;
 }
 
-.modal .panel table tr.details td {
+.modal .panel.scores table tr.details td {
   color: blue;
   text-align: right;
   cursor: pointer;

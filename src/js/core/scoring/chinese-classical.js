@@ -212,17 +212,17 @@ class ChineseClassical extends Ruleset {
 
     if (state.selfdraw) {
       scoreObject.score += 2;
-      scoreObject.log.push(`2 points for self-drawn win`);
+      scoreObject.log.push(`2 for self-drawn win`);
     }
 
     if (state.outonPair) {
       scoreObject.score += 2;
-      scoreObject.log.push(`2 points for winning on a pair`);
+      scoreObject.log.push(`2 for winning on a pair`);
     }
 
     if (state.outonPair && state.majorPair) {
       scoreObject.score += 2;
-      scoreObject.log.push(`2 points for winning on a major pair`);
+      scoreObject.log.push(`2 for winning on a major pair`);
     }
 
     if (state.allchow && !state.majorPair) {

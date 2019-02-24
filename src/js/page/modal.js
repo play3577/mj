@@ -1,6 +1,23 @@
-
 // Simple general purpose modal
 let modal = document.querySelector(".modal");
+let panels = [];
+
+function makePanel(name) {
+  let panel = document.createElement("div");
+  panel.classList.add("panel");
+  if (name) panel.classList.add(name);
+  panels.forEach(p => (p.style.display = "none"));
+  panels.push(panel);
+  modal.appendChild(panel);
+  return panel;
+}
+
+function close() {
+  let panel = panels.pop();
+  if (panel) modal.removeChild(panel);
+  if (panels.length) panels[panels.length - 1].style.display = "block";
+  else modal.classList.add("hidden");
+}
 
 /**
  * This modal offers a label and a set of button choices
@@ -8,7 +25,7 @@ let modal = document.querySelector(".modal");
  * cursor keys for one handed play.
  */
 modal.choiceInput = (label, options, resolve, cancel) => {
-  let panel = modal.querySelector('.panel');
+  let panel = makePanel();
   panel.innerHTML = `<h1>${label}</h1>`;
 
   let bid = 0;
@@ -18,7 +35,7 @@ modal.choiceInput = (label, options, resolve, cancel) => {
     let btn = document.createElement("button");
     btn.textContent = data.label;
     btn.addEventListener("click", e => {
-      modal.classList.add("hidden");
+      close();
       document.removeEventListener('focus', gainFocus);
       resolve(data.value);
     });
@@ -58,11 +75,12 @@ modal.choiceInput = (label, options, resolve, cancel) => {
   gainFocus();
 };
 
+
 /**
  * ...
  */
 modal.setScores = (hand, scores, adjustments, resolve) => {
-  let panel = modal.querySelector('.panel');
+  let panel = makePanel(`scores`);
   panel.innerHTML = `<h3>Scores for hand ${hand}</h3>`;
 
   let builder = document.createElement('div');
@@ -125,7 +143,7 @@ modal.setScores = (hand, scores, adjustments, resolve) => {
     .slice(1)
     .map((e,pid) => {
       e.addEventListener('click', evt => {
-        alert(scores[pid].log.join('\n'));
+        showScoreDetails(pid, scores[pid].log);
       });
     });
   panel.appendChild(table);
@@ -133,7 +151,7 @@ modal.setScores = (hand, scores, adjustments, resolve) => {
   let ok = document.createElement('button');
   ok.textContent = 'OK';
   ok.addEventListener('click', () => {
-    modal.classList.add("hidden");
+    close();
     document.removeEventListener('focus', gainFocus);
     resolve();
   });
@@ -152,3 +170,30 @@ modal.setScores = (hand, scores, adjustments, resolve) => {
   gainFocus();
 
 };
+
+
+function showScoreDetails(pid, log) {
+  let panel = makePanel(`score-breakdown`);
+  panel.innerHTML = `<h3>Score breakdown for player ${pid}</h3>`;
+
+  let table = document.createElement('table');
+  let data = [
+    `<tr><th>element</th><th>points</th></tr>`,
+    ...log.map(line => {
+      let mark = ` for `;
+      if (line.indexOf(mark) > -1) {
+        let parts = line.split(mark);
+        return `<tr><td>${parts[1]}</td><td>${parts[0].replace('double', 'dbl')}</td></tr>`;
+      } else {
+        return `<tr><td colspan="2">${line}</td></tr>`;
+      }
+    })
+  ];
+  table.innerHTML = data.join(`\n`);
+  panel.appendChild(table);
+
+  let ok = document.createElement('button');
+  ok.textContent = 'OK';
+  ok.addEventListener('click', close);
+  panel.appendChild(ok);
+}
