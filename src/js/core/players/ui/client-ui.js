@@ -123,6 +123,8 @@ class ClientUI {
 
     let cleanup = [];
 
+    // The actual discard function that resolves this
+    // entire user action.
     let pickAsDiscard = e => {
       if (stile) {
         stile.classList.remove('suggestion');
@@ -132,12 +134,23 @@ class ClientUI {
       resolve(e.target);
     };
 
+    // declaration using mouse = long press
+    let evtStart = e => {
+      setTimeout(() => {
+        e.stopPropagation();
+        e.target.removeEventListener("click", pickAsDiscard);
+        e.target.removeEventListener("mousedown", evtStart);
+        this.spawnDeclarationModal(this.getLatestTile(), pickAsDiscard);
+      }, 1000);
+    };
+
     // cleanup for the click listeners
     cleanup.push(() => {
       tiles.forEach(tile => {
         tile.classList.remove('new');
         tile.classList.remove('selectable');
         tile.removeEventListener("click", pickAsDiscard);
+        tile.removeEventListener("mousedown", evtStart);
       });
     })
 
@@ -145,6 +158,7 @@ class ClientUI {
     tiles.forEach(tile => {
       tile.classList.add('selectable');
       tile.addEventListener("click", pickAsDiscard);
+      tile.addEventListener("mousedown", evtStart);
     });
 
     // keyboard interaction
@@ -176,42 +190,7 @@ class ClientUI {
           pickAsDiscard({ target: currentTile });
         }
 
-        if (VK_DOWN[code]) {
-          let face = currentTile.getTileFace();
-          let allInHand = this.getAllTilesInHand(face);
-          let canKong = false;
-
-          // do we have a concealed kong?
-          if (allInHand.length === 4) canKong = true;
-          // can we meld a kong?
-          else if (this.player.locked.some(set => set.every(t => t.getTileFace()==face))) canKong = true;
-
-          // can we win?
-          let { winpaths } = tilesNeeded(this.player.getTileFaces(), this.player.locked);
-          let canWin = winpaths.length > 0;
-
-          if (!canWin) {
-            let allTiles = this.getTileFaces(true).filter(t => t<34);
-            canWin = this.player.rules.checkAllTilesForLimit(allTiles);
-          }
-
-          // build the self-declare options for this action
-          let options = [
-            { label: "on second thought, never mind", value: CLAIM.IGNORE },
-            canKong ? { label: "I'm declaring a kong", value: CLAIM.KONG } : false,
-            canWin ? { label: "I just won", value: CLAIM.WIN } : false
-          ].filter(v=>v);
-
-          modal.choiceInput("Declare a kong or win?", options, result => {
-            if (result === CLAIM.KONG) {
-              currentTile.exception = CLAIM.KONG;
-              currentTile.kong = [...allInHand];;
-              currentTile.classList.remove('highlight');
-              pickAsDiscard({ target: currentTile });
-            }
-            if (result === CLAIM.WIN) pickAsDiscard({ target: undefined });
-          });
-        }
+        if (VK_DOWN[code]) this.spawnDeclarationModal(currentTile, pickAsDiscard);
       };
     })();
 
@@ -221,6 +200,46 @@ class ClientUI {
     });
 
     document.addEventListener('keydown', listenForKeys);
+  }
+
+  /**
+   * spawn a declaration modal for declaring a kong or a win-on-own-turn
+   */
+  spawnDeclarationModal(currentTile, pickAsDiscard) {
+    let face = currentTile.getTileFace();
+    let allInHand = this.getAllTilesInHand(face);
+    let canKong = false;
+
+    // do we have a concealed kong?
+    if (allInHand.length === 4) canKong = true;
+    // can we meld a kong?
+    else if (this.player.locked.some(set => set.every(t => t.getTileFace()==face))) canKong = true;
+
+    // can we win?
+    let { winpaths } = tilesNeeded(this.player.getTileFaces(), this.player.locked);
+    let canWin = winpaths.length > 0;
+
+    if (!canWin) {
+      let allTiles = this.getTileFaces(true).filter(t => t<34);
+      canWin = this.player.rules.checkAllTilesForLimit(allTiles);
+    }
+
+    // build the self-declare options for this action
+    let options = [
+      { label: "on second thought, never mind", value: CLAIM.IGNORE },
+      canKong ? { label: "I'm declaring a kong", value: CLAIM.KONG } : false,
+      canWin ? { label: "I just won", value: CLAIM.WIN } : false
+    ].filter(v=>v);
+
+    modal.choiceInput("Declare a kong or win?", options, result => {
+      if (result === CLAIM.KONG) {
+        currentTile.exception = CLAIM.KONG;
+        currentTile.kong = [...allInHand];;
+        currentTile.classList.remove('highlight');
+        pickAsDiscard({ target: currentTile });
+      }
+      if (result === CLAIM.WIN) pickAsDiscard({ target: undefined });
+    });
   }
 
   removeLastDiscard() {
@@ -628,6 +647,10 @@ class ClientUI {
 
   getDuplicates(tile) {
     return this.el.querySelectorAll(".tile[data-tile='"+tile+"']:not([data-locked])");
+  }
+
+  getLatestTile() {
+    return this.el.querySelector(`.latest`);
   }
 
   reveal() {

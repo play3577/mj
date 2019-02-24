@@ -179,7 +179,7 @@ class ChineseClassical extends Ruleset {
     return { score, doubles, log };
   }
 
-  checkAllTilesForLimit(allTiles) {
+  checkAllTilesForLimit(allTiles, lockedSize) {
     let test;
     const reset = () => test = allTiles.slice().sort();
 
@@ -190,7 +190,7 @@ class ChineseClassical extends Ruleset {
     if (test.length === 1 && thirteen.indexOf(test[0])>-1) return `Thirteen orphans`;
 
     // check for nine gates (1,1,1, 2,3,4,5,6,7,8, 9,9,9, and a pairing tile)
-    if (test.every(t => t<27)) {
+    if (lockedSize<=2 && test.every(t => t<27)) {
       let suit = (test[0]/9) | 0;
       if (test.every(t =>  ((t/9)|0) === suit)) {
         let offset = suit * 9;

@@ -213,7 +213,7 @@ class Ruleset {
     // least one winning path for this person to have won.
     if (winner) {
       // first check for non-standard-pattern limit hands
-      let limit = this.checkAllTilesForLimit(allTiles);
+      let limit = this.checkAllTilesForLimit(allTiles, locked.reduce((t,s) => t + s.length, 0));
       if (limit) return { limit:limit, log: [`Limit hand: ${limit}`], score: this.limit, doubles: 0, total: this.limit };
 
       // no limit: proceed to score hand based on normal win paths.
