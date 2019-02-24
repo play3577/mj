@@ -1,13 +1,14 @@
 # Mahjong. In the browser.
 
-![A screenshot of what the live game looks like when set to autoplay](https://user-images.githubusercontent.com/177243/53303363-53589780-381e-11e9-8e2b-8702e56fd303.png)
-
 1: We're talking real four player mahjong here. Not the one player solitair game. That "game" has literally nothing to do with mahjong.
 
 2: This README.md has been kept sparse pending a set of full length development articles that walk through going from "having an idea" to "having finished writing a fully functional game". 
 
 The live version, which is effectively done (with tweaks of course are still happening), can be found at https://pomax.github.io/mj and uses "Chinese Classical" rules for play and scoring.
 
+#### What it looks like
+
+![A screenshot of what the live game looks like when set to autoplay](https://user-images.githubusercontent.com/177243/53303363-53589780-381e-11e9-8e2b-8702e56fd303.png)
 
 #### This is a pure HTML, CSS, and JavaScript game
 
