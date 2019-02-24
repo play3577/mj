@@ -6,7 +6,8 @@
 
 The live version, which is effectively done (with tweaks of course are still happening), can be found at https://pomax.github.io/mj and uses "Chinese Classical" rules for play and scoring.
 
-![image](https://user-images.githubusercontent.com/177243/53303347-273d1680-381e-11e9-8356-9c3968335274.png)
+![A screenshot of what the live game looks like when set to autoplay](https://user-images.githubusercontent.com/177243/53303363-53589780-381e-11e9-8e2b-8702e56fd303.png)
+
 
 #### Debugging using query parameters
 
