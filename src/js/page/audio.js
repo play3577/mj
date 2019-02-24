@@ -32,13 +32,14 @@ const clips = {
 
   start: [`start.mp3`],
   win: [`win.mp3`],
+  end: [`end.mp3`],
 };
 
 function playClip(name, id) {
-  if (!config.PLAY_SOUND) return;
+  if (config.NO_SOUND) return;
   let bin = clips[name];
   if (!bin) return console.error(`'audio bin ${name} does not exist`);
-  id = id || (Math.random() * bin.length)|0;
+  id = id || random(bin.length);
   let audio = document.createElement("audio");
   audio.src = `audio/${bin[id]}`;
   document.body.appendChild(audio);

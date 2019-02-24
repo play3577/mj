@@ -45,7 +45,7 @@ class Game {
             rotateWinds();
             let finalScores = players.map(p => p.getScore());
             players.forEach(p => p.endOfGame(finalScores));
-            return;
+            return playClip('end');
           }
         }
       } else console.debug(`Winner player was East, winds will not rotate.`);
