@@ -4,7 +4,7 @@
 
 2: this README.md is sparse because I'm going to be writing a serial-post on the whole "developing a game in the browser" practice, which is going to be much more informative than this README.md could ever be.
 
-The live version, which is effectively done (with tweaks of course are still happening) can be found at https://pomax.github.io/mj and uses "Chinese Classical" rules for play and scoring.
+The live version, which is effectively done (with tweaks of course are still happening), can be found at https://pomax.github.io/mj and uses "Chinese Classical" rules for play and scoring.
 
 #### Debugging using query parameters
 
