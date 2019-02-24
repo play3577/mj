@@ -19,6 +19,7 @@ if (typeof window !== "undefined") {
 const DEBUG = (params.debug==='true') ? true : false;
 if (!DEBUG) console.debug = () => {};
 
+const PLAY_SOUND = (params.sound==='true') ? true : false;
 const SEED = params.seed ? parseInt(params.seed) : 0;
 const PLAY_IMMEDIATELY = (params.autoplay==='true') ? true : false;
 const FORCE_OPEN_BOT_PLAY = (params.force_open_bot_play==='true') ? true : false;
@@ -158,7 +159,8 @@ const SUIT_NAMES = {
 
 // And then rest of the configuration.
 const config = {
-    DEBUG: DEBUG,
+    DEBUG,
+    PLAY_SOUND,
     SEED: simple.SEED,
 
     // The pseudo-random number generator used by

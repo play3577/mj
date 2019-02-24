@@ -11,6 +11,7 @@ class Game {
   }
 
   startGame() {
+    playClip('start');
     document.querySelector(`.board`).classList.remove(`finished`);
     this.GAME_START = Date.now();
     this.wind = 0;
@@ -187,6 +188,7 @@ class Game {
     if (!claim) this.dealTile(player);
     else {
       let tiles = player.receiveDiscardForClaim(claim, discard);
+      playClip(tiles.length===4 ? 'kong' : 'multi');
 
       // Awarded claims are shown to all other players.
       players.forEach(p => p.seeClaim(tiles, player, discard, claim));
@@ -295,6 +297,7 @@ class Game {
    * Handle a discard and let all players know that discard occurred.
    */
   processDiscard(player) {
+    playClip(this.counter===1 ? 'thud' : 'click');
     let discard = this.discard;
     console.debug(`${player.id} discarded ${discard.dataset.tile}`);
     player.remove(discard);
@@ -392,5 +395,6 @@ class Game {
     modal.setScores(hand, scores, adjustments, () => {
       this.startHand({ winner: player });
     });
+    playClip('win');
   }
 }
