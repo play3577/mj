@@ -1,6 +1,6 @@
 # Mahjong. In the browser.
 
-1: we're talking real four player mahjong here. Not that solaire game your aunt plays.
+1: we're talking real four player mahjong here. Not that solaire game your aunt used to play on "Yahoo! games".
 
 2: this README.md is sparse because I'm going to be writing a serial-post on the whole "developing a game in the browser" practice, which is going to be much more informative than this README.md could ever be.
 
