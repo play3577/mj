@@ -2,6 +2,9 @@
 let modal = document.querySelector(".modal");
 let panels = [];
 
+/**
+ * Create a new modal panel to show data in.
+ */
 function makePanel(name) {
   let panel = document.createElement("div");
   panel.classList.add("panel");
@@ -12,6 +15,10 @@ function makePanel(name) {
   return panel;
 }
 
+/**
+ * Close the currently-active modal, which will either
+ * reveal the underlying modal, or hide the master overlay.
+ */
 function close() {
   let panel = panels.pop();
   if (panel) modal.removeChild(panel);
@@ -75,9 +82,37 @@ modal.choiceInput = (label, options, resolve, cancel) => {
   gainFocus();
 };
 
+/**
+ * Show a detailed score log for a particular player.
+ */
+function showScoreDetails(pid, log) {
+  let panel = makePanel(`score-breakdown`);
+  panel.innerHTML = `<h3>Score breakdown for player ${pid}</h3>`;
+
+  let table = document.createElement('table');
+  let data = [
+    `<tr><th>element</th><th>points</th></tr>`,
+    ...log.map(line => {
+      let mark = ` for `;
+      if (line.indexOf(mark) > -1) {
+        let parts = line.split(mark);
+        return `<tr><td>${parts[1]}</td><td>${parts[0].replace('double', 'dbl')}</td></tr>`;
+      } else {
+        return `<tr><td colspan="2">${line}</td></tr>`;
+      }
+    })
+  ];
+  table.innerHTML = data.join(`\n`);
+  panel.appendChild(table);
+
+  let ok = document.createElement('button');
+  ok.textContent = 'OK';
+  ok.addEventListener('click', close);
+  panel.appendChild(ok);
+}
 
 /**
- * ...
+ * Show the end-of-hand score breakdown.
  */
 modal.setScores = (hand, scores, adjustments, resolve) => {
   let panel = makePanel(`scores`);
@@ -170,30 +205,3 @@ modal.setScores = (hand, scores, adjustments, resolve) => {
   gainFocus();
 
 };
-
-
-function showScoreDetails(pid, log) {
-  let panel = makePanel(`score-breakdown`);
-  panel.innerHTML = `<h3>Score breakdown for player ${pid}</h3>`;
-
-  let table = document.createElement('table');
-  let data = [
-    `<tr><th>element</th><th>points</th></tr>`,
-    ...log.map(line => {
-      let mark = ` for `;
-      if (line.indexOf(mark) > -1) {
-        let parts = line.split(mark);
-        return `<tr><td>${parts[1]}</td><td>${parts[0].replace('double', 'dbl')}</td></tr>`;
-      } else {
-        return `<tr><td colspan="2">${line}</td></tr>`;
-      }
-    })
-  ];
-  table.innerHTML = data.join(`\n`);
-  panel.appendChild(table);
-
-  let ok = document.createElement('button');
-  ok.textContent = 'OK';
-  ok.addEventListener('click', close);
-  panel.appendChild(ok);
-}
