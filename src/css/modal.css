@@ -44,6 +44,8 @@
   width: 100%;
   white-space: nowrap;
   background: #DDD;
+  font-family: Helvetica;
+  font-size: 1.1rem;
 }
 
 .modal .panel button:only-of-type,
