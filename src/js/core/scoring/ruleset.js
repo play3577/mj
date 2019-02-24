@@ -30,6 +30,11 @@ class Ruleset {
     return { score: 0, doubles: 0, total: 0, limit: undefined, log: ['master ruleset does not perform any scoring'] };
   }
 
+  checkAllTilesForLimit(allTiles) {
+    // extended by subclasses
+    return false;
+  }
+
   /**
    * All possible flags and values necessary for performing scoring, used in checkWinnerHandPatterns
    */
@@ -63,6 +68,9 @@ class Ruleset {
       selfdraw: selfdraw,
       lastTile: (tilesLeft<=0)
     };
+
+    // classic limit hands
+    state.allGreen = scorePattern.every(set => set.every(t => [1,2,3,5,7,31].indexOf(t) > -1))
 
     // FIXME: still missing
     //        - out on supplement tile
@@ -165,6 +173,7 @@ class Ruleset {
     let winset = false;
     let windTile = getWindTile(disclosure.wind);
     let windOfTheRoundTile = getWindTile(windOfTheRound);
+    let allTiles = tiles.slice();
 
     // Move kong tile concealments out of the tile datasets
     // and into the sets themselves, instead.
@@ -181,6 +190,7 @@ class Ruleset {
     let tileInformation = tilesNeeded(tiles, locked);
     let openCompositions = tileInformation.composed;
 
+
     // Then, flatten the locked sets from tile elements
     // to simple numerical arrays, but with the set
     // properties (locked/concealed) preserved:
@@ -190,6 +200,7 @@ class Ruleset {
       newset.locked = 'locked';
       if (set.concealed) newset.concealed = set.concealed;
       if (winning) winset = newset;
+      allTiles.push(...newset);
       return newset;
     });
 
@@ -200,7 +211,14 @@ class Ruleset {
 
     // If this is the winner, though, then we _know_ there is at
     // least one winning path for this person to have won.
-    if (winner) openCompositions = tileInformation.winpaths;
+    if (winner) {
+      // first check for non-standard-pattern limit hands
+      let limit = this.checkAllTilesForLimit(allTiles);
+      if (limit) return { limit:limit, log: [`Limit hand: ${limit}`], score: this.limit, doubles: 0, total: this.limit };
+
+      // no limit: proceed to score hand based on normal win paths.
+      openCompositions = tileInformation.winpaths;
+    }
 
     // Run through each possible interpetation of in-hand
     // tiles, and see how much they would score, based on
@@ -232,10 +250,9 @@ class Ruleset {
       return this.getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset, winner, selfdraw, selftile, tilesLeft);
     });
 
-
-    // And then make sure we award each player the highest
-    // score they're elligible for.
+    // And then make sure we award each player the highest score they're elligible for.
     let finalScore = possibleScores.sort( (a,b) => { a = a.total; b = b.total; return a - b; }).slice(-1)[0];
+
     console.debug(finalScore);
     return finalScore;
   }

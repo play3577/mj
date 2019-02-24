@@ -47,8 +47,7 @@ class ChineseClassical extends Ruleset {
       }
     }
 
-    if (winningplayer === eastplayer)
-      scores[eastplayer].log.push(`Player won as East`);
+    if (winningplayer === eastplayer) scores[eastplayer].log.push(`Player won as East`);
     else scores[eastplayer].log.push(`Player lost as East`);
 
     return adjustments;
@@ -180,6 +179,29 @@ class ChineseClassical extends Ruleset {
     return { score, doubles, log };
   }
 
+  checkAllTilesForLimit(allTiles) {
+    let test;
+    const reset = () => test = allTiles.slice().sort();
+
+    // check for thirteen orphans (1/9 of each suit, each wind and dragon once, and a pairing tile)
+    let thirteen = [0,8,9,17,18,26,27,28,29,30,31,32,33];
+    reset();
+    thirteen.forEach(t => { let pos = test.indexOf(t); if (pos>-1) test.splice(pos,1); });
+    if (test.length === 1 && thirteen.indexOf(test[0])>-1) return `Thirteen orphans`;
+
+    // check for nine gates (1,1,1, 2,3,4,5,6,7,8, 9,9,9, and a pairing tile)
+    if (test.every(t => t<27)) {
+      let suit = (test[0]/9) | 0;
+      if (test.every(t =>  ((t/9)|0) === suit)) {
+        let offset = suit * 9;
+        let nine = [0,0,0, 1,2,3,4,5,6,7, 8,8,8].map(t => t+offset);
+        nine.forEach(t => { let pos = test.indexOf(t); if (pos>-1) test.splice(pos,1); });
+        if (test.length === 1 && offset < test[0] && test[0] < offset+8) return `Nine gates`;
+      }
+    }
+  }
+
+
   /**
    * ...docs go here...
    */
@@ -228,6 +250,11 @@ class ChineseClassical extends Ruleset {
       scoreObject.limit = `all honours hand`;
     }
 
+    if (state.terminal && state.honours) {
+      scoreObject.doubles += 1;
+      scoreObject.log.push(`1 double for terminals an honours hand`);
+    }
+
     if (state.punghand) {
       scoreObject.doubles += 1;
       scoreObject.log.push(`1 double for an all pung hand`);
@@ -267,6 +294,10 @@ class ChineseClassical extends Ruleset {
       } else {
         scoreObject.log.push(`1 double for winning with the last discard`);
       }
+    }
+
+    if (state.allGreen) {
+      scoreObject.limit = `"All Green" (bamboos 2, 3, 4, 6, 8 and/or green dragons)`;
     }
   }
 

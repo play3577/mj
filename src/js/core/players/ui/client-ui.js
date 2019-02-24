@@ -190,6 +190,11 @@ class ClientUI {
           let { winpaths } = tilesNeeded(this.player.getTileFaces(), this.player.locked);
           let canWin = winpaths.length > 0;
 
+          if (!canWin) {
+            let allTiles = this.getTileFaces(true).filter(t => t<34);
+            canWin = this.player.rules.checkAllTilesForLimit(allTiles);
+          }
+
           // build the self-declare options for this action
           let options = [
             { label: "on second thought, never mind", value: CLAIM.IGNORE },
@@ -197,7 +202,7 @@ class ClientUI {
             canWin ? { label: "I just won", value: CLAIM.WIN } : false
           ].filter(v=>v);
 
-          modal.choiceInput("Declaring a kong or win?", options, result => {
+          modal.choiceInput("Declare a kong or win?", options, result => {
             if (result === CLAIM.KONG) {
               currentTile.exception = CLAIM.KONG;
               currentTile.kong = [...allInHand];;
@@ -398,6 +403,7 @@ class ClientUI {
       }
 
       bank.dataset.wincount = res.wincount;
+      this.sortTiles(bank);
     });
   }
 
