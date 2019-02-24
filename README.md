@@ -6,17 +6,17 @@
 
 The live version, which is effectively done (with tweaks of course are still happening), can be found at https://pomax.github.io/mj and uses "Chinese Classical" rules for play and scoring.
 
-#### What it looks like
+### What it looks like
 
 ![A screenshot of what the live game looks like when set to autoplay](https://user-images.githubusercontent.com/177243/53303363-53589780-381e-11e9-8e2b-8702e56fd303.png)
 
-#### This is a pure HTML, CSS, and JavaScript game
+### This is a pure HTML, CSS, and JavaScript game
 
 That means there are no bundlers, no web app packaging, no CSS preprocessors or JS transpiling, just an index.html, a bunch of CSS files, and a bunch of JS files. If you can load the page, you now have a full copy of the game that you can save to your desktop and congratulations, you now have your own copy "installed" without every having to install anything.
 
 I can hear you think "but... then isn't it horribly inefficient?" to which I'm just going to point out that this game has a [Google PageSpeed ranking of 97](https://developers.google.com/speed/pagespeed/insights/?url=https%3A%2F%2Fpomax.github.io%2Fmj%2F), so: not even remotely.
 
-#### Debugging using query parameters
+### Debugging using query parameters
 
 The following URL query parameters are supported for debugging purposes:
 
@@ -28,6 +28,6 @@ The following URL query parameters are supported for debugging purposes:
 - `force_open_bot_play=true` shows all player tiles irrespective of normal gameplay vs. automated bot play.
 - `wall_hack=<wall hack name>` overrides the wall instantiation with specific tile sequences for debugging specific plays. See [`core/wall-hack.js`](https://github.com/Pomax/mj/blob/master/src/js/core/wall-hack.js) for the list of available pattern names.
 
-#### I have (a) question(s)!
+### I have (a) question(s)!
 
 I'd be happy to answer them! Feel free to [tweet at me](https://twitter.com/TheRealPomax) for shallow engagement, or file an issue over on [the issue tracker](https://github.com/Pomax/mj/issues) if you need deeper engagement.
