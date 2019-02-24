@@ -18,14 +18,14 @@ I can hear you think "but... then isn't it horribly inefficient?" to which I'm j
 
 The following URL query parameters are supported for debugging purposes:
 
-- `debug=true` turns on extended debug logging
-- `seed=<num>` make pseudo-random number generator use this seed value
-- `autoplay=true` immediately starts a game with four bots playing each other
-- `play=<num>` number of milliseconds paused between bot actions
-- `hand=<num>` number of milliseconds paused on the score screen before starting a new hand
-- `force_open_bot_play=true` show the tiles that the "not us" bots are playing with
-- `wall_hack=<wall hack name>` override the wall instantiation to specific patterns for debugging specific plays. See [`core/wall-hack.js`](https://github.com/Pomax/mj/blob/master/src/js/core/wall-hack.js) for the list of available patterns.
+- `debug=true` turns on extended debug logging to the console.
+- `seed=<num>` makes pseudo-random number generator use the specified seed value.
+- `autoplay=true` immediately starts a game with four bots playing each other.
+- `play=<num>` sets the number of milliseconds between bots taking turns.
+- `hand=<num>` sets the number of milliseconds paused on the score breakdown before starting a new hand.
+- `force_open_bot_play=true` shows all player tiles irrespective of normal gameplay vs. automated bot play.
+- `wall_hack=<wall hack name>` overrides the wall instantiation with specific tile sequences for debugging specific plays. See [`core/wall-hack.js`](https://github.com/Pomax/mj/blob/master/src/js/core/wall-hack.js) for the list of available pattern names.
 
-#### I have questions!
+#### I have (a) question(s)!
 
-That's great, I'd be happy to answer them! Feel free to [tweet at me](https://twitter.com/TheRealPomax) for shallow engagement, or file an issue over on [the issue tracker](https://github.com/Pomax/mj/issues) if you need deeper engagement.
+I'd be happy to answer them! Feel free to [tweet at me](https://twitter.com/TheRealPomax) for shallow engagement, or file an issue over on [the issue tracker](https://github.com/Pomax/mj/issues) if you need deeper engagement.
