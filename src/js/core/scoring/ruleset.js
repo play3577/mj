@@ -76,6 +76,7 @@ class Ruleset {
     //        - out on supplement tile
     //        - out by robbing a kong
     //        - ready after initial deal
+    //        - winning 13 times in a row as East
 
     let tile, tilesuit;
     scorePattern.forEach(set => {
