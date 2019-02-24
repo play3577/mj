@@ -12,7 +12,7 @@ The live version, which is effectively done (with tweaks of course are still hap
 
 ### This is a pure HTML, CSS, and JavaScript game
 
-That means there are no bundlers, no web app packaging, no CSS preprocessors or JS transpiling, just an index.html, a bunch of CSS files, and a bunch of JS files. If you can load the page, you now have a full copy of the game that you can save to your desktop and congratulations, you now have your own copy "installed" without every having to install anything.
+That means there are no bundlers, no web app packaging, no CSS preprocessors or JS transpiling, just an index.html, a bunch of CSS files, and a bunch of JS files. If you can load the page, you now have a full copy of the game that you can save to your desktop and congratulations, you now have your own copy "installed" without doing anything beyond just downloading the page and its local page assets.
 
 I can hear you think "but... then isn't it horribly inefficient?" to which I'm just going to point out that this game has a [Google PageSpeed ranking of 97](https://developers.google.com/speed/pagespeed/insights/?url=https%3A%2F%2Fpomax.github.io%2Fmj%2F), so: not even remotely.
 
