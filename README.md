@@ -21,6 +21,6 @@ The following URL query parameters are supported for debugging purposes:
 - `force_open_bot_play=true` show the tiles that the "not us" bots are playing with
 - `wall_hack=<wall hack name>` override the wall instantiation to always be one specific pattern. See [`core/wall.js`](https://github.com/Pomax/mj/blob/master/src/js/core/wall-hack.js).
 
-#### I have questions..?
+#### I have questions!
 
 That's great, I'd be happy to answer them! Feel free to [tweet at me](https://twitter.com/TheRealPomax) for shallow engagement, or file an issue over on [the issue tracker](https://github.com/Pomax/mj/issues) if you need deeper engagement.
