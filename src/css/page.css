@@ -61,10 +61,10 @@ footer {
     text-align: center;
 }
 
-#this-game ul {
+#this-game ul, #controls ul {
     margin: 1em
 }
 
-#this-game ul li {
+#this-game ul li, #controls ul li {
     margin: 0;
 }
