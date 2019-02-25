@@ -22,6 +22,7 @@ The following URL query parameters are supported for debugging purposes:
 
 - `debug=true` turns on extended debug logging to the console.
 - `seed=<num>` makes pseudo-random number generator use the specified seed value.
+- `nosound=true` bypasses audio playback, nice for silent debugging.
 - `autoplay=true` immediately starts a game with four bots playing each other.
 - `play=<num>` sets the number of milliseconds between bots taking turns.
 - `hand=<num>` sets the number of milliseconds paused on the score breakdown before starting a new hand.
