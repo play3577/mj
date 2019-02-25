@@ -28,7 +28,6 @@
 .discards::after {
   position: absolute;
   z-index: 10;
-  background: var(--prp);
   opacity: 0.9;
   box-shadow: 0 0 10px 2px var(--prp);
   padding: 20em;
@@ -37,10 +36,12 @@
 
 .discards.exhausted::after {
   content: "NO TILES LEFT TO DEAL: ROUND IS A DRAW";
+  background: inherit;
 }
 
 .discards.winner::after {
   content: "GAME WAS WON - WINNING PLAYER IS HIGHLIGHTED";
+  background: inherit;
 }
 
 .discards .countdown-bar {

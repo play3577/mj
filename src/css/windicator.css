@@ -22,6 +22,10 @@
   margin-left: var(--offset);
 }
 
+.finished .windicator {
+  z-index: 10;
+}
+
 .windicator .wind-of-the-round {
   white-space: nowrap;
   display: flex;
@@ -123,4 +127,8 @@
   padding-top: 4px;
   font-weight: bold;
   font-variant: small-caps;
+}
+
+.finished .windicator .hand-counter {
+  display: none;
 }

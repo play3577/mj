@@ -5,8 +5,13 @@
  * human input for... well, humans)
  */
 class ClientUI {
-  constructor(player) {
+  constructor(player, tracker) {
     this.player = player;
+    this.tracker = tracker;
+
+    // seed the "knowledge" panel with our tracker
+    this.tracker.bindTo(document.querySelector(".knowledge"));
+
     this.id = player.id;
     this.timeouts = [];
     this.discards = document.querySelector(".discards");
@@ -460,6 +465,21 @@ class ClientUI {
       e.classList.remove('winner');
       if (id===b) e.classList.add('game-winner');
     });
+
+    // clear out the player banks, discards, and tile tracker.
+    let remove = [];
+    this.playerbanks.forEach(bank => {
+      remove = [...remove, ...bank.querySelectorAll('.tile')];
+    });
+    remove = [...remove, ...this.discards.querySelectorAll('.tile')];
+    remove.forEach(t => t.parentNode.removeChild(t));
+
+    // and then for aesthetic purposes, fill the player banks and tracker
+    this.playerbanks.forEach(bank => {
+      new Array(13).fill(-1).forEach(t => bank.appendChild(create(t)));
+    });
+
+    this.tracker.reset();
   }
 
   recordScores(scores) {
