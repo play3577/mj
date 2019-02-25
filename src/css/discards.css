@@ -9,7 +9,7 @@
   height: var(--d);
   background-color: var(--prp);
   background-image: url('../../img/background/opacity-05.png');
-  background-size: cover;
+  background-size: 100% 100%;
   border: calc(3 * var(--sep)) solid var(--green);
   box-sizing: border-box;
   display: flex;
