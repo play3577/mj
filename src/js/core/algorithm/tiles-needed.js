@@ -1,5 +1,5 @@
 /**
- *
+ * A tree to list-of-paths unrolling function.
  */
 function unroll(list, seen=[], result=[]) {
   list = list.slice();
@@ -8,7 +8,6 @@ function unroll(list, seen=[], result=[]) {
   else list.forEach(tail => unroll(tail, seen.slice(), result));
   return result;
 }
-
 
 /**
  * This function uses the Pattern class to determine which tiles

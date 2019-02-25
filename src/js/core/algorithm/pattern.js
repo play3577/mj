@@ -29,7 +29,12 @@ function unhash(print, tile) {
   return obj;
 }
 
-
+/**
+ * The major algorithm class, responsible for determining
+ * which tiles might be necessary to form what, and which
+ * paths can be taken through a hand in terms of already
+ * formed sets.
+ */
 class Pattern {
   constructor(tiles=[], canChow=false) {
     this.keys = [];
@@ -101,26 +106,31 @@ class Pattern {
    *
    */
   checkForChow(tile, result) {
-    if (!this.canChow) return;
-    if (tile > 26) return;
+    if (!this.canChow) return false;
+    if (tile > 26) return false;
+    let handled = false;
     let {t1, t2, suit} = this.getChowInformation(tile);
     if (t1 || t2) {
       let set = [], remove;
       if (t1 && t2) { // this is already a chow!
         set.push({ required: false, type: Constants.CHOW, tile });
         remove = [tile, tile+1, tile+2];
+        handled = true;
       }
       else if (t1) { // connected pair, we need either a first or last tile.
         if (this.matchSuit(tile - 1, suit)) set.push({ required: tile-1, type: Constants.CHOW1, tile });
         if (this.matchSuit(tile + 2, suit)) set.push({ required: tile+2, type: Constants.CHOW3, tile });
         remove = [tile, tile + 1];
+        handled = true;
       }
       else if (t2) { // gapped pair, we need the middle tile.
         set.push({ required: tile+1, type: Constants.CHOW2, tile });
         remove = [tile, tile + 2];
+        handled = true;
       }
       this.recurse(remove, set, result);
     }
+    return handled;
   }
 
   /**
@@ -130,7 +140,7 @@ class Pattern {
     //console.debug(`removing ${processed}, set:`,set);
     set.forEach(s => {
       if (s.required !== false && s.required !== undefined) {
-        let tile = s.required
+        let tile = s.required;
         if (!result[tile]) result[tile] = [];
         let print = hash(s);
         let list = result[tile];
@@ -158,14 +168,21 @@ class Pattern {
       let set = [{ required: false, type: Constants.KONG, tile }];
       this.recurse([tile, tile, tile, tile], set, result);
     } else {
-      this.checkForChow(tile, result);
-      if (count===1) {
+      let handled = this.checkForChow(tile, result);
+      if (!handled && count===1) {
         // We cannot claim pairs "normally", so we do not record it.
         // But, in crazy rulesets where we could claim pairs, the
         // following code would be required:
         //
         // let set = [{ required: tile, type: Constants.PAIR, tile }];
         //
+        // and the "checked" conditional should be removed. However,
+        // it's there for a good reason: without it, chows get reduced
+        // by one tile, and then we end up in a situation where our
+        // hand has [1,2,3] but because we chomped [1] the check for
+        // the subsequent [2,3] will go "oh, we need 1!" and then a
+        // bot will happily have [1,2,3], claim [1] for a chow and
+        // then immediately discard the left over [1], which is dumb.
         let set = [];
         this.recurse([tile], set, result);
       }
