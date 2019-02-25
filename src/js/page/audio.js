@@ -42,6 +42,7 @@ function playClip(name, id) {
   id = id || random(bin.length);
   let audio = document.createElement("audio");
   audio.src = `audio/${bin[id]}`;
+  audio.type = `mp3`;
   document.body.appendChild(audio);
   audio.addEventListener("ended", evt => document.body.removeChild(audio));
   setTimeout(() => audio.play());
