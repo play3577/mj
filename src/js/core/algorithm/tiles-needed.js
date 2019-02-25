@@ -79,7 +79,7 @@ function tilesNeeded(tiles, locked=[], canChow=false) {
 if (typeof process !== "undefined") { (function() {
 
   conf = require('../../../config.js');
-  Pattern = require('./algorithm/pattern.js/index.js');
+  Pattern = require('./pattern.js');
   Logger = conf.LOGGER;
   Constants = conf.Constants;
   module.exports = tilesNeeded;

@@ -1,3 +1,9 @@
+if (typeof process !== "undefined") {
+  if (typeof Ruleset === "undefined") {
+    Ruleset = require('./ruleset');
+  }
+}
+
 /**
  * Chinese Classical rules.
  */
@@ -63,7 +69,7 @@ class ChineseClassical extends Ruleset {
     let tile = set[0];
 
     let log = [];
-    let value;
+    let value = 0;
     let score = 0;
     let doubles = 0;
 
@@ -100,16 +106,16 @@ class ChineseClassical extends Ruleset {
         if (tile < 27) {
           if (tile % 9 === 0 || tile % 9 === 8) {
             value = locked ? 4 : 8;
-            score + value;
+            score += value;
             log.push(`${value} for ${prefix}pung of terminals (${name[tile]})`);
           } else {
-            value = locked ? 4 : 8;
-            score + value;
+            value = locked ? 2 : 4;
+            score += value;
             log.push(`${value} for ${prefix}pung of simple (${name[tile]})`);
           }
         } else if (tile < 31) {
           value = locked ? 4 : 8;
-          score += value
+          score += value;
           log.push(`${value} for ${prefix}pung of winds (${name[tile]})`);
           if (tile === windTile) {
             doubles += 1;
@@ -121,7 +127,7 @@ class ChineseClassical extends Ruleset {
           }
         } else {
           value = locked ? 4 : 8;
-          score += value
+          score += value;
           log.push(`${value} for ${prefix}pung of dragons (${name[tile]})`);
           doubles += 1;
           log.push(`1 double for a pung of dragons (${name[tile]})`);
@@ -328,11 +334,11 @@ class ChineseClassical extends Ruleset {
       result.score += 4;
       result.log.push(`4 for bonus tile (${name[tile]})`);
 
-      if (ownFlower(tile, windTile)) {
+      if (this.ownFlower(tile, windTile)) {
         hasOwnFlower = true;
       }
 
-      if (ownSeason(tile, windTile)) {
+      if (this.ownSeason(tile, windTile)) {
         hasOwnSeason = true;
       }
     });
@@ -342,12 +348,12 @@ class ChineseClassical extends Ruleset {
       result.log.push(`1 double for own flower and season`);
     }
 
-    if (allFlowers(bonus)) {
+    if (this.allFlowers(bonus)) {
       result.doubles += 2;
       result.log.push(`1 more double for having all flowers`);
     }
 
-    if (allSeasons(bonus)) {
+    if (this.allSeasons(bonus)) {
       result.doubles += 2;
       result.log.push(`1 more double for having all seasons`);
     }
@@ -391,13 +397,15 @@ Ruleset.register(ChineseClassical);
 
 if (typeof process !== "undefined") {
   (function() {
+    config = require('../../../config.js');
     tilesNeeded = require("../algorithm/tiles-needed.js");
     Logger = console;
-    module.exports = scoreTiles;
 
     // shortcut if we're merely being required
     let invocation = process.argv.join(" ");
     if (invocation.indexOf("chinese-classical.j") === -1) return;
+
+    let rules = new ChineseClassical();
 
     function lock(sets, win) {
       return sets.map((set, sid) =>
@@ -420,11 +428,26 @@ if (typeof process !== "undefined") {
         locked: lock([[1, 2, 3], [2, 3, 4], [3, 4, 5], [6, 6]], 3),
         bonus: [],
         wind: 1
-      }
+      },
+      {
+        id: 0,
+        wotr: 0,
+        tilesLeft: 50,
+        winner: true,
+        selfdraw: false,
+        concealed: [5,5,5, 11,12,13],
+        locked: lock([[20,21,22], [24,25,26], [11,11]], 3),
+        bonus: [],
+        wind: 1
+      },
     ];
 
-    tests.forEach(test => {
-      scoreTiles(test, test.id, test.wotr, test.tilesLeft);
+    tests.forEach((test,id) => {
+      if (id < 1) return;
+
+      console.log(test.concealed, test.locked.map(set => set.map(t => t.dataset.tile)), test.bonus);
+      let scores = rules.scoreTiles(test, test.id, test.wotr, test.tilesLeft);
+      console.log(scores);
     });
   })();
 }

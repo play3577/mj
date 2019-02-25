@@ -1,3 +1,9 @@
+if (typeof process !== "undefined") {
+  if (typeof random === "undefined") {
+    random = require('./math').random;
+  }
+}
+
 /**
  * https://gist.github.com/blixt/f17b47c62508be59987b
  */

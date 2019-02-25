@@ -325,3 +325,10 @@ class Pattern {
     return { results, paths };
   }
 } // end of Pattern class
+
+
+
+// Node context
+if (typeof process !== "undefined") {
+  module.exports = Pattern;
+}

@@ -1,11 +1,11 @@
-// helper functions
-const getWindTile = wind => 27 + wind;
-const ownFlower = (tile, windTile) => tile - 34 === windTile - 27;
-const ownSeason = (tile, windTile) => tile - 38 === windTile - 27;
-const allFlowers = bonus => [34, 35, 36, 37].every(t => bonus.indexOf(t) > -1);
-const allSeasons = bonus => [38, 39, 40, 41].every(t => bonus.indexOf(t) > -1);
-
 class Ruleset {
+  // helper functions
+  getWindTile(wind) { return 27 + wind }
+  ownFlower(tile, windTile) { return tile - 34 === windTile - 27 }
+  ownSeason(tile, windTile) { return tile - 38 === windTile - 27 }
+  allFlowers(bonus) { return [34, 35, 36, 37].every(t => bonus.indexOf(t) > -1); }
+  allSeasons(bonus) { return [38, 39, 40, 41].every(t => bonus.indexOf(t) > -1); }
+
   constructor(startscore, limit) {
     this.player_start_score = startscore;
     this.limit = limit;
@@ -172,8 +172,8 @@ class Ruleset {
     let locked = disclosure.locked;
     let bonus = disclosure.bonus;
     let winset = false;
-    let windTile = getWindTile(disclosure.wind);
-    let windOfTheRoundTile = getWindTile(windOfTheRound);
+    let windTile = this.getWindTile(disclosure.wind);
+    let windOfTheRoundTile = this.getWindTile(windOfTheRound);
     let allTiles = tiles.slice();
 
     // Move kong tile concealments out of the tile datasets
@@ -275,3 +275,9 @@ class Ruleset {
 
   Ruleset.getRuleset = name => rulesets[name];
 })();
+
+
+// Node context
+if (typeof process !== "undefined") {
+  module.exports = Ruleset;
+}
