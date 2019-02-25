@@ -34,12 +34,12 @@
 }
 
 .discards.exhausted::after {
-  content: "NO TILES LEFT TO DEAL: ROUND IS A DRAW";
+  content: "NO TILES LEFT TO DEAL: HAND IS A DRAW";
   background: inherit;
 }
 
-.discards.winner::after {
-  content: "GAME WAS WON - WINNING PLAYER IS HIGHLIGHTED";
+.finished .discards::after {
+  content: "GAME WAS FINISHED - WINNING PLAYER IS HIGHLIGHTED";
   background: inherit;
 }
 
