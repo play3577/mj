@@ -233,7 +233,7 @@ class Player {
   }
 
   getTileFaces(allTiles) {
-    return this.getTiles(allTiles).map(t => t.getTileFace());
+    return this.getTiles(allTiles).map(t => t.dataset ? t.dataset.tile : t);
   }
 
   getDuplicates(tile) {

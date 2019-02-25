@@ -102,6 +102,11 @@ class BotPlayer extends Player {
       return resolve(undefined);
     }
 
+    // Did we self-draw a limit hand?
+    let allTiles = this.getTileFaces(true).filter(t => t<34);
+    let limithand = this.rules.checkAllTilesForLimit(allTiles);
+    if (limithand) return resolve(undefined);
+
     // Now then. We haven't won, let's figure out which tiles are worth keeping,
     // and which tiles are worth throwing away.
     this.determineDiscardUsingTracker(resolve);

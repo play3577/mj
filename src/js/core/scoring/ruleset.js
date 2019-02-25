@@ -6,14 +6,60 @@ class Ruleset {
   allFlowers(bonus) { return [34, 35, 36, 37].every(t => bonus.indexOf(t) > -1); }
   allSeasons(bonus) { return [38, 39, 40, 41].every(t => bonus.indexOf(t) > -1); }
 
-  constructor(startscore, limit) {
+  constructor(startscore, limit, losers_settle_scores=config.LOSERS_SETTLE_SCORES, east_doubles_up=false) {
     this.player_start_score = startscore;
     this.limit = limit;
+    this.losers_settle_scores = losers_settle_scores;
+    this.east_doubles_up = east_doubles_up;
   }
 
+  /**
+   * Turn basic tilescores into score adjustments, by running
+   * the "how much does the winner get" and "how much do the
+   * losers end up paying" calculations.
+   */
   settleScores(scores, winningplayer, eastplayer) {
-    // extended by subclasses
-    return [0,0,0,0];
+    let adjustments = [0, 0, 0, 0];
+    let eastwin = winningplayer === eastplayer ? 2 : 1;
+
+    console.debug(`%cSettling payment`, `color: red`);
+
+    for (let i = 0; i < scores.length; i++) {
+      if (i === winningplayer) continue;
+
+      // every non-winner pays the winner.
+      if (i !== winningplayer) {
+        let wscore = scores[winningplayer].total;
+        let east = 1;
+        if (this.east_doubles_up) east = (i === eastplayer) ? 2 : 1;
+        let difference = wscore * Math.max(eastwin, east);
+        adjustments[winningplayer] += difference;
+        console.debug(`${winningplayer} gets ${difference} from ${i}`);
+        adjustments[i] -= wscore * Math.max(eastwin, east);
+        console.debug(`${i} pays ${difference} to ${winningplayer}`);
+      }
+
+      if (!this.losers_settle_scores) continue;
+
+      // If losers should settle their scores amongst
+      // themselves, make that happen right here:
+      for (let j = i + 1; j < scores.length; j++) {
+        if (j === winningplayer) continue;
+
+        let east = 1;
+        if (this.east_doubles_up) east = (i === eastplayer) ? 2 : 1;
+        let difference = (scores[i].total - scores[j].total) * east;
+        console.debug(`${i} gets ${difference} from ${j}`);
+        adjustments[i] += difference;
+        console.debug(`${j} pays ${difference} to ${i}`);
+        adjustments[j] -= difference;
+      }
+    }
+
+    if (winningplayer === eastplayer) scores[eastplayer].log.push(`Player won as East`);
+    else scores[eastplayer].log.push(`Player lost as East`);
+
+    return adjustments;
   }
 
   _tile_score(set, windTile, windOfTheRoundTile) {
@@ -30,9 +76,59 @@ class Ruleset {
     return { score: 0, doubles: 0, total: 0, limit: undefined, log: ['master ruleset does not perform any scoring'] };
   }
 
-  checkAllTilesForLimit(allTiles) {
-    // extended by subclasses
-    return false;
+  /**
+   * The base ruleset covers two classic limit hands.
+   */
+  checkAllTilesForLimit(allTiles, lockedSize) {
+    const tiles = () => allTiles.slice().sort();
+    if (this.hasThirteenOrphans(tiles())) return `Thirteen orphans`;
+    if (this.hasNineGates(tiles())) return `Nine gates`;
+  }
+
+  // check for thirteen orphans (1/9 of each suit, each wind and dragon once, and a pairing tile)
+  hasThirteenOrphans(tiles) {
+    let thirteen = [0,8,9,17,18,26,27,28,29,30,31,32,33];
+    thirteen.forEach(t => {
+      let pos = tiles.indexOf(t);
+      if (pos>-1) tiles.splice(pos,1);
+    });
+    return (tiles.length === 1 && thirteen.indexOf(tiles[0])>-1);
+  }
+
+  // check for nine gates (1,1,1, 2,3,4,5,6,7,8, 9,9,9, and a pairing tile, all same suit)
+  hasNineGates(tiles, lockedSize) {
+    if (lockedSize > 2) return false;
+    if (tiles.some(t => t>=27)) return false;
+    let suit = (tiles[0]/9) | 0;
+    if (tiles.some(t =>  ((t/9)|0) !== suit)) return false;
+    let offset = suit * 9;
+    let nine = [0,0,0, 1,2,3,4,5,6,7, 8,8,8].map(t => t+offset);
+    nine.forEach(t => {
+      let pos = tiles.indexOf(t);
+      if (pos>-1) tiles.splice(pos,1);
+    });
+    return (tiles.length === 1 && offset < tiles[0] && tiles[0] < offset+8);
+  }
+
+  /**
+   * Aggregate all the points for individual sets into a single score object
+   */
+  aggregateScorePattern(scorePattern, windTile, windOfTheRoundTile) {
+    return scorePattern
+      .map(set => this._tile_score(set, windTile, windOfTheRoundTile))
+      .reduce(
+        (t, v) => {
+          t.score += v.score;
+          t.doubles += v.doubles;
+          t.log = t.log.concat(v.log);
+          return t;
+        },
+        {
+          score: 0,
+          doubles: 0,
+          log: []
+        }
+      );
   }
 
   /**

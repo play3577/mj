@@ -173,8 +173,8 @@ class ClientUI {
       }
       cleanup.forEach(fn => fn());
       let tile = e.target;
-      tile.classList.remove('highlight');
-      resolve(e.target);
+      if (tile) tile.classList.remove('highlight');
+      resolve(tile);
     };
 
     let evtStart = e => {
@@ -265,6 +265,7 @@ class ClientUI {
 
     // do we have a concealed kong?
     if (allInHand.length === 4) canKong = true;
+
     // can we meld a kong?
     else if (this.player.locked.some(set => set.every(t => t.getTileFace()==face))) canKong = true;
 

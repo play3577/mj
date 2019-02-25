@@ -9,54 +9,7 @@ if (typeof process !== "undefined") {
  */
 class ChineseClassical extends Ruleset {
   constructor() {
-    super(2000, 1000);
-  }
-
-  /**
-   * Turn basic tilescores into score adjustments, by running
-   * the "how much does the winner get" and "how much do the
-   * losers end up paying" calculations.
-   */
-  settleScores(scores, winningplayer, eastplayer) {
-    let adjustments = [0, 0, 0, 0];
-    let eastwin = winningplayer === eastplayer ? 2 : 1;
-
-    console.debug(`%cSettling payment`, `color: red`);
-
-    for (let i = 0; i < scores.length; i++) {
-      if (i === winningplayer) continue;
-
-      // every non-winner pays the winner.
-      if (i !== winningplayer) {
-        let wscore = scores[winningplayer].total;
-        let east = i === eastplayer ? 2 : 1;
-        let difference = wscore * Math.max(eastwin, east);
-        adjustments[winningplayer] += difference;
-        console.debug(`${winningplayer} gets ${difference} from ${i}`);
-        adjustments[i] -= wscore * Math.max(eastwin, east);
-        console.debug(`${i} pays ${difference} to ${winningplayer}`);
-      }
-
-      if (!config.LOSERS_SETTLE_SCORES) continue;
-
-      // If losers should settle their scores amongst
-      // themselves, make that happen right here:
-      for (let j = i + 1; j < scores.length; j++) {
-        if (j === winningplayer) continue;
-
-        let east = i == eastplayer ? 2 : 1;
-        let difference = (scores[i].total - scores[j].total) * east;
-        console.debug(`${i} gets ${difference} from ${j}`);
-        adjustments[i] += difference;
-        console.debug(`${j} pays ${difference} to ${i}`);
-        adjustments[j] -= difference;
-      }
-    }
-
-    if (winningplayer === eastplayer) scores[eastplayer].log.push(`Player won as East`);
-    else scores[eastplayer].log.push(`Player lost as East`);
-
-    return adjustments;
+    super(2000, 1000, true, true);
   }
 
   /**
@@ -185,29 +138,6 @@ class ChineseClassical extends Ruleset {
     return { score, doubles, log };
   }
 
-  checkAllTilesForLimit(allTiles, lockedSize) {
-    let test;
-    const reset = () => test = allTiles.slice().sort();
-
-    // check for thirteen orphans (1/9 of each suit, each wind and dragon once, and a pairing tile)
-    let thirteen = [0,8,9,17,18,26,27,28,29,30,31,32,33];
-    reset();
-    thirteen.forEach(t => { let pos = test.indexOf(t); if (pos>-1) test.splice(pos,1); });
-    if (test.length === 1 && thirteen.indexOf(test[0])>-1) return `Thirteen orphans`;
-
-    // check for nine gates (1,1,1, 2,3,4,5,6,7,8, 9,9,9, and a pairing tile)
-    if (lockedSize<=2 && test.every(t => t<27)) {
-      let suit = (test[0]/9) | 0;
-      if (test.every(t =>  ((t/9)|0) === suit)) {
-        let offset = suit * 9;
-        let nine = [0,0,0, 1,2,3,4,5,6,7, 8,8,8].map(t => t+offset);
-        nine.forEach(t => { let pos = test.indexOf(t); if (pos>-1) test.splice(pos,1); });
-        if (test.length === 1 && offset < test[0] && test[0] < offset+8) return `Nine gates`;
-      }
-    }
-  }
-
-
   /**
    * ...docs go here...
    */
@@ -311,22 +241,7 @@ class ChineseClassical extends Ruleset {
    * Determine the tile score for a collection of sets
    */
   getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset, winner=false, selfdraw=false, selftile=false, tilesLeft) {
-    let result = scorePattern
-      .map(set => this._tile_score(set, windTile, windOfTheRoundTile))
-      .reduce(
-        (t, v) => {
-          t.score += v.score;
-          t.doubles += v.doubles;
-          t.log = t.log.concat(v.log);
-          return t;
-        },
-        {
-          score: 0,
-          doubles: 0,
-          log: []
-        }
-      );
-
+    let result = this.aggregateScorePattern(scorePattern, windTile, windOfTheRoundTile);
     let name = config.TILE_NAMES;
     let hasOwnFlower = false;
     let hasOwnSeason = false;
