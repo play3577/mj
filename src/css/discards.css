@@ -7,7 +7,10 @@
   left: var(--ph);
   width: var(--d);
   height: var(--d);
-  background: var(--prp);
+  background-color: var(--prp);
+  background-image: url('../../img/background/opacity-05.png');
+  background-size: 103%;
+  background-position: -15px -3px;
   border: calc(3 * var(--sep)) solid var(--green);
   box-sizing: border-box;
   display: flex;
@@ -44,9 +47,12 @@
   position: absolute;
   bottom: 0;
   left: 0;
-  height: 7px;
-  background: gold;
+  height: 2px;
+  background: transparent;
   width: 0%;
-  border: 3px solid var(--prp);
   box-sizing: border-box;
+}
+
+.discards .countdown-bar.active {
+  background: gold
 }

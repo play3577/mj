@@ -1,5 +1,6 @@
 .tile {
   display: inline-block;
+
   --lw: calc(0.5 * var(--ph));
   --lh: calc(0.7 * var(--ph));
   width: var(--lw);
@@ -8,10 +9,14 @@
   min-height: var(--lh);
   max-width: var(--lw);
   max-height: var(--lh);
+
   position: relative;
   z-index: 1; /* ends up over the score box if we have lots of tiles */
-  border-radius: calc(0.05 * var(--ph));
+  margin-bottom: 2px;
+
   border: 1px solid black;
+  border-radius: calc(0.05 * var(--ph));
+
   background-color: rgb(245, 245, 245);
   background-size: 100%;
   background-position: center center;

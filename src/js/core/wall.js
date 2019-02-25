@@ -4,7 +4,6 @@ const BASE = base.concat(base).concat(base).concat(base).concat([34,35,36,37,38,
 class Wall {
   constructor(players) {
     this.players = players;
-    this.ui = document.querySelector('.wall.data');
     this.reset();
   }
 
@@ -27,16 +26,10 @@ class Wall {
 
   get(howmany=1) {
     let left = this.tiles.length - howmany;
-    this.players.forEach(p => p.markTilesLeft(left, this.deadSize));
-    this.markRemaining(left, this.deadSize);
+    this.remaining = left - this.deadSize;
+    this.players.forEach(p => p.markTilesLeft(this.remaining));
     this.dead = (this.tiles.length - howmany <= this.deadSize);
     if (howmany===1) return this.tiles.shift();
     return this.tiles.splice(0, howmany);
-  }
-
-  markRemaining(left, dead) {
-    this.remaining = left - dead;
-    if (!this.ui) return;
-    this.ui.textContent = `${this.remaining} tiles left`;
   }
 }

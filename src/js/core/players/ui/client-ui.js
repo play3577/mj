@@ -48,15 +48,20 @@ class ClientUI {
   clearTimeouts() {
     this.timeouts.forEach(t => clearTimeout(t));
     this.bar.style.width = `0%`;
+    this.bar.classList.remove('active');
   }
 
   startCountDown(ms) {
+    this.bar.classList.add('active');
     let update = fraction => (this.bar.style.width = `${100 - 100 * fraction}%`);
     for (let i=0, fraction, e=10; i<=e; i++) {
       fraction = i/e;
       this.timeouts.push(setTimeout(() => update(fraction), ms*fraction));
     }
-    this.timeouts.push(setTimeout(() => update(1), ms + 10));
+    this.timeouts.push(setTimeout(() => {
+      update(1);
+      this.bar.classList.remove('active');
+    }, ms + 10));
   }
 
   setRules(rules) {
@@ -68,8 +73,10 @@ class ClientUI {
     modal.choiceInput('Ready to start playing?', [{label: "ready!",value: false}], resolve);
   }
 
-  markTilesLeft(left, dead) {
-    // ...currently handled in game.js but should really be handled here...
+  markTilesLeft(remaining) {
+    let ui = document.querySelector('.wall.data');
+    ui.textContent = `${remaining} tiles left`;
+
   }
 
   async confirmKong(tile, resolve) {
