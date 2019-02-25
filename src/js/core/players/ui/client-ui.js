@@ -1,3 +1,22 @@
+// Make sure we put in the signal lock to prevent
+// OS/application-level keyrepeat from incorrectly
+// triggering click events:
+
+let vk_signal_lock = false;
+
+function lock_vk_signal() {
+  vk_signal_lock = true;
+  document.addEventListener('keyup', unlock_vk_signal);
+};
+
+function unlock_vk_signal(evt) {
+  let code = evt.keyCode;
+  if (VK_UP[code] || VK_SIGNAL[code]) {
+    vk_signal_lock = false;
+    document.removeEventListener('keyup', unlock_vk_signal);
+  }
+};
+
 /**
  * This is a graphical interface that players can use
  * to visualise their game knowledge, and allow external
@@ -217,8 +236,11 @@ class ClientUI {
         highlightTile({ target: currentTile });
 
         if (VK_UP[code] || VK_SIGNAL[code]) {
-          currentTile.classList.remove('highlight');
-          pickAsDiscard({ target: currentTile });
+          if (!vk_signal_lock) {
+            lock_vk_signal();
+            currentTile.classList.remove('highlight');
+            pickAsDiscard({ target: currentTile });
+          }
         }
 
         if (VK_DOWN[code]) this.spawnDeclarationModal(currentTile, pickAsDiscard);
@@ -402,6 +424,10 @@ class ClientUI {
 
     // keyboard interaction
     let listenForKeys = evt => {
+      // Prevent keyrepeat immediately kicking in off of a
+      // discard action, which uses the same signal:
+      if (vk_signal_lock) return;
+
       let code = evt.keyCode;
       let willBeHandled = (VK_LEFT[code] || VK_RIGHT[code] || VK_UP[code] || VK_SIGNAL[code]);
       if (!willBeHandled) return;
