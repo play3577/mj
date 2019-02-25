@@ -8,7 +8,7 @@ The live version, which is effectively done (with tweaks of course are still hap
 
 ### What it looks like
 
-![A screenshot of what the live game looks like when set to autoplay](https://user-images.githubusercontent.com/177243/53303363-53589780-381e-11e9-8e2b-8702e56fd303.png)
+![A screenshot of what the live game looks like when set to autoplay](https://user-images.githubusercontent.com/177243/53316469-df99a780-387c-11e9-89a6-400d60d09a5c.png)
 
 ### This is a pure HTML, CSS, and JavaScript game
 
