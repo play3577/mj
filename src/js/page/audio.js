@@ -21,8 +21,6 @@ const clips = {
     `click-multi-01.mp3`,
     `click-multi-02.mp3`,
     `click-multi-03.mp3`,
-    `click-multi-04.mp3`,
-    `click-multi-05.mp3`,
   ],
 
   kong: [
