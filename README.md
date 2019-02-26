@@ -2,7 +2,7 @@
 
 1: We're talking real four player mahjong here. Not the one player solitair game. That "game" has literally nothing to do with mahjong.
 
-2: This README.md has been kept sparse pending a set of full length development articles that walk through going from "having an idea" to "having finished writing a fully functional game". 
+2: This README.md has been kept sparse pending a set of full length development articles that walk through going from "having an idea" to "having finished writing a fully functional game".
 
 The live version, which is effectively done (with tweaks of course are still happening), can be found at https://pomax.github.io/mj and uses "Chinese Classical" rules for play and scoring.
 
@@ -27,6 +27,7 @@ The following URL query parameters are supported for debugging purposes:
 - `play=<num>` sets the number of milliseconds between bots taking turns.
 - `hand=<num>` sets the number of milliseconds paused on the score breakdown before starting a new hand.
 - `force_open_bot_play=true` shows all player tiles irrespective of normal gameplay vs. automated bot play.
+- `force_draw=true` starts a hand as if the previous hand was a draw.
 - `wall_hack=<wall hack name>` overrides the wall instantiation with specific tile sequences for debugging specific plays. See [`core/wall-hack.js`](https://github.com/Pomax/mj/blob/master/src/js/core/wall-hack.js) for the list of available pattern names.
 
 ### I have (a) question(s)!

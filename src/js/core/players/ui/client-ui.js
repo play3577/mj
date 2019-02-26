@@ -94,11 +94,8 @@ class ClientUI {
 
   handWillStart(redraw, resolve) {
     if (config.BOT_PLAY) return resolve();
-    if (redraw) {
-      modal.choiceInput('Hand was a draw. Ready to start again?', [{label: "ready",value: false}], resolve);
-    } else {
-      modal.choiceInput('Ready to start playing?', [{label: "ready!",value: false}], resolve);
-    }
+    if (redraw) modal.choiceInput('Hand was a draw, ready to start again?', [{label: "ready",value: false}], resolve);
+    else modal.choiceInput('Ready to start playing?', [{label: "ready!",value: false}], resolve);
   }
 
   markTilesLeft(remaining) {

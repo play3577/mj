@@ -51,7 +51,7 @@ class Game {
       } else console.debug(`Winner player was East, winds will not rotate.`);
     }
 
-    if (!result.draw) {
+    if (!result.draw && !config.FORCE_DRAW) {
       this.hand++;
       this.draws = 0;
     } else {
@@ -78,7 +78,7 @@ class Game {
     this.PLAY_START = Date.now();
 
     await this.dealTiles();
-    await this.preparePlay(this.draws > 0);
+    await this.preparePlay(config.FORCE_DRAW || this.draws > 0);
     this.play();
   }
 

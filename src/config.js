@@ -22,6 +22,7 @@ if (!DEBUG) console.debug = () => {};
 const NO_SOUND = (params.nosound==='true') ? true : false;
 const SEED = params.seed ? parseInt(params.seed) : 0;
 const PLAY_IMMEDIATELY = (params.autoplay==='true') ? true : false;
+const FORCE_DRAW = (params.force_draw==='true') ? true : false;
 const FORCE_OPEN_BOT_PLAY = (params.force_open_bot_play==='true') ? true : false;
 const PLAY_INTERVAL = params.play ? params.play : 100;
 const HAND_INTERVAL = params.hand ? params.hand : 3000;
@@ -231,6 +232,9 @@ const config = {
     // normally would have no way to access it.
     FORCE_OPEN_BOT_PLAY: FORCE_OPEN_BOT_PLAY,
 
+    // Debugging around drawn hands requires
+    // being able to force a draw
+    FORCE_DRAW: FORCE_DRAW,
 
     // Turning on wall hacks will set the wall
     // to very specific walls for debugging
