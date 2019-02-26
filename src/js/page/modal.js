@@ -95,12 +95,12 @@ function showScoreDetails(pid, log) {
 
   let table = document.createElement('table');
   let data = [
-    `<tr><th>element</th><th>points</th></tr>`,
+    `<tr><th>points</th><th>element</th></tr>`,
     ...log.map(line => {
       let mark = ` for `;
       if (line.indexOf(mark) > -1) {
         let parts = line.split(mark);
-        return `<tr><td>${parts[1]}</td><td>${parts[0].replace('double', 'dbl')}</td></tr>`;
+        return `<tr><td>${parts[0].replace(/doubles?/, `dbl`)}</td><td>${parts[1]}</td></tr>`;
       } else {
         return `<tr><td colspan="2">${line}</td></tr>`;
       }

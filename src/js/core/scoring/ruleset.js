@@ -6,9 +6,10 @@ class Ruleset {
   allFlowers(bonus) { return [34, 35, 36, 37].every(t => bonus.indexOf(t) > -1); }
   allSeasons(bonus) { return [38, 39, 40, 41].every(t => bonus.indexOf(t) > -1); }
 
-  constructor(startscore, limit, losers_settle_scores=config.LOSERS_SETTLE_SCORES, east_doubles_up=false) {
+  constructor(startscore, limit, points_for_winning, losers_settle_scores=config.LOSERS_SETTLE_SCORES, east_doubles_up=false) {
     this.player_start_score = startscore;
     this.limit = limit;
+    this.points_for_winning = points_for_winning;
     this.losers_settle_scores = losers_settle_scores;
     this.east_doubles_up = east_doubles_up;
   }
@@ -62,18 +63,80 @@ class Ruleset {
     return adjustments;
   }
 
+  // implemented by subclasses
+  getPairValue() { return false; }
+  getChowValue() { return false; }
+  getPungValue() { return false; }
+  getKongValue() { return false; }
+
+  /**
+   * ...docs go here...
+   */
   _tile_score(set, windTile, windOfTheRoundTile) {
-    // extended by subclasses
-    return 0;
+    let locked = set.locked;
+    let concealed = set.concealed;
+    let tile = set[0];
+    let names = config.TILE_NAMES;
+
+    if (set.length === 2) return this.getPairValue(tile, locked, concealed, names, windTile, windOfTheRoundTile);
+    if (set.length === 3) {
+      if (set[0] !== set[1]) return this.getChowValue(tile, locked, concealed, names, windTile, windOfTheRoundTile);
+      else return this.getPungValue(tile, locked, concealed, names, windTile, windOfTheRoundTile);
+    }
+    if (set.length === 4) return this.getKongValue(tile, locked, concealed, names, windTile, windOfTheRoundTile);
   }
 
-  checkWinnerHandPatterns(scorePattern,winset,selfdraw = false,windTile,windOfTheRoundTile,tilesLeft,scoreObject) {
-    // extended by subclasses
+  // implemented by subclasses
+  checkBonusTilePoints(bonus, windTile, names, result) {}
+  checkHandPatterns(scorePattern, windTile, windOfTheRoundTile, tilesLeft, result) {}
+  checkWinnerHandPatterns(scorePattern, winset, selfdraw, windTile, windOfTheRoundTile, tilesLeft, scoreObject) {}
+
+  // Aggregate all the points for individual sets into a single score object
+  aggregateScorePattern(scorePattern, windTile, windOfTheRoundTile) {
+    return scorePattern
+      .map(set => this._tile_score(set, windTile, windOfTheRoundTile))
+      .filter(v => v)
+      .reduce((t, v) => {
+        t.score += v.score;
+        t.doubles += (v.doubles||0);
+        t.log = t.log.concat(v.log);
+        return t;
+      },{ score: 0, doubles: 0, log: [] });
   }
 
+  /**
+   * ...docs go here...
+   */
   getTileScore(scorePattern,windTile,windOfTheRoundTile,bonus,winset,winner=false,selfdraw=false,selftile=false,tilesLeft) {
-    // extended by subclasses
-    return { score: 0, doubles: 0, total: 0, limit: undefined, log: ['master ruleset does not perform any scoring'] };
+    let names = config.TILE_NAMES;
+    let result = this.aggregateScorePattern(scorePattern, windTile, windOfTheRoundTile);
+    result.wind = windTile;
+    result.wotd = windOfTheRoundTile;
+
+    this.checkBonusTilePoints(bonus, windTile, names, result);
+    this.checkHandPatterns(scorePattern, windTile, windOfTheRoundTile, tilesLeft, result);
+    if (winner) {
+      if (this.points_for_winning > 0) {
+        result.score += this.points_for_winning;
+        result.log.push(`${this.points_for_winning} for winning`);
+      }
+      this.checkWinnerHandPatterns(scorePattern, winset, selfdraw, selftile, windTile, windOfTheRoundTile, tilesLeft, result);
+    }
+
+    if (result.limit) {
+      result.score = this.limit;
+      result.doubles = 0;
+      result.total = this.limit;
+      result.log.push(`Limit hand: ${result.limit}`);
+    } else {
+      result.total = result.score * 2 ** result.doubles;
+      if (result.total > this.limit) {
+        result.log.push(`Score limited from ${result.total} to ${this.limit}`);
+        result.total = this.limit;
+      }
+    }
+
+    return result;
   }
 
   /**
@@ -82,7 +145,7 @@ class Ruleset {
   checkAllTilesForLimit(allTiles, lockedSize) {
     const tiles = () => allTiles.slice().sort();
     if (this.hasThirteenOrphans(tiles())) return `Thirteen orphans`;
-    if (this.hasNineGates(tiles())) return `Nine gates`;
+    if (this.hasNineGates(tiles(), lockedSize)) return `Nine gates`;
   }
 
   // check for thirteen orphans (1/9 of each suit, each wind and dragon once, and a pairing tile)
@@ -108,27 +171,6 @@ class Ruleset {
       if (pos>-1) tiles.splice(pos,1);
     });
     return (tiles.length === 1 && offset < tiles[0] && tiles[0] < offset+8);
-  }
-
-  /**
-   * Aggregate all the points for individual sets into a single score object
-   */
-  aggregateScorePattern(scorePattern, windTile, windOfTheRoundTile) {
-    return scorePattern
-      .map(set => this._tile_score(set, windTile, windOfTheRoundTile))
-      .reduce(
-        (t, v) => {
-          t.score += v.score;
-          t.doubles += v.doubles;
-          t.log = t.log.concat(v.log);
-          return t;
-        },
-        {
-          score: 0,
-          doubles: 0,
-          log: []
-        }
-      );
   }
 
   /**

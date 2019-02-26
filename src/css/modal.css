@@ -68,21 +68,30 @@
 .modal .panel.score-breakdown table {
   width: 100%;
   padding: 1em;
-  margin-bottom: 1em;
 }
 
 .modal .panel.score-breakdown table tr th {
   border-bottom: 1px solid black;
 }
 
-.modal .panel.score-breakdown table tr th:first-child,
+.modal .panel.score-breakdown table tr th,
 .modal .panel.score-breakdown table tr td:first-child {
+    text-align: center;
+}
+
+.modal .panel.score-breakdown table tr td:last-child {
     text-align: left;
 }
 
 .modal .panel.score-breakdown table tr th:last-child,
 .modal .panel.score-breakdown table tr td:last-child {
-    text-align: center;
+  text-indent: 1em;
+}
+
+.modal .panel.score-breakdown table tr td[colspan="2"] {
+  text-align: center;
+  padding-top:1em;
+  color: #999;
 }
 
 .modal .panel.scores table tr th {

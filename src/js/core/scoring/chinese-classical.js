@@ -8,138 +8,177 @@ if (typeof process !== "undefined") {
  * Chinese Classical rules.
  */
 class ChineseClassical extends Ruleset {
+
   constructor() {
-    super(2000, 1000, true, true);
+    super(
+      2000, // start points
+      1000, // limit
+      10,   // points for winning
+      true, // losers settle their scores after paying the winner
+      true  // east pays and receives double
+    );
   }
 
   /**
-   * ...docs go here...
+   * What are considered point-scoring pairs in this ruleset?
    */
-  _tile_score(set, windTile, windOfTheRoundTile) {
-    let name = config.TILE_NAMES;
+  getPairValue(tile, locked, concealed, names, windTile, windOfTheRoundTile) {
+    if (tile > 30) return {
+      score: 2,
+      log: [ `2 for pair of dragons (${names[tile]})` ]
+    };
 
-    let locked = set.locked;
-    let tile = set[0];
+    if (tile === windTile) return {
+      score: 2,
+      log: [ `2 for pair of own wind (${names[tile]})` ]
+    };
 
-    let log = [];
+    if (tile === windOfTheRoundTile) return {
+      score: 2,
+      log: [ `2 for pair of wind of the round (${names[tile]})` ]
+    };
+  }
+
+  /**
+   * What are considered point-scoring pungs in this ruleset,
+   * and do those incur any doubles?
+   */
+  getPungValue(tile, locked, concealed, names, windTile, windOfTheRoundTile) {
+    let prefix = (locked && !concealed) ? "" : "concealed ";
     let value = 0;
-    let score = 0;
-    let doubles = 0;
 
-    // Kongs get to change this prefix, because they can be one
-    // of three forms, with one being both locked AND concealed
-    // (namely, a locked kong formed out of a concealed pung).
-    let prefix = (locked && !set.concealed) ? "" : "concealed ";
+    if (tile>30) {
+      value = locked ? 4 : 8;
+      return {
+        score: value,
+        doubles: 1,
+        log: [
+          `${value} for ${prefix}pung of dragons (${names[tile]})`,
+          `1 double for pung of dragons (${names[tile]})`
+        ]
+      };
+    }
 
-    // Pairs
-    if (set.length === 2) {
-      if (tile > 30) {
-        value = 2;
-        score += value;
-        log.push(`${value} for pair of dragons (${name[tile]})`);
-      }
+    if (tile > 26) {
+      value = locked ? 4 : 8;
+      let scoreObject = {
+        score: value,
+        doubles: 0,
+        log: [ `${value} for ${prefix}pung of winds (${names[tile]})` ]
+      };
       if (tile === windTile) {
-        value = 2;
-        score += value;
-        log.push(`${value} for pair of own wind (${name[tile]})`);
+        scoreObject.doubles += 1;
+        scoreObject.log.push(`1 double for pung of player's own wind (${names[tile]})`);
       }
       if (tile === windOfTheRoundTile) {
-        value = 2;
-        score += value;
-        log.push(`${value} for pair of wind of the round (${name[tile]})`);
+        scoreObject.doubles += 1;
+        scoreObject.log.push(`1 double for pung of wind of the round (${names[tile]})`);
       }
+      return scoreObject;
     }
 
-    // Triplets
-    if (set.length === 3) {
-      // chows score nothing.
-      let s1 = set[1];
-      s1 = s1.dataset ? parseInt(s1.dataset.tile) : s1;
-      if (s1 === tile) {
-        if (tile < 27) {
-          if (tile % 9 === 0 || tile % 9 === 8) {
-            value = locked ? 4 : 8;
-            score += value;
-            log.push(`${value} for ${prefix}pung of terminals (${name[tile]})`);
-          } else {
-            value = locked ? 2 : 4;
-            score += value;
-            log.push(`${value} for ${prefix}pung of simple (${name[tile]})`);
-          }
-        } else if (tile < 31) {
-          value = locked ? 4 : 8;
-          score += value;
-          log.push(`${value} for ${prefix}pung of winds (${name[tile]})`);
-          if (tile === windTile) {
-            doubles += 1;
-            log.push(`1 double for a pung of player's own wind (${name[tile]})`);
-          }
-          if (tile === windOfTheRoundTile) {
-            doubles += 1;
-            log.push(`1 double for a pung of wind of the round (${name[tile]})`);
-          }
-        } else {
-          value = locked ? 4 : 8;
-          score += value;
-          log.push(`${value} for ${prefix}pung of dragons (${name[tile]})`);
-          doubles += 1;
-          log.push(`1 double for a pung of dragons (${name[tile]})`);
-        }
-      }
-    }
-
-    // goodness, a kong!
-    if (set.length === 4) {
-
-      // Is this a melded kong (locked, not concealed), a
-      // claimed kong (locked, concealed=3 for pung), or
-      // a self-drawn kong (locked, concealed=4 for kong)?
-      let ccount = set.concealed;
-
-      if (!ccount) {
-        prefix = `melded `
-      } else if (ccount ===3) {
-        prefix = `claimed `
-      } else if (ccount ===3) {
-        prefix = `concealed `
-      }
-
-      if (tile < 27) {
-        if (tile % 9 === 0 || tile % 9 === 8) {
-          value = (locked || ccount===3) ? 16 : 32;
-          score += value;
-          log.push(`${value} for ${prefix}kong of terminals (${name[tile]})`);
-        } else {
-          value = (locked || ccount===3) ? 8 : 16;
-          score += value;
-          log.push(`${value} for ${prefix}kong of simple (${name[tile]})`);
-        }
-      } else if (tile < 31) {
-        value = (locked || ccount===3) ? 16 : 32;
-        score += value;
-        log.push(`${value} for ${prefix}kong of winds (${name[tile]})`);
-        if (tile === windTile) {
-          doubles += 1;
-          log.push(`1 double for a kong of player's own wind`);
-        }
-        if (tile === windOfTheRoundTile) {
-          doubles += 1;
-          log.push(`1 double for a kong of wind of the round`);
-        }
+    if (tile < 27) {
+      let type;
+      if (tile % 9 === 0 || tile % 9 === 8) {
+        type = `terminals`;
+        value = locked ? 4 : 8;
       } else {
-        value = (locked || ccount===3) ? 16 : 32;;
-        score += value;
-        log.push(`${value} for ${prefix}kong of dragons (${name[tile]})`);
-        doubles += 1;
-        log.push(`1 double for a kong of dragons (${name[tile]})`);
+        type = `simple`;
+        value = locked ? 2 : 4;
       }
+      return {
+        score: value,
+        log: [ `${value} for ${prefix}pung of ${type} (${names[tile]})` ]
+      };
     }
-
-    return { score, doubles, log };
   }
 
   /**
-   * ...docs go here...
+   * What are considered point-scoring kongs in this ruleset,
+   * and do those incur any doubles?
+   */
+  getKongValue(tile, locked, concealed, names, windTile, windOfTheRoundTile) {
+    let value = 0;
+
+    // Is this a melded kong (locked, not concealed), a
+    // claimed kong (locked, concealed=3 for pung), or
+    // a self-drawn kong (locked, concealed=4 for kong)?
+    let prefix = ``;
+    let ccount = concealed;
+    if (!ccount) prefix = `melded `;
+    else if (ccount === 3) prefix = `claimed `;
+    else if (ccount === 4) prefix = `concealed `;
+
+    if (tile>30) {
+      value = (locked || ccount===3) ? 16 : 32;;
+      return {
+        score: value,
+        doubles: 1,
+        log: [
+          `${value} for ${prefix}kong of dragons (${names[tile]})`,
+          `1 double for kong of dragons (${names[tile]})`
+        ]
+      };
+    }
+
+    if (tile > 26) {
+      value = (locked || ccount===3) ? 16 : 32;
+      let scoreObject = {
+        score: value,
+        doubles: 0,
+        log: [ `${value} for ${prefix}kong of winds (${names[tile]})` ]
+      };
+      if (tile === windTile) {
+        scoreObject.doubles += 1;
+        scoreObject.log.push(`1 double for kong of player's own wind (${names[tile]})`);
+      }
+      if (tile === windOfTheRoundTile) {
+        scoreObject.doubles += 1;
+        scoreObject.log.push(`1 double for kong of wind of the round (${names[tile]})`);
+      }
+      return scoreObject;
+    }
+
+    if (tile < 27) {
+      let type;
+      if (tile % 9 === 0 || tile % 9 === 8) {
+        type = `terminals`;
+        value = (locked || ccount===3) ? 16 : 32;
+      } else {
+        type = `simple`;
+        value = (locked || ccount===3) ? 8 : 16;
+      }
+      return {
+        score: value,
+        log: [ `${value} for ${prefix}kong of ${type} (${names[tile]})` ]
+      };
+    }
+  }
+
+  /**
+   * There are special points and doubles that any player
+   * can get at the end of the hand. Calculate those here:
+   */
+  checkHandPatterns(scorePattern, windTile, windOfTheRoundTile, tilesLeft, scoreObject) {
+    // this ruleset only awards points for little three dragons.
+    let r, g, w;
+
+    scorePattern.forEach(set => {
+      let tile = set[0];
+      if (tile===31) g = set.length;
+      if (tile===32) r = set.length;
+      if (tile===33) w = set.length;
+    });
+
+    if (r + g + w >= 8 && (r===2 || g===2 || w===2)) {
+      scoreObject.doubles += 1;
+      scoreObject.log.push(`1 double for little three dragons`);
+    }
+  }
+
+  /**
+   * There are special points and doubles that you can only
+   * get by winning the hand. Calculate those here:
    */
   checkWinnerHandPatterns(scorePattern, winset, selfdraw, selftile, windTile, windOfTheRoundTile, tilesLeft, scoreObject) {
     let suits = config.SUIT_NAMES;
@@ -163,18 +202,18 @@ class ChineseClassical extends Ruleset {
 
     if (state.allchow && !state.majorPair) {
       scoreObject.doubles += 1;
-      scoreObject.log.push(`1 double for a chow hand`);
+      scoreObject.log.push(`1 double for chow hand`);
     }
 
     if (state.onesuit) {
       if (state.honours) {
         scoreObject.doubles += 1;
         scoreObject.log.push(
-          `1 double for a one suit (${suits[state.suit]}) and honours hand`
+          `1 double for one suit (${suits[state.suit]}) and honours hand`
         );
       } else {
         scoreObject.doubles += 3;
-        scoreObject.log.push(`3 doubles for a clean one suit hand (${suits[state.suit]})`);
+        scoreObject.log.push(`3 doubles for clean one suit hand (${suits[state.suit]})`);
       }
     }
 
@@ -193,7 +232,7 @@ class ChineseClassical extends Ruleset {
 
     if (state.punghand) {
       scoreObject.doubles += 1;
-      scoreObject.log.push(`1 double for an all pung hand`);
+      scoreObject.log.push(`1 double for all pung hand`);
     }
 
     if (state.kongCount === 4) {
@@ -214,7 +253,7 @@ class ChineseClassical extends Ruleset {
 
     if (state.concealedCount === 5) {
       scoreObject.doubles += 1;
-      scoreObject.log.push(`1 double for a fully concealed hand`);
+      scoreObject.log.push(`1 double for fully concealed hand`);
     }
 
     if (state.concealedCount === 5 && state.punghand) {
@@ -238,24 +277,19 @@ class ChineseClassical extends Ruleset {
   }
 
   /**
-   * Determine the tile score for a collection of sets
+   * Award points based on bonus tiles. A flat 4 points per
+   * bonus, but Chinese classical also awards some doubles
+   * based on having specific flowers/seasons.
    */
-  getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset, winner=false, selfdraw=false, selftile=false, tilesLeft) {
-    let result = this.aggregateScorePattern(scorePattern, windTile, windOfTheRoundTile);
-    let name = config.TILE_NAMES;
+  checkBonusTilePoints(bonus, windTile, names, result) {
     let hasOwnFlower = false;
     let hasOwnSeason = false;
+
     bonus.forEach(tile => {
       result.score += 4;
-      result.log.push(`4 for bonus tile (${name[tile]})`);
-
-      if (this.ownFlower(tile, windTile)) {
-        hasOwnFlower = true;
-      }
-
-      if (this.ownSeason(tile, windTile)) {
-        hasOwnSeason = true;
-      }
+      result.log.push(`4 for bonus tile (${names[tile]})`);
+      if (this.ownFlower(tile, windTile)) hasOwnFlower = true;
+      if (this.ownSeason(tile, windTile)) hasOwnSeason = true;
     });
 
     if (hasOwnFlower && hasOwnSeason) {
@@ -265,39 +299,13 @@ class ChineseClassical extends Ruleset {
 
     if (this.allFlowers(bonus)) {
       result.doubles += 2;
-      result.log.push(`1 more double for having all flowers`);
+      result.log.push(`1 double for having all flowers`);
     }
 
     if (this.allSeasons(bonus)) {
       result.doubles += 2;
-      result.log.push(`1 more double for having all seasons`);
+      result.log.push(`1 double for having all seasons`);
     }
-
-    if (winner) {
-      result.score += 10;
-      result.log.push(`10 for winning`);
-    }
-
-    result.wind = windTile;
-    result.wotd = windOfTheRoundTile;
-
-    // also determine points/doubles based on the full hand
-    if (winner) this.checkWinnerHandPatterns(scorePattern, winset, selfdraw, selftile, windTile, windOfTheRoundTile, tilesLeft, result);
-
-    if (result.limit) {
-      result.score = this.limit;
-      result.doubles = 0;
-      result.total = this.limit;
-      result.log.push(`Limit hand: ${result.limit}`);
-    } else {
-      result.total = result.score * 2 ** result.doubles;
-      if (result.total > this.limit) {
-        result.log.push(`Score limited from ${result.total} to ${this.limit}`);
-        result.total = this.limit;
-      }
-    }
-
-    return result;
   }
 }
 
