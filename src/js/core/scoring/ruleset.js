@@ -1,4 +1,8 @@
+/**
+ *
+ */
 class Ruleset {
+
   // helper functions
   getWindTile(wind) { return 27 + wind }
   ownFlower(tile, windTile) { return tile - 34 === windTile - 27 }

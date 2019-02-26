@@ -1,17 +1,32 @@
+/**
+ *
+ */
 class TileTracker {
   constructor(id) {
     this.id = id;
     this.reset();
   }
+
+  /**
+   *
+   */
   reset() {
     let tiles = (new Array(34)).fill(4);
     tiles.push(1,1,1,1,1,1,1,1);
     this.tiles = Object.assign({}, tiles);
     if (this.el) this.bindTo(this.el);
   }
+
+  /**
+   *
+   */
   get(tile) {
     return this.tiles[tile];
   }
+
+  /**
+   *
+   */
   seen(tile) {
     if (tile.dataset) {
       console.log(`Player ${this.id} tracker was passed an HTMLElement instead of a tile`);
@@ -33,7 +48,14 @@ class TileTracker {
       }
     }
   }
+
+  /**
+   *
+   */
   bindTo(htmlElement) {
+    // TODO almost all this code should be in the client-ui,
+    // with the tracker simply going `if (this.ui) this.ui.[...]`
+    // in any location it needs the UI updated.
     this.el = htmlElement;
     this.el.innerHTML = '';
     this.counts = {};

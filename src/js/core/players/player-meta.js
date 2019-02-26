@@ -31,6 +31,7 @@ class PlayerMeta {
   setRules(rules) {
     this.rules = rules;
     this._score = this.rules.player_start_score;
+    if (this.ui) this.ui.setRules(rules);
   }
 
   handWillStart(redraw, resolve) {
@@ -159,11 +160,11 @@ class PlayerMeta {
     return false;
   }
 
-  see(tiles, player, melded) {
+  see(tiles, player) {
     if (player === this) return;
     if (!tiles.map) tiles = [tiles];
     tiles.forEach(tile => this.tracker.seen(tile));
-    if (this.ui) this.ui.see(tiles, player, melded);
+    if (this.ui) this.ui.see(tiles, player);
   }
 
   receivedTile(player) {
@@ -176,8 +177,8 @@ class PlayerMeta {
     if (this.ui) this.ui.playerDiscarded(player, tile);
   }
 
-  seeKong(tiles, player, melded) {
-    this.see(tiles.map(t => t.dataset.tile), player, false, true);
+  seeKong(tiles, player) {
+    this.see(tiles.map(t => t.dataset.tile), player);
   }
 
   seeClaim(tiles, player, claimedTile, claim) {

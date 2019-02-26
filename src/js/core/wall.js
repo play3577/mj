@@ -1,12 +1,18 @@
 let base = [...new Array(34)].map((_,i) => i);
 const BASE = base.concat(base).concat(base).concat(base).concat([34,35,36,37,38,39,40,41]);
 
+/**
+ *
+ */
 class Wall {
   constructor(players) {
     this.players = players;
     this.reset();
   }
 
+  /**
+   *
+   */
   reset() {
     let tiles = BASE.slice();
     this.tiles = [];
@@ -24,6 +30,9 @@ class Wall {
     }
   }
 
+  /**
+   *
+   */
   get(howmany=1) {
     let left = this.tiles.length - howmany;
     this.remaining = left - this.deadSize;

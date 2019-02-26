@@ -1,3 +1,6 @@
+/**
+ *
+ */
 (function generateLockedSetSeparationCSS() {
 
   const style = document.createElement("style");

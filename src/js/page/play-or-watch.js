@@ -1,3 +1,6 @@
+/**
+ *
+ */
 (function() {
     function play() {
         let manager = new GameManager();

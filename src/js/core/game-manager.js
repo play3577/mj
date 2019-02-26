@@ -1,3 +1,6 @@
+/**
+ *
+ */
 class GameManager {
   constructor() {
     this.players = [
@@ -8,6 +11,9 @@ class GameManager {
     ];
   }
 
+  /**
+   *
+   */
   create() {
     return new Game(this.players);
   }

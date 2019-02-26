@@ -43,9 +43,9 @@ class HumanPlayer extends BotPlayer {
 
   determineClaim(pid, discard, resolve, interrupt) {
     // And of course, the same applies here:
-    let suggestion = super.determineClaim(pid, discard, suggestion => {
+    super.determineClaim(pid, discard, suggestion => {
       if (config.BOT_PLAY) return resolve(suggestion);
-      this.ui.listenForClaim(pid, discard, resolve, interrupt);
+      this.ui.listenForClaim(pid, discard, suggestion, resolve, interrupt);
     });
   }
 }

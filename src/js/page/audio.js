@@ -34,6 +34,9 @@ const clips = {
   end: [`end.mp3`],
 };
 
+/**
+ *
+ */
 function playClip(name, id) {
   if (config.NO_SOUND) return;
   let bin = clips[name];

@@ -31,3 +31,22 @@ const VK_SIGNAL = {
   "13": true, // enter
   "32": true  // space
 };
+
+// Make sure we put in the signal lock to prevent
+// OS/application-level keyrepeat from incorrectly
+// triggering click events:
+
+let vk_signal_lock = false;
+
+function lock_vk_signal() {
+  vk_signal_lock = true;
+  document.addEventListener('keyup', unlock_vk_signal);
+};
+
+function unlock_vk_signal(evt) {
+  let code = evt.keyCode;
+  if (VK_UP[code] || VK_SIGNAL[code]) {
+    vk_signal_lock = false;
+    document.removeEventListener('keyup', unlock_vk_signal);
+  }
+};

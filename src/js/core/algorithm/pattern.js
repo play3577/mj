@@ -6,35 +6,6 @@
  *   2. which possible combinations of sets all free tiles can form
  *   3. whether a combination of free + locked tiles is a win or not.
  */
-
-
-// hash a tile requirement object to a compact string form.
-function hash(set) {
-  let s = `${set.type}`;
-  if (set.subtype) { s = `${s}s${set.subtype}`; }
-  if (set.type===Constants.PAIR || set.type===Constants.CHOW) { s = `${s}t${set.tile}`; }
-  return s;
-}
-
-
-// unhash a tile requirement object from its compact string form.
-function unhash(print, tile) {
-  let re = /(\d+)(s(-?\d+))?(t(\d+))?/;
-  let m = print.match(re);
-  let type = parseInt(m[1]);
-  let subtype = m[3] ? parseInt(m[3]) : undefined;
-  let required = tile;
-  if (type===Constants.CHOW) tile -= subtype;
-  let obj = { required, type, subtype, tile };
-  return obj;
-}
-
-/**
- * The major algorithm class, responsible for determining
- * which tiles might be necessary to form what, and which
- * paths can be taken through a hand in terms of already
- * formed sets.
- */
 class Pattern {
   constructor(tiles=[], canChow=false) {
     this.keys = [];

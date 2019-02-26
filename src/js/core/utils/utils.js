@@ -1,3 +1,6 @@
+/**
+ *
+ */
 const create = (t, hidden) => {
   let span = document.createElement('span');
   span.className = 'tile';
@@ -12,6 +15,9 @@ const create = (t, hidden) => {
   return span;
 }
 
+/**
+ *
+ */
 const countTileOccurences = clone => {
   // let's just compute this *super* naively.
   clone.forEach(t => {
@@ -28,6 +34,9 @@ const countTileOccurences = clone => {
   });
 };
 
+/**
+ *
+ */
 const removeAllListeners = el => {
   // When adding a function like this, make sure
   // you have an idea of how you're going to make
