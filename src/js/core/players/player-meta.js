@@ -33,8 +33,8 @@ class PlayerMeta {
     this._score = this.rules.player_start_score;
   }
 
-  handWillStart(resolve) {
-    if (this.ui) this.ui.handWillStart(resolve);
+  handWillStart(redraw, resolve) {
+    if (this.ui) this.ui.handWillStart(redraw, resolve);
     else resolve();
   }
 

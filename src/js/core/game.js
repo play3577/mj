@@ -54,7 +54,10 @@ class Game {
     if (!result.draw) {
       this.hand++;
       this.draws = 0;
-    } else this.draws++;
+    } else {
+      this.draws++;
+      playClip('draw');
+    }
 
     console.log(`\n%c${pre}tarting hand ${this.hand}.`, `color: red; font-weight: bold; font-size: 120%; border-bottom: 1px solid black;`); // Starting hand / Restarting hand
     console.debug("Rotated winds:", this.wind, this.windOfTheRound);
@@ -75,7 +78,7 @@ class Game {
     this.PLAY_START = Date.now();
 
     await this.dealTiles();
-    await this.preparePlay();
+    await this.preparePlay(this.draws > 0);
     this.play();
   }
 
@@ -140,7 +143,7 @@ class Game {
   /**
    * Set up and run the main game loop.
    */
-  async preparePlay() {
+  async preparePlay(redraw) {
     this.currentPlayerId = (this.wind % 4);
     this.discard = undefined;
     this.counter = 0;
@@ -149,10 +152,10 @@ class Game {
 
     // wait for "ready" from each player
     await Promise.all([
-      new Promise(resolve => players[0].handWillStart(resolve)),
-      new Promise(resolve => players[1].handWillStart(resolve)),
-      new Promise(resolve => players[2].handWillStart(resolve)),
-      new Promise(resolve => players[3].handWillStart(resolve)),
+      new Promise(resolve => players[0].handWillStart(redraw, resolve)),
+      new Promise(resolve => players[1].handWillStart(redraw, resolve)),
+      new Promise(resolve => players[2].handWillStart(redraw, resolve)),
+      new Promise(resolve => players[3].handWillStart(redraw, resolve)),
     ]);
 
     // resolve kongs for each player

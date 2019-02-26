@@ -92,9 +92,13 @@ class ClientUI {
     // ...not used at the moment, but could be useful a "view rules" dialog...
   }
 
-  handWillStart(resolve) {
+  handWillStart(redraw, resolve) {
     if (config.BOT_PLAY) return resolve();
-    modal.choiceInput('Ready to start playing?', [{label: "ready!",value: false}], resolve);
+    if (redraw) {
+      modal.choiceInput('Hand was a draw. Ready to start again?', [{label: "ready",value: false}], resolve);
+    } else {
+      modal.choiceInput('Ready to start playing?', [{label: "ready!",value: false}], resolve);
+    }
   }
 
   markTilesLeft(remaining) {

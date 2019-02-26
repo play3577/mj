@@ -30,6 +30,7 @@ const clips = {
 
   start: [`start.mp3`],
   win: [`win.mp3`],
+  draw: [`draw.mp3`],
   end: [`end.mp3`],
 };
 
