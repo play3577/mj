@@ -73,14 +73,16 @@ class ClientUI extends ClientUIMeta {
       resolve(tile);
     };
 
-    let evtStart = e => {
-      // declaration using mouse = long press
-      if (e.which !== 1) return;
+    // declaration using mouse = long press
+    let listenForLongPress = e => {
+      if (e.type === 'mousedown' && e.which !== 1) return;
       setTimeout(() => {
         if (!listenForInput) return;
         e.stopPropagation();
         e.target.removeEventListener("click", pickAsDiscard);
-        this.spawnDeclarationModal(this.getLatestTile(), pickAsDiscard);
+        this.spawnDeclarationModal(this.getLatestTile(), pickAsDiscard, () => {
+          e.target.addEventListener("click", pickAsDiscard);
+        });
       }, 1000);
     };
 
@@ -95,10 +97,11 @@ class ClientUI extends ClientUIMeta {
     cleanup.push(() => {
       tiles.forEach(tile => {
         tile.classList.remove('selectable');
+        tile.classList.remove('highlight');
         tile.removeEventListener("mouseover", highlightTile);
         tile.removeEventListener("click", pickAsDiscard);
-        tile.removeEventListener("mousedown", evtStart);
-        tile.removeEventListener("touchstart", evtStart);
+        tile.removeEventListener("mousedown", listenForLongPress);
+        tile.removeEventListener("touchstart", listenForLongPress);
       });
     });
 
@@ -107,8 +110,8 @@ class ClientUI extends ClientUIMeta {
       tile.classList.add('selectable');
       tile.addEventListener("mouseover", highlightTile);
       tile.addEventListener("click", pickAsDiscard);
-      tile.addEventListener("mousedown", evtStart);
-      tile.addEventListener("touchstart", evtStart);
+      tile.addEventListener("mousedown", listenForLongPress);
+      tile.addEventListener("touchstart", listenForLongPress);
     });
 
     // keyboard interaction
@@ -154,7 +157,7 @@ class ClientUI extends ClientUIMeta {
   /**
    * spawn a declaration modal for declaring a kong or a win-on-own-turn
    */
-  spawnDeclarationModal(currentTile, pickAsDiscard) {
+  spawnDeclarationModal(currentTile, pickAsDiscard, cancel) {
     let face = currentTile.getTileFace();
     let allInHand = this.getAllTilesInHand(face);
     let canKong = false;
@@ -182,13 +185,16 @@ class ClientUI extends ClientUIMeta {
     ].filter(v=>v);
 
     modal.choiceInput("Declare a kong or win?", options, result => {
+      if (result === CLAIM.IGNORE) {
+        return cancel ? cancel() : false;
+      }
       if (result === CLAIM.KONG) {
         currentTile.exception = CLAIM.KONG;
         currentTile.kong = [...allInHand];;
         currentTile.classList.remove('highlight');
-        pickAsDiscard({ target: currentTile });
+        return pickAsDiscard({ target: currentTile });
       }
-      if (result === CLAIM.WIN) pickAsDiscard({ target: undefined });
+      if (result === CLAIM.WIN) return pickAsDiscard({ target: undefined });
     });
   }
 
