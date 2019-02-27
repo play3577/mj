@@ -16,6 +16,16 @@ class Ruleset {
     this.points_for_winning = points_for_winning;
     this.losers_settle_scores = losers_settle_scores;
     this.east_doubles_up = east_doubles_up;
+    this.limits = new LimitHands();
+  }
+
+  /**
+   * The base ruleset covers two classic limit hands.
+   */
+  checkForLimit(allTiles, lockedSize) {
+    const tiles = () => allTiles.slice().sort();
+    if (this.limits.hasThirteenOrphans(tiles())) return `Thirteen orphans`;
+    if (this.limits.hasNineGates(tiles(), lockedSize)) return `Nine gates`;
   }
 
   /**
@@ -141,40 +151,6 @@ class Ruleset {
     }
 
     return result;
-  }
-
-  /**
-   * The base ruleset covers two classic limit hands.
-   */
-  checkAllTilesForLimit(allTiles, lockedSize) {
-    const tiles = () => allTiles.slice().sort();
-    if (this.hasThirteenOrphans(tiles())) return `Thirteen orphans`;
-    if (this.hasNineGates(tiles(), lockedSize)) return `Nine gates`;
-  }
-
-  // check for thirteen orphans (1/9 of each suit, each wind and dragon once, and a pairing tile)
-  hasThirteenOrphans(tiles) {
-    let thirteen = [0,8,9,17,18,26,27,28,29,30,31,32,33];
-    thirteen.forEach(t => {
-      let pos = tiles.indexOf(t);
-      if (pos>-1) tiles.splice(pos,1);
-    });
-    return (tiles.length === 1 && thirteen.indexOf(tiles[0])>-1);
-  }
-
-  // check for nine gates (1,1,1, 2,3,4,5,6,7,8, 9,9,9, and a pairing tile, all same suit)
-  hasNineGates(tiles, lockedSize) {
-    if (lockedSize > 2) return false;
-    if (tiles.some(t => t>=27)) return false;
-    let suit = (tiles[0]/9) | 0;
-    if (tiles.some(t =>  ((t/9)|0) !== suit)) return false;
-    let offset = suit * 9;
-    let nine = [0,0,0, 1,2,3,4,5,6,7, 8,8,8].map(t => t+offset);
-    nine.forEach(t => {
-      let pos = tiles.indexOf(t);
-      if (pos>-1) tiles.splice(pos,1);
-    });
-    return (tiles.length === 1 && offset < tiles[0] && tiles[0] < offset+8);
   }
 
   /**
@@ -347,21 +323,21 @@ class Ruleset {
       return newset;
     });
 
-    // If there is nothing to be formed with the tiles in hand,
-    // then we need to create an empty path, so that we at
-    // least still compute score based on just the locked tiles.
-    if (!winner && openCompositions.length === 0) openCompositions.push([]);
-
     // If this is the winner, though, then we _know_ there is at
     // least one winning path for this person to have won.
     if (winner) {
       // first check for non-standard-pattern limit hands
-      let limit = this.checkAllTilesForLimit(allTiles, locked.reduce((t,s) => t + s.length, 0));
+      let limit = this.checkForLimit(allTiles, locked.reduce((t,s) => t + s.length, 0));
       if (limit) return { limit:limit, log: [`Limit hand: ${limit}`], score: this.limit, doubles: 0, total: this.limit };
 
       // no limit: proceed to score hand based on normal win paths.
       openCompositions = tileInformation.winpaths;
     }
+
+    // If there is nothing to be formed with the tiles in hand,
+    // then we need to create an empty path, so that we at
+    // least still compute score based on just the locked tiles.
+    else if(openCompositions.length === 0) openCompositions.push([]);
 
     // Run through each possible interpetation of in-hand
     // tiles, and see how much they would score, based on

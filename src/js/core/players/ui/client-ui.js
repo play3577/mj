@@ -174,7 +174,7 @@ class ClientUI extends ClientUIMeta {
 
     if (!canWin) {
       let allTiles = this.getTileFaces(true).filter(t => t<34);
-      canWin = this.player.rules.checkAllTilesForLimit(allTiles);
+      canWin = this.player.rules.checkForLimit(allTiles);
     }
 
     // build the self-declare options for this action
