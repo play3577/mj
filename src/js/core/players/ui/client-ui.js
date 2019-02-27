@@ -238,10 +238,12 @@ class ClientUI extends ClientUIMeta {
    *
    */
   listenForClaim(pid, discard, suggestion, resolve, interrupt) {
-    // TODO: how do we want to handle the bot's suggestion?
-
     let tile = this.discards.lastChild;
     let mayChow = (((pid + 1)%4) == this.id);
+
+    if (config.SHOW_BOT_CLAIM_SUGGESTION && suggestion && suggestion.claimtype) {
+      this.discards.lastChild.classList.add('highlight');
+    }
 
     let triggerClaimDialog = evt => {
       if(evt) evt.stopPropagation();
@@ -261,6 +263,7 @@ class ClientUI extends ClientUIMeta {
         this.canKong(discard) ? { label: "Kong", value: CLAIM.KONG } : false,
         { label: "Win", value: CLAIM.WIN }, // Let's not pre-filter this one
       ], result => {
+        this.discards.lastChild.classList.remove('highlight');
         tile.classList.remove('selectable');
         tile.removeEventListener("click", triggerClaimDialog);
         if (result === CLAIM.WIN) return this.spawnWinDialog(discard, resolve, cancel);

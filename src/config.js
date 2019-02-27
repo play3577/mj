@@ -24,6 +24,7 @@ const SEED = params.seed ? parseInt(params.seed) : 0;
 const PLAY_IMMEDIATELY = (params.autoplay==='true') ? true : false;
 const FORCE_DRAW = (params.force_draw==='true') ? true : false;
 const FORCE_OPEN_BOT_PLAY = (params.force_open_bot_play==='true') ? true : false;
+const SHOW_BOT_CLAIM_SUGGESTION = (params.show_bot_claim_suggestion==='true') ? true : false;
 const PLAY_INTERVAL = params.play ? params.play : 100;
 const HAND_INTERVAL = params.hand ? params.hand : 3000;
 const BOT_DELAY_BEFORE_DISCARD_ENDS = params.bot_delay ? parseInt(params.bot_delay) : 300;
@@ -230,11 +231,16 @@ const config = {
     // separation of concern and force bots to
     // update the player's ui, even though they
     // normally would have no way to access it.
-    FORCE_OPEN_BOT_PLAY: FORCE_OPEN_BOT_PLAY,
+    FORCE_OPEN_BOT_PLAY,
+
+    // Highlight discarded tiles if the bot
+    // superclass to the human player recommends
+    // claiming it for something.
+    SHOW_BOT_CLAIM_SUGGESTION,
 
     // Debugging around drawn hands requires
     // being able to force a draw
-    FORCE_DRAW: FORCE_DRAW,
+    FORCE_DRAW,
 
     // Turning on wall hacks will set the wall
     // to very specific walls for debugging

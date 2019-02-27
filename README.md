@@ -27,6 +27,7 @@ The following URL query parameters are supported for debugging purposes:
 - `play=<num>` sets the number of milliseconds between bots taking turns.
 - `hand=<num>` sets the number of milliseconds paused on the score breakdown before starting a new hand.
 - `force_open_bot_play=true` shows all player tiles irrespective of normal gameplay vs. automated bot play.
+- `show_bot_claim_suggestion=true` highlights a discard if the player's bot superclass would have bid a claim.
 - `force_draw=true` starts a hand as if the previous hand was a draw.
 - `wall_hack=<wall hack name>` overrides the wall instantiation with specific tile sequences for debugging specific plays. See [`core/wall-hack.js`](https://github.com/Pomax/mj/blob/master/src/js/core/wall-hack.js) for the list of available pattern names.
 
