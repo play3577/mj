@@ -86,7 +86,7 @@ if (typeof process !== "undefined") { (function() {
 
   // shortcut if this wasn't our own invocation
   let invocation = process.argv.join(' ');
-  if (invocation.indexOf('mgen.j') === -1) return;
+  if (invocation.indexOf('tiles-needed.js') === -1) return;
 
   // local:
   let hand, locked,
@@ -102,7 +102,8 @@ if (typeof process !== "undefined") { (function() {
       hand: [7,7,7, 15,15, 19,20,21, 22,23,24],
       locked: [
         [24,26,25]
-      ]
+      ],
+      win: true
     },
     {
       hand: [32,32,32],
@@ -111,7 +112,8 @@ if (typeof process !== "undefined") { (function() {
         [1,2,3],
         [30,30,30,30],
         [31,31]
-       ]
+       ],
+       win: true
     },
     {
       hand: [],
@@ -121,7 +123,8 @@ if (typeof process !== "undefined") { (function() {
         [18,20,19],
         [13,12,11],
         [33,33]
-      ]
+      ],
+      win: true
     },
     {
       hand: [],
@@ -131,52 +134,61 @@ if (typeof process !== "undefined") { (function() {
         [20,22,21],
         [29,29,29,29],
         [31,31]
-      ]
+      ],
+      win: true
     },
     {
       hand: [14,15,16,22,23,24,24,24],
       locked: [
         [10,11,12],
         [20,21,22]
-      ]
+      ],
+      win: true
     },
     {
       hand: [18,18,27,27,27,30,30,32,32,32],
       locked: [
         [20,22,21]
-      ]
+      ],
+      win: false,
+      need: [[18], [30]]
     },
     {
       hand: [32,32,32],
       locked: [
         [1,2,3],
-        [2,3,5],
+        [2,3,4],
         [5,6,7],
         [6,6]
-      ]
-    },
-    {
-      hand: [0,0,10,10,12,13,16,17,17,27,29,31,32],
-      locked: []
-    },
-    {
-      hand: [14,15,2,22,27,3,3,31,32,4,5,5,6],
-      locked: []
+      ],
+      win: true
     }
   ]
 
   tests.forEach((test,tid) => {
-    if (tid < 8) return;
-
     let hand = test.hand;
     let locked = lock(test.locked);
-    console.log();
+    console.log(`--------------------------`);
+    console.log(`test ${tid}`);
     console.log(`current hand: ${hand}`);
     console.log(`locked: ${list(locked)}`);
-    console.log(`result:`);
-    console.log(
-      tilesNeeded(hand, locked, false)
-    );
+
+    let result = tilesNeeded(hand, locked, false);
+    if (test.win) {
+      if (result.winpaths===0) {
+        console.log(`test ${tid} failed: winning hand was not detected as winning.`);
+      } else {
+        console.log(`test ${tid} passed: winning hand was detected as such.`);
+      }
+    }
+
+    else {
+      if (test.need.some(tile => result.lookout[tile].some(type => type.indexOf('32')!==0))) {
+        console.log(`test ${tid} failed: not all tiles required to win are marked as required.`);
+      } else {
+        console.log(`test ${tid} passed: all possible win tiles were flagged as lookout.`);
+      }
+    }
   });
 
 })()}

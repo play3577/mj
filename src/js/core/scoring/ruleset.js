@@ -23,7 +23,8 @@ class Ruleset {
    * The base ruleset covers two classic limit hands.
    */
   checkForLimit(allTiles, lockedSize) {
-    const tiles = () => allTiles.slice().sort();
+    if (allTiles.length < 14) return;
+    const tiles = () => allTiles.slice().map(t => t|0).sort();
     if (this.limits.hasThirteenOrphans(tiles())) return `Thirteen orphans`;
     if (this.limits.hasNineGates(tiles(), lockedSize)) return `Nine gates`;
   }

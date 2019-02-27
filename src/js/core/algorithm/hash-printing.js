@@ -21,3 +21,8 @@ function unhash(print, tile) {
   let obj = { required, type, subtype, tile };
   return obj;
 }
+
+// node context
+if (typeof process !== "undefined") {
+  module.exports = { hash, unhash };
+}
