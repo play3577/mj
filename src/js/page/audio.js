@@ -44,8 +44,8 @@ Object.keys(clips).forEach(bin => {
     audio.src = `audio/${filename}`;
     audio.type = `mp3`;
     return audio;
-  })
-})
+  });
+});
 
 
 /**
