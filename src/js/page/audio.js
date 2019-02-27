@@ -1,4 +1,4 @@
-const clips = {
+const filenames = {
   thud: [
     `play-01.mp3`,
     `play-02.mp3`,
@@ -34,18 +34,32 @@ const clips = {
   end: [`end.mp3`],
 };
 
+
+// turn filenames into playable clips:
+const clips = JSON.parse(JSON.stringify(filenames));
+
+Object.keys(clips).forEach(bin => {
+  clips[bin] = clips[bin].map(filename => {
+    let audio = document.createElement("audio");
+    audio.src = `audio/${filename}`;
+    audio.type = `mp3`;
+    return audio;
+  })
+})
+
+
 /**
- *
+ * play a random clip from the specified named bin,
+ * if `id` is falsey. Otherwise, play that specific
+ * clip.
  */
 function playClip(name, id) {
   if (config.NO_SOUND) return;
   let bin = clips[name];
-  if (!bin) return console.error(`'audio bin ${name} does not exist`);
-  id = id || random(bin.length);
-  let audio = document.createElement("audio");
-  audio.src = `audio/${bin[id]}`;
-  audio.type = `mp3`;
-  document.body.appendChild(audio);
-  audio.addEventListener("ended", evt => document.body.removeChild(audio));
-  setTimeout(() => audio.play());
+  if (!bin) return console.error(`audio bin ${name} does not exist`);
+
+  let pos = id || random(bin.length);
+  let audio = bin[pos];
+  if (!audio) return console.error(`audio bin ${name} does not have a clip ${pos}`);
+  audio.play();
 }
