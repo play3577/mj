@@ -379,6 +379,7 @@ class Game {
 
     // Let everyone know what everyone had. It's the nice thing to do.
     let disclosure = players.map(p => p.getDisclosure());
+    console.debug('disclosure array:', disclosure);
     players.forEach(p => p.endOfHand(disclosure));
 
     // And calculate the scores.

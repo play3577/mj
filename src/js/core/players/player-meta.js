@@ -216,7 +216,7 @@ class PlayerMeta {
   }
 
   getTileFaces(allTiles) {
-    return this.getTiles(allTiles).map(t => t.dataset ? t.dataset.tile : t);
+    return this.getTiles(allTiles).map(t => (t.dataset ? t.dataset.tile : t)|0);
   }
 
   getDuplicates(tile) {

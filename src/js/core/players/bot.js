@@ -216,7 +216,10 @@ class BotPlayer extends Player {
     let pos = tiles.indexOf(tile);
     tiles.splice(pos, 1);
     let testPattern = new Pattern(tiles, true);
-    let lookout = testPattern.expand();
+
+    let { results } = testPattern.expand();
+    delete results.win;
+    let lookout = results;
 
     let stats = {
       discard: tile,

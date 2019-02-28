@@ -1,3 +1,8 @@
+if (typeof process !== "undefined") {
+  Pattern = require("./pattern.js");
+}
+
+
 /**
  * A tree to list-of-paths unrolling function.
  */
@@ -10,63 +15,68 @@ function unroll(list, seen=[], result=[]) {
 }
 
 /**
+ * A helper function for summary prints
+ */
+function summarise(set) {
+  if (!set.map && !set.forEach) return set;
+  // pairs
+  let t = set.sort()[0];
+  t = t.dataset ? t.dataset.tile : t;
+  if (set.length===2) return `pair${t}`; // special notation for easy extraction
+  // chows
+  let u = set[1];
+  u = u.dataset ? u.dataset.tile : u;
+  if (t !== u) return `3c-${t}-!`;
+  // pung and kong
+  if (set.length===3) return `3p-${t}-!`;
+  if (set.length===4) return `4k-${t}-${set.concealed ? set.concealed : `!`}`;
+}
+
+
+/**
  * This function uses the Pattern class to determine which tiles
  * a player might be interested in, to form valid hands. And,
  * if they already have a winning hand, how many interpretations
  * of the tiles involved there might be.
  */
 function tilesNeeded(tiles, locked=[], canChow=false) {
+  console.debug('tilesNeeded:', tiles, locked);
+
   let p = new Pattern(tiles, canChow);
 
   // Transform the "locked tiles" listing to
   // a form that the rest of the code understands.
+  locked = locked.map(summarise).filter(v => v);
+
+  // Extract the pair, if there is one.
   let pair = [];
+  locked.some((set,pos) => {
+    if (set.indexOf('pair')===0) {
+      let tile = parseInt(set.substring(4));
+      pair.push(tile)
+      locked.splice(pos,1);
+      return true;
+    }
+  });
 
-  // Due to the various places we call tilesNeeded, locked could
-  // contain have either [1,...] or [<span data-tile="tile">,...]
-  locked = locked.map(s => {
-    if (!s.map && !s.forEach) return s;
+  // Then run a pattern expansion!
+  let {results, paths} = p.expand(pair, locked);
 
-    let t = s.sort()[0];
-    t = t.dataset ? t.dataset.tile : t;
-    if (s.length===2) { pair.push(`${t}-!`); return false; }
-
-    let u = s[1];
-    u = u.dataset ? u.dataset.tile : u;
-    if (t !== u) return `3c-${t}-!`;
-
-    if (s.length===3) return `3p-${t}-!`;
-
-    if (s.length===4) return `4k-${t}-${s.concealed ? s.concealed : `!`}`;
-  }).filter(v => v);
-
-  // Then figure out which tiles we might be on the lookout
-  // for, based on the tiles currently in our hand.
-  let lookout = p.copy().expand();
-
-  // Also check to see if there is some way for use to
-  // win with a single claim, or even whether we have
-  // a winning hand, right now.
-  let {results, paths} = p.copy().determineWin([], [], [], pair, locked);
-
+  // Is this a winning hand?
   let winpaths = (results.win || []).map(path => ['2p-' + path.pair[0], ...path.set]);
-
-  delete results.win;
   let winner = (winpaths.length > 0);
-  let waiting = (results.length > 0);
 
-  // Any tile we need to win overrides whatever other
-  // reason we needed that tile for:
-  results.forEach((l,idx) => lookout[idx] = l);
+  // Is this a waiting hand?
+  delete results.win;
+  let lookout = results;
+  let waiting = !winner && lookout.some(list => list.some(type => type.indexOf('32')===0));
 
-  // Then, form all compositional paths that our unlocked tiles can take.
+  // Form all compositional paths that our unlocked tiles can take,
+  // because someone might not want to immediately win! (I know, crazy!)
   paths = paths.map(path => unroll(path));
   let composed = paths.map(path => path[0]);
 
-  // If we have any compositional paths left, we could
-  // already have a winning pattern in our hand, as long
-  // as there is only one pair between `composed` and
-  // `locked`, so... let's check:
+  // And that's all the work we need to do.
   return { lookout, waiting, composed, winner, winpaths};
 };
 
@@ -79,22 +89,19 @@ function tilesNeeded(tiles, locked=[], canChow=false) {
 if (typeof process !== "undefined") { (function() {
 
   conf = require('../../../config.js');
-  Pattern = require('./pattern.js');
   Logger = conf.LOGGER;
   Constants = conf.Constants;
-  module.exports = tilesNeeded;
 
   // shortcut if this wasn't our own invocation
   let invocation = process.argv.join(' ');
   if (invocation.indexOf('tiles-needed.js') === -1) return;
 
   // local:
-  let hand, locked,
-      create = t => ({ dataset: { tile: t } }),
-      lock = l => l.map(s => s.map(t => create(t)));
+  let create = t => ({ dataset: { tile: t } }),
+      lock = l => l.map(s => s.map(t => create(t))),
+      list = l => l.map(s => s.map(t => t.dataset.tile));
 
   // global:
-  list = l => l.map(s => s.map(t => t.dataset.tile));
   lineNumber = 0;
 
   let tests = [
@@ -168,6 +175,8 @@ if (typeof process !== "undefined") { (function() {
   tests.forEach((test,tid) => {
     let hand = test.hand;
     let locked = lock(test.locked);
+
+
     console.log(`--------------------------`);
     console.log(`test ${tid}`);
     console.log(`current hand: ${hand}`);
@@ -183,10 +192,10 @@ if (typeof process !== "undefined") { (function() {
     }
 
     else {
-      if (test.need.some(tile => result.lookout[tile].some(type => type.indexOf('32')!==0))) {
-        console.log(`test ${tid} failed: not all tiles required to win are marked as required.`);
-      } else {
+      if (test.need.every(tile => result.lookout[tile].some(type => type.indexOf('32')===0))) {
         console.log(`test ${tid} passed: all possible win tiles were flagged as lookout.`);
+      } else {
+        console.log(`test ${tid} failed: not all tiles required to win are marked as required.`);
       }
     }
   });
