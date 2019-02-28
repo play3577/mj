@@ -1,5 +1,5 @@
 /**
- *
+ * Nothing fancy here. Just a Game object builder.
  */
 class GameManager {
   constructor() {
@@ -12,9 +12,13 @@ class GameManager {
   }
 
   /**
-   *
+   * Create a game, with document blur/focus event handling
+   * bound to game pause/resume functionality.
    */
   create() {
-    return new Game(this.players);
+    let game = new Game(this.players);
+    document.addEventListener('blur', evt => game.pause());
+    document.addEventListener('focus', evt => game.resume());
+    return game;
   }
 }

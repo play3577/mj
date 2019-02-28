@@ -7,6 +7,10 @@ class Player extends PlayerMeta {
     super(id);
   }
 
+  setActiveGame(game) {
+    this.game = game;
+  }
+
   async getDiscard(resolve) {
     return this.determineDiscard(resolve);
   }
@@ -31,6 +35,9 @@ class Player extends PlayerMeta {
     // send "IGNORE!" if we take too long to
     // decide on whether we want this discard.
     let overrideKickedIn = false;
+
+    // TODO: suspend the override trigger for
+    //       as long as the game is paused.
 
     let overrideTrigger = setTimeout(() => {
       overrideKickedIn = true;

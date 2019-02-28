@@ -4,10 +4,12 @@
 class Game {
   constructor(players) {
     this.players = players;
+    players.forEach(p => p.setActiveGame(this));
     this.rules = Ruleset.getRuleset("Chinese Classical");
     this.players.forEach(p => p.setRules(this.rules));
     this.wall = new Wall(players);
     this.scoreHistory = [];
+    this._playLock = false;
   }
 
   startGame() {
@@ -21,10 +23,21 @@ class Game {
     this.startHand();
   }
 
+  pause() {
+    this._playLock = new Promise(resolve => {
+      this.resume = () => {
+        this._playLock = false;
+        resolve();
+      }
+    });
+  }
+
   // A function that triggers the s hand's play.
   // Unless the game is over because we've played
   // enough rounds to rotate the winds fully.
   async startHand(result = {}) {
+    if (this._playLock) await this._playLock;
+
     let pre = result.draw ? 'Res' : 'S';
     let players = this.players;
 
@@ -86,6 +99,8 @@ class Game {
    * Resolve kongs in hand for as long as necessary.
    */
   async resolveKongs(player, resolve) {
+    if (this._playLock) await this._playLock;
+
     let players = this.players;
     let kong;
     do {
@@ -112,6 +127,8 @@ class Game {
    * with any bonus tiles replaced by normal tiles.
    */
   async dealTiles() {
+    if (this._playLock) await this._playLock;
+
     let wall = this.wall;
     let players = this.players;
 
@@ -144,6 +161,8 @@ class Game {
    * Set up and run the main game loop.
    */
   async preparePlay(redraw) {
+    if (this._playLock) await this._playLock;
+
     this.currentPlayerId = (this.wind % 4);
     this.discard = undefined;
     this.counter = 0;
@@ -171,6 +190,8 @@ class Game {
    * The actual main game loop.
    */
   async play(claim) {
+    if (this._playLock) await this._playLock;
+
     let hand = this.hand;
     let players = this.players;
     let wall = this.wall;
@@ -239,6 +260,7 @@ class Game {
     this.processDiscard(player);
 
     // Does someone want to claim this discard?
+    if (this._playLock) await this._playLock;
     claim = await this.getAllClaims(); // players take note of the fact that a discard happened as part of their determineClaim()
     if (claim) return this.processClaim(player, claim);
 
@@ -250,6 +272,7 @@ class Game {
     }
 
     // Nothing of note happened: game on.
+    if (this._playLock) await this._playLock;
     players.forEach(p => p.nextPlayer());
     this.currentPlayerId = (this.currentPlayerId + 1) % 4;
 
@@ -274,6 +297,8 @@ class Game {
    * also be a bonus or kong tile.
    */
   async dealTileToPlayer(player, tile) {
+    if (this._playLock) await this._playLock;
+
     let players = this.players;
 
     console.debug(`${player.id} was given tile ${tile}`);
@@ -317,6 +342,8 @@ class Game {
    * If there are multiple claims, the highest valued claim wins.
    */
   async getAllClaims() {
+    if (this._playLock) await this._playLock;
+
     let players = this.players;
     let currentpid = this.currentPlayerId;
     let discard = this.discard;
