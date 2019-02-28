@@ -283,6 +283,8 @@ class Ruleset {
    * is the score the player will be assigned.
    */
   scoreTiles(disclosure, id, windOfTheRound, tilesLeft) {
+    console.debug(id, disclosure, windOfTheRound, tilesLeft);
+
     // Let's get the administrative data:
     let winner = disclosure.winner;
     let selfdraw = disclosure.selfdraw;
