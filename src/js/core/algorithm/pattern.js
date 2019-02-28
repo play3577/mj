@@ -216,12 +216,14 @@ class Pattern {
         this.recurse(head, toRemove, results, single, pair, set.concat(head));
       }
       else if (t1) {
-        // one tile away from having a chow
-        this.markNeeded(results, tile+2, Constants.CHOW3);
+        let suit = this.getSuit(tile);
+        // We might be one tile away from having a chow, if t2 is in the same suit...
+        if (this.matchSuit(tile+2,suit)) this.markNeeded(results, tile+2, Constants.CHOW3);
         this.recurse(paths, [tile, tile+1], results, single, pair, set);
       }
       else {
-        // one tile away from having a chow
+        // One tile away from having a chow, and because it's the
+        // middle tile, we know that it's the correct suit already.
         this.markNeeded(results, tile+1, Constants.CHOW2);
         this.recurse(paths, [tile, tile+2], results, single, pair, set);
       }
