@@ -6,10 +6,11 @@
  * number of milliseconds.
  *
  * This timeout can be paused using `.pause()`,
- * with the pause lock being resumable through
- * `.resume()`, as well as `.pause().resume()`.
+ * which will return a promise that can be
+ * `await`ed to effect a non-blocking "pause".
  */
 class TaskTimer {
+
   /**
    * @param {function} startWaiting
    * @param {function} timeoutFunction
@@ -49,14 +50,18 @@ class TaskTimer {
   }
 
   pause() {
-    clearTimeout(this.overrideTrigger);
+    this.interrupt();
     let elapsed = Date.now() - this.created;
     this.timeoutInterval =  this.timeoutInterval - elapsed;
-    this.paused = true;
-    return () => this.resume();
+
+    let resolver = resolve => (this._resolve_pause_lock = resolve);
+    this.paused = new Promise(resolver);
+
+    return this.paused;
   }
 
   resume() {
+    this._resolve_pause_lock();
     this.paused = false;
     this.created = Date.now();
     this.startTimeout();
@@ -99,15 +104,18 @@ if (typeof process !== "undefined") {
   let runtime;
   new TaskTimer(
     (timer) => {
-      setTimeout(() =>{
-        timer.pause();
-        console.log(Date.now(), 'paused 3 after 250ms');
+      setTimeout(async() => {
+        console.log(Date.now(), 'pausing 3');
+        let p = timer.pause();
 
         setTimeout(() =>{
           timer.resume();
           runtime = Date.now() - 250;
-          console.log(Date.now(), 'resumed 3 after 2000ms of pause');
         }, 2000);
+
+        console.log(Date.now(), 'awaiting 3 to resume (after 2000ms)');
+        await p;
+        console.log(Date.now(), 'await for 3 resolved');
       }, 250)
     },
     () => {
