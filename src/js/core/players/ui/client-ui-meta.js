@@ -481,28 +481,28 @@ class ClientUIMeta {
    *
    */
   getAvailableTiles() {
-    return this.el.querySelectorAll('.tile:not([data-bonus]):not([data-locked]');
+    return this.el.querySelectorAll('.tile:not([data-bonus]):not([data-locked])');
   }
 
   /**
    *
    */
   getSingleTileFromHand(tile) {
-    return this.el.querySelector(`.tile[data-tile='${tile}']:not([data-locked]`);
+    return this.el.querySelector(`.tile[data-tile='${tile}']:not([data-locked])`);
   }
 
   /**
    *
    */
   getAllTilesInHand(tile) {
-    return this.el.querySelectorAll(`.tile[data-tile='${tile}']:not([data-locked]`);
+    return this.el.querySelectorAll(`.tile[data-tile='${tile}']:not([data-locked])`);
   }
 
   /**
    *
    */
   getTiles(allTiles) {
-    return this.el.querySelectorAll(`.tile${allTiles ? ``: `:not([data-locked]`}`);
+    return this.el.querySelectorAll(`.tile${allTiles ? ``: `:not([data-locked])`}`);
   }
 
   /**
