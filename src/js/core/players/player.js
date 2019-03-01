@@ -46,7 +46,7 @@ class Player extends PlayerMeta {
     );
   }
 
-  determineClaim(pid, discard, resolve, interrupt, timer) {
+  determineClaim(pid, discard, resolve, interrupt, claimTimer) {
     // Just like determineDiscard, players have a way
     // to determine whether they want a discard, and
     // for what, but we're not going to say how to

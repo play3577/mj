@@ -264,7 +264,7 @@ class BotPlayer extends Player {
   /**
    * Automated claim policy, see `tilesNeeded` in `./mgen.js`
    */
-  async determineClaim(pid, discard, resolve, interrupt, timer) {
+  async determineClaim(pid, discard, resolve, interrupt, claimTimer) {
     // which tile is this?
     let tile = discard.getTileFace();
 

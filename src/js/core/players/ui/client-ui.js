@@ -237,7 +237,7 @@ class ClientUI extends ClientUIMeta {
   /**
    * FIXME: split this monster up, it's too much code in a single function.
    */
-  listenForClaim(pid, discard, suggestion, resolve, interrupt, timer) {
+  listenForClaim(pid, discard, suggestion, resolve, interrupt, claimTimer) {
     let discards = this.discards;
     let tile = discards.lastChild;
     let mayChow = (((pid + 1)%4) == this.id);
@@ -255,8 +255,14 @@ class ClientUI extends ClientUIMeta {
     // on the part of the page that normally triggers ignore
     // as part of a document focus action.
     let regainedFocus = false;
-    let brb = () => timer.pause();
-    let frb = (evt) => { evt.stopPropagation(); evt.preventDefault(); regainedFocus = true; timer.resume() };
+
+    // if the document is blurred,  we need to suspend the claim timer!
+    let brb = () => claimTimer.pause();
+
+    // if focus is regained, resume the claim timer, and make sure that
+    // focus event cannot trigger ignore() if it was a click, and that
+    // clicked happened on the discards element
+    let frb = (evt) => { regainedFocus = true; claimTimer.resume() };
 
     // Set up the dialog spawning for when the user elects to stake a claim.
     let triggerClaimDialog = evt => {
