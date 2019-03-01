@@ -217,8 +217,10 @@ class Pattern {
       }
       else if (t1) {
         let suit = this.getSuit(tile);
-        // We might be one tile away from having a chow, if t2 is in the same suit...
+        // We might be one tile away from having a chow(3), if +2 is in the same suit.
         if (this.matchSuit(tile+2,suit)) this.markNeeded(results, tile+2, Constants.CHOW3);
+        // We might also be one tile away from having a chow(1), if -2 is in the same suit.
+        if (this.matchSuit(tile-1,suit)) this.markNeeded(results, tile-1, Constants.CHOW1);
         this.recurse(paths, [tile, tile+1], results, single, pair, set);
       }
       else {

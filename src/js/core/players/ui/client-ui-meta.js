@@ -63,16 +63,22 @@ class ClientUIMeta {
    *
    */
   startCountDown(ms) {
-    this.bar.classList.add('active');
-    let update = fraction => (this.bar.style.width = `${100 - 100 * fraction}%`);
-    for (let i=0, fraction, e=10; i<=e; i++) {
-      fraction = i/e;
-      this.timeouts.push(setTimeout(() => update(fraction), ms*fraction));
+    // TODO make this pause when the game is paused
+    let i=0, e=10, step_interval = ms/(e+1);
+    let step = () => {
+      if (i<=e) {
+        let fraction = i/e;
+        let handle = setTimeout(() => {
+          i++;
+          this.bar.style.width = `${100 - 100 * fraction}%`;
+          step();
+        }, step_interval);
+        this.timeouts.push(handle);
+      } else update(1);
     }
-    this.timeouts.push(setTimeout(() => {
-      update(1);
-      this.bar.classList.remove('active');
-    }, ms + 10));
+
+    this.bar.classList.add('active');
+    step();
   }
 
   /**

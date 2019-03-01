@@ -31,34 +31,17 @@ class Player extends PlayerMeta {
       return resolve({ claimtype: CLAIM.IGNORE });
     }
 
-    // Then, set up a timeout that ensures we
-    // send "IGNORE!" if we take too long to
-    // decide on whether we want this discard.
-    let overrideKickedIn = false;
-
-    // TODO: suspend the override trigger for
-    //       as long as the game is paused.
-
-    let overrideTrigger = setTimeout(() => {
-      overrideKickedIn = true;
-      resolve({ claimtype: CLAIM.IGNORE })
-    }, config.CLAIM_INTERVAL);
-
-    // And similarly, make sure to cancel the
-    // timeout check if we do have a claim
-    // determined within the allotted time.
-    let interrupt = () => {
-      if (!overrideKickedIn) {
-        clearTimeout(overrideTrigger);
-      }
-    };
-
-    this.determineClaim(pid, discard, claim => {
-      if (!overrideKickedIn) {
-        clearTimeout(overrideTrigger);
-        resolve(claim);
-      }
-    }, interrupt);
+    new TaskTimer(
+      timer => {
+        this.determineClaim(pid, discard, claim => {
+          if (!timer.hasTimedOut()) {
+            resolve(claim);
+          }
+        }, () => timer.interrupt());
+      },
+      () => resolve({ claimtype: CLAIM.IGNORE }),
+      config.CLAIM_INTERVAL
+    );
   }
 
   determineClaim(pid, discard, resolve, interrupt) {

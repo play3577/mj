@@ -270,6 +270,7 @@ class BotPlayer extends Player {
 
     // build a quick list of what we might actually be interested in
     let canChow = ((pid+1)%4 == this.id);
+    console.debug(`${this.id} can${canChow?``:`not`} claim chow from ${pid}`);
 
     let tiles = this.getTileFaces();
     tiles.sort();
@@ -279,15 +280,17 @@ class BotPlayer extends Player {
     let {lookout, waiting, composed} = tilesNeeded(tiles, this.locked, canChow);
     this.markWaiting(waiting);
 
+    console.debug(`${this.id} lookout: ${Object.keys(lookout)}`);
+
     // is the current discard in the list of tiles we want?
     let claim = CLAIM.IGNORE, wintype;
     if (lookout[tile]) {
       lookout[tile].map(print => unhash(print,tile)).forEach(set => {
         let type = set.type;
+        console.debug(`lookout for ${tile} = type: ${type}, canChow: ${canChow}`);
         if (type === Constants.PAIR) return;
-        if (type === Constants.CHOW) {
-          if ((pid+1)%4 != this.id) return;
-          type = convertSubtypeToClaim(set.subtype);
+        if (type === Constants.CHOW1 || type === Constants.CHOW2 || type === Constants.CHOW3) {
+          if (!canChow) return;
         }
         if (type === CLAIM.WIN) {
           wintype = set.subtype ? set.subtype : 'normal';

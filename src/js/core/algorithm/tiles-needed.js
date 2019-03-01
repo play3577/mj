@@ -169,6 +169,11 @@ if (typeof process !== "undefined") { (function() {
         [6,6]
       ],
       win: true
+    },
+    {
+      hand: [13,17,19,20,20,26,27,28,29,31,33,5,9],
+      locked: [],
+      win: false
     }
   ]
 
@@ -191,13 +196,15 @@ if (typeof process !== "undefined") { (function() {
       }
     }
 
-    else {
+    else if (test.need) {
       if (test.need.every(tile => result.lookout[tile].some(type => type.indexOf('32')===0))) {
         console.log(`test ${tid} passed: all possible win tiles were flagged as lookout.`);
       } else {
         console.log(`test ${tid} failed: not all tiles required to win are marked as required.`);
       }
     }
+
+    else console.log(result);
   });
 
 })()}
