@@ -37,7 +37,7 @@ class Player extends PlayerMeta {
           if (!timer.hasTimedOut()) {
             resolve(claim);
           }
-        }, () => timer.interrupt());
+        }, () => timer.cancel());
       },
       () => resolve({ claimtype: CLAIM.IGNORE }),
       config.CLAIM_INTERVAL
