@@ -53,9 +53,11 @@ class ClientUIMeta {
   pause(lock) {
     this.paused = lock;
     if (this.countdownTimer) this.countdownTimer.pause();
+    this.discards.classList.add("paused");
   }
 
   resume() {
+    this.discards.classList.remove("paused");
     if (this.countdownTimer) this.countdownTimer.resume();
     this.paused = false;
   }

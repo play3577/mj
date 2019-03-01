@@ -38,6 +38,11 @@
   background: inherit;
 }
 
+.discards.paused::after {
+  content: "GAME PAUSED";
+  background: inherit;
+}
+
 .finished .discards::after {
   content: "GAME WAS FINISHED - WINNING PLAYER IS HIGHLIGHTED";
   background: inherit;
