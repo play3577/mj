@@ -1,5 +1,8 @@
 /**
- *
+ * This is an administrative class that is used by Players
+ * to track how many instances of each tile are, potentially,
+ * still left in the game, based on incomplete information
+ * received during the playing of a hand.
  */
 class TileTracker {
   constructor(id) {
@@ -8,7 +11,7 @@ class TileTracker {
   }
 
   /**
-   *
+   * Reset all tiles to "there are four".
    */
   reset() {
     let tiles = (new Array(34)).fill(4);
@@ -18,31 +21,32 @@ class TileTracker {
   }
 
   /**
-   *
+   * Fetch the count associated with a specific tile.
    */
-  get(tile) {
-    return this.tiles[tile];
+  get(tileNumber) {
+    return this.tiles[tileNumber];
   }
 
   /**
-   *
+   * Mark a specific tile as having been revealed to this
+   * player (but not necessarily to all players!)
    */
-  seen(tile) {
+  seen(tileNumber) {
     if (tile.dataset) {
       console.log(`Player ${this.id} tracker was passed an HTMLElement instead of a tile`);
       console.trace();
       throw new Error('why is the tracker being given an HTML element?');
     }
     if (this.id == 0) {
-      console.debug(`Player ${this.id} removing ${tile} from available tiles.`);
+      console.debug(`Player ${this.id} removing ${tileNumber} from available tiles.`);
     }
-    this.tiles[tile]--;
+    this.tiles[tileNumber]--;
     if (this.counts) {
       try {
-        let e = this.counts[tile].shift();
+        let e = this.counts[tileNumber].shift();
         e.parentNode.removeChild(e);
       } catch(error) {
-        console.log(`Player ${this.id} can't remove ${tile}, because there aren't any left to remove..?`);
+        console.log(`Player ${this.id} can't remove ${tileNumber}, because there aren't any left to remove..?`);
         console.trace();
         throw error;
       }
@@ -50,7 +54,13 @@ class TileTracker {
   }
 
   /**
+   * bind this tracker to a UI element for actually seeing how
+   * many of each tile is still "in the game" according to
+   * this player.
    *
+   * Note: this should not be the tiletracker's responsibility,
+   * and really it should just be told that there is a UI,
+   * and then trigger `ui.renderMePlease(this)`.
    */
   bindTo(htmlElement) {
     // TODO almost all this code should be in the client-ui,
