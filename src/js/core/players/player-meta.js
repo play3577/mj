@@ -229,10 +229,6 @@ class PlayerMeta {
     return this.getTiles(allTiles).map(t => (t.dataset ? t.dataset.tile : t)|0);
   }
 
-  getDuplicates(tile) {
-    return this.tiles.filter(t => (t.dataset.tile == tile));
-  }
-
   getLockedTileFaces() {
     return this.locked.map(set => `[${set.map(v=>v.dataset.tile|0)}]${set.winning?'!':''}`);
   }
@@ -241,10 +237,6 @@ class PlayerMeta {
     let filtered = this.tiles.filter(t => t.classList.contains('latest'));
     if (filtered.length) return filtered[0];
     return false;
-  }
-
-  reveal() {
-    if (this.ui) this.ui.reveal();
   }
 
   sortTiles() {

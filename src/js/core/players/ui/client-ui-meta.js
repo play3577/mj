@@ -26,9 +26,7 @@ class ClientUIMeta {
     }
   }
 
-  /**
-   *
-   */
+  // just a reset function
   reset() {
     if(!this.el) return;
 
@@ -50,12 +48,27 @@ class ClientUIMeta {
     if (this.countdownTimer) this.countdownTimer.cancel();
   }
 
+  /**
+   * Bind the rules to this UI, which can be handy for
+   * things like generating a rules/scoring explanation.
+   */
+  setRules(rules) {
+    this.rules = rules;
+  }
+
+  /**
+   * Effect a lock on the UI. Note that UI elements can still
+   * listen for events like document.blur etc. on their own.
+   */
   pause(lock) {
     this.paused = lock;
     if (this.countdownTimer) this.countdownTimer.pause();
     this.discards.classList.add("paused");
   }
 
+  /**
+   * Release the lock on the UI.
+   */
   resume() {
     this.discards.classList.remove("paused");
     if (this.countdownTimer) this.countdownTimer.resume();
@@ -63,7 +76,9 @@ class ClientUIMeta {
   }
 
   /**
-   *
+   * Start a count-down bar that signals to the user
+   * that there is "some time remaining" without
+   * giving them (milli)second accurate numbers.
    */
   startCountDown(ms) {
     new TaskTimer(
@@ -89,14 +104,8 @@ class ClientUIMeta {
   }
 
   /**
-   *
-   */
-  setRules(rules) {
-    this.rules = rules;
-  }
-
-  /**
-   *
+   * Triggered after players have been dealt their initial
+   * tiles, but before the first discard is prompted for.
    */
   handWillStart(redraw, resolve) {
     if (config.BOT_PLAY) return resolve();
@@ -105,16 +114,16 @@ class ClientUIMeta {
   }
 
   /**
-   *
+   * Note how many tiles are left to be played with in the current hand.
    */
   markTilesLeft(remaining) {
     let ui = document.querySelector('.wall.data');
     ui.textContent = `${remaining} tiles left`;
-
   }
 
   /**
-   *
+   * Have the player confirm whether they want to declare
+   * a self-drawn kong or not.
    */
   async confirmKong(tile, resolve) {
     if (config.BOT_PLAY) return resolve(true);
@@ -130,7 +139,8 @@ class ClientUIMeta {
   }
 
   /**
-   *
+   * Several actions require removing the most recent discard,
+   * such as players claiming it to form sets from their hand.
    */
   removeLastDiscard() {
     if (this.discards.lastChild) {
@@ -139,14 +149,14 @@ class ClientUIMeta {
   }
 
   /**
-   *
+   * Triggered when play moves from one player to another.
    */
   nextPlayer() {
     this.discards.lastChild.classList.remove('selectable');
   }
 
   /**
-   *
+   * Utility function: checks if this player is holding (at least one of) this tile.
    */
   haveSingle(tile) {
     let tiles = this.getAllTilesInHand(tile.dataset ? tile.getTileFace() : tile);
@@ -154,7 +164,7 @@ class ClientUIMeta {
   }
 
   /**
-   *
+   * Utility function: checks if this player can form a pung with this tile.
    */
   canPung(tile) {
     let tiles = this.getAllTilesInHand(tile.dataset ? tile.getTileFace() : tile);
@@ -162,7 +172,7 @@ class ClientUIMeta {
   }
 
   /**
-   *
+   * Utility function: checks if this player can form a kong with this tile.
    */
   canKong(tile) {
     let tiles = this.getAllTilesInHand(tile.dataset ? tile.getTileFace() : tile);
@@ -170,7 +180,8 @@ class ClientUIMeta {
   }
 
   /**
-   *
+   * Utility function: checks if this player can form a particular type of
+   * chow with this tile either as first, second, or third tile in the set.
    */
   canChow(tile, type) {
     tile = (tile.dataset ? tile.getTileFace() : tile);
@@ -197,7 +208,8 @@ class ClientUIMeta {
 
 
   /**
-   *
+   * Triggered when either the hand was a draw, or someone won,
+   * with the full game disclosure available in case of a win.
    */
   endOfHand(disclosure) {
     if (!disclosure) {
@@ -243,7 +255,9 @@ class ClientUIMeta {
   }
 
   /**
-   *
+   * Triggered after all hands have been played and the game is over,
+   * with the full score history for the game available for presenting
+   * to the user.
    */
   endOfGame(scores) {
     let v=0, b=-1;
@@ -271,7 +285,7 @@ class ClientUIMeta {
   }
 
   /**
-   *
+   * Locally record the scores for a played hand.
    */
   recordScores(scores) {
     scores.forEach((score, b) => {
@@ -282,14 +296,15 @@ class ClientUIMeta {
   }
 
   /**
-   *
+   * Triggered at the start of a hand, stating which
+   * hand this is, and what its wind of the round is.
    */
   markHand(hand, wind) {
     this.el.dataset.wind = ['東','南','西','北'][wind];
   }
 
   /**
-   *
+   * Mark the player with `id` as the currently active player.
    */
   activate(id) {
     this.playerbanks.forEach(b => b.classList.remove('active'));
@@ -301,14 +316,15 @@ class ClientUIMeta {
   }
 
   /**
-   *
+   * Visually unmark this player as active (this function is
+   * called specifically on whoever is currently activ)
    */
   disable() {
     this.el.classList.remove('active');
   }
 
   /**
-   *
+   * Visually mark this player as waiting to win.
    */
   markWaiting(val) {
     if (val) this.el.classList.add('waiting');
@@ -316,7 +332,7 @@ class ClientUIMeta {
   }
 
   /**
-   *
+   * Visually mark this player as having won.
    */
   markWinner(wincount) {
     this.el.dataset.wincount = wincount;
@@ -325,7 +341,7 @@ class ClientUIMeta {
   }
 
   /**
-   *
+   * Add a tile to this player's tilebank.
    */
   append(t) {
     let old = this.el.querySelector('.tile.latest');
@@ -342,14 +358,15 @@ class ClientUIMeta {
   }
 
   /**
-   *
+   * Remove a tile from this player's tile bank
    */
   remove(tile) {
     this.el.removeChild(tile);
   }
 
   /**
-   *
+   * Show this player as locking down a set formed
+   * from tiles in their hand, and the current discard
    */
   lockClaim(tiles) {
     this.removeLastDiscard();
@@ -362,7 +379,8 @@ class ClientUIMeta {
   }
 
   /**
-   *
+   * Move the fourth tile in a locked set of three from the
+   * player's hand to that locked set.
    */
   meldKong(tile) {
     // find another tile like this, but locked, which can only be a pung.
@@ -374,7 +392,7 @@ class ClientUIMeta {
   }
 
   /**
-   *
+   * Triggered when a player discards a tile from their hand.
    */
   playerDiscarded(player, tile) {
     let bank = this.playerbanks[player.id];
@@ -399,7 +417,7 @@ class ClientUIMeta {
   }
 
   /**
-   *
+   * See one or more tiles being revealed by a player.
    */
   see(tiles, player) {
     console.debug(`${this.id} sees ${tiles.map(t => t.dataset ? t.getTileFace() : t)} from ${player.id}`);
@@ -428,7 +446,10 @@ class ClientUIMeta {
   }
 
   /**
+   * see a reveal by a player specifically as a result
+   * of claiminig a tile.
    *
+   * This function falls through to `see()`
    */
   seeClaim(tiles, player, claim) {
     // this differs from see() in that we know we need to remove one
@@ -447,7 +468,8 @@ class ClientUIMeta {
   }
 
   /**
-   *
+   * Render a UI element that notified the user that some
+   * other player claimed the discard for some purpose.
    */
   renderClaimAnnouncement(pid, claimtype) {
     let label = 'win';
@@ -465,7 +487,8 @@ class ClientUIMeta {
   }
 
   /**
-   *
+   * Mark the fact that a player received "a tile",
+   * but we don't know specifically which tile.
    */
   receivedTile(player) {
     if (player.id === this.id) return;
@@ -475,7 +498,8 @@ class ClientUIMeta {
   }
 
   /**
-   *
+   * Sort all the tiles in a player's tile bank
+   * (either the user, or one of the bot players).
    */
   sortTiles(bank) {
     bank = (bank||this.el);
@@ -486,73 +510,62 @@ class ClientUIMeta {
   }
 
   /**
-   *
+   * Get all `data-locked=locked` tiles in a player's tile bank.
    */
   getLockedTiles(bank) {
     return (bank||this.el).querySelectorAll('.tile[data-locked]');
   }
 
   /**
-   *
+   * Get all tiles in a player's tile bank that are not locked, and not bonus tiles
    */
   getAvailableTiles() {
     return this.el.querySelectorAll('.tile:not([data-bonus]):not([data-locked])');
   }
 
   /**
-   *
+   * Find a single instance of a tile with the specified tile number,
+   * or undefined if no such tile exists in the player's hand.
    */
-  getSingleTileFromHand(tile) {
-    return this.el.querySelector(`.tile[data-tile='${tile}']:not([data-locked])`);
+  getSingleTileFromHand(tileNumber) {
+    return this.el.querySelector(`.tile[data-tile='${tileNumber}']:not([data-locked])`);
   }
 
   /**
-   *
+   * Get every instance of a specific tile in the player's hand.
    */
-  getAllTilesInHand(tile) {
-    return this.el.querySelectorAll(`.tile[data-tile='${tile}']:not([data-locked])`);
+  getAllTilesInHand(tileNumber) {
+    return this.el.querySelectorAll(`.tile[data-tile='${tileNumber}']:not([data-locked])`);
   }
 
   /**
-   *
+   * Get either all tiles, or all "not locked" tiles.
    */
   getTiles(allTiles) {
     return this.el.querySelectorAll(`.tile${allTiles ? ``: `:not([data-locked])`}`);
   }
 
   /**
-   *
+   * Get the list of tiles as tile numbers, or all "not locked" tiles as tile numbers.
    */
   getTileFaces(allTiles) {
     return Array.from(this.getTiles(allTiles)).map(t => t.getTileFace());
   }
 
   /**
-   *
-   */
-  getDuplicates(tile) {
-    return this.el.querySelectorAll(".tile[data-tile='"+tile+"']:not([data-locked])");
-  }
-
-  /**
-   *
+   * Get the latest-received tile.
    */
   getLatestTile() {
     return this.el.querySelector(`.latest`);
   }
 
   /**
-   *
+   * Sort tiles ordered as:
+   * 1: bonus tiles
+   * 2: locked tiles, sorted
+   * 3: unlocked tiles, sorted
+   * 4: concealed tiles
    */
-  reveal() {
-    Array.from(this.el.querySelectorAll(".tile")).forEach(t => {delete t.dataset.hidden;});
-  }
-
-  // Sort tiles ordered as:
-  // 1: bonus tiles
-  // 2: locked tiles, sorted
-  // 3: unlocked tiles, sorted
-  // 4: concealed tiles
   tilebank_sort_function(a,b) {
     let la = a.dataset.locknum;
     let lb = b.dataset.locknum;

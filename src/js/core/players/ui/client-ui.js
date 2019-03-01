@@ -10,7 +10,8 @@ class ClientUI extends ClientUIMeta {
   }
 
   /**
-   *
+   * Called by `determineDiscard` in human.js, this function
+   * lets the user pick a tile to discard through the GUI.
    */
   listenForDiscard(resolve, suggestion, lastClaim) {
     let listenForInput = true;
@@ -155,7 +156,9 @@ class ClientUI extends ClientUIMeta {
   }
 
   /**
-   * spawn a declaration modal for declaring a kong or a win-on-own-turn
+   * Called in several places in `listenForDiscard`, this function
+   * spawns a modal that allows the user to declaring they can
+   * form a kong or that they have won on their own turn.
    */
   spawnDeclarationModal(currentTile, pickAsDiscard, cancel) {
     let face = currentTile.getTileFace();
@@ -199,45 +202,12 @@ class ClientUI extends ClientUIMeta {
   }
 
   /**
-   * Can be trigger both during discard and claim phases.
-   */
-  spawnWinDialog(discard, resolve, cancel) {
-    // determine how this player could actually win on this tile.
-    let { lookout } = tilesNeeded(this.player.getTileFaces(), this.player.locked);
-
-    let winOptions = { pair: false, chow: false, pung: false };
-    let claimList = lookout[discard.getTileFace()];
-
-    if (claimList) {
-      claimList.forEach(type => {
-        if (parseInt(type) === CLAIM.WIN) {
-          let subtype = parseInt(type.split('s')[1]);
-          if (subtype === CLAIM.PAIR) winOptions.pair = true;
-          if (subtype >= CLAIM.CHOW && subtype < CLAIM.PUNG) winOptions.chow = true;
-          if (subtype >= CLAIM.PUNG) winOptions.pung = true;
-        }
-      });
-    }
-
-    let options = [
-      { label: "Actually, it doesn't", value: CLAIM.IGNORE },
-      winOptions.pair ? { label: "Pair", value: CLAIM.PAIR } : false,
-      winOptions.chow && this.canChow(discard, CLAIM.CHOW1) ? { label: "Chow (▮▯▯)", value: CLAIM.CHOW1 } : false,
-      winOptions.chow && this.canChow(discard, CLAIM.CHOW2) ? { label: "Chow (▯▮▯)", value: CLAIM.CHOW2 } : false,
-      winOptions.chow && this.canChow(discard, CLAIM.CHOW3) ? { label: "Chow (▯▯▮)", value: CLAIM.CHOW3 } : false,
-      winOptions.pung ? { label: "Pung", value: CLAIM.PUNG } : false
-    ];
-
-    modal.choiceInput("How does this tile make you win?", options, result => {
-      if (result === CLAIM.IGNORE) resolve({ claimtype: CLAIM.IGNORE });
-      else resolve({ claimtype: CLAIM.WIN, wintype: result });
-    }, cancel);
-  }
-
-  /**
-   * FIXME: split this monster up, it's too much code in a single function.
+   * Called by `determineClaim` in human.js, this function
+   * lets the user decide whether or not to claim the discard
+   * in order to form a specific set, or even win.
    */
   listenForClaim(pid, discard, suggestion, resolve, interrupt, claimTimer) {
+    // TODO: split this monster up, it's too much code in a single function.
     let discards = this.discards;
     let tile = discards.lastChild;
     let mayChow = (((pid + 1)%4) == this.id);
@@ -333,5 +303,43 @@ class ClientUI extends ClientUIMeta {
     };
 
     document.addEventListener('keydown', listenForKeys);
+  }
+
+  /**
+   * Called in `listenForClaim`, this function spawns a modal
+   * that allows the user to claim a discard for the purposes
+   * of declaring a win.
+   */
+  spawnWinDialog(discard, resolve, cancel) {
+    // determine how this player could actually win on this tile.
+    let { lookout } = tilesNeeded(this.player.getTileFaces(), this.player.locked);
+
+    let winOptions = { pair: false, chow: false, pung: false };
+    let claimList = lookout[discard.getTileFace()];
+
+    if (claimList) {
+      claimList.forEach(type => {
+        if (parseInt(type) === CLAIM.WIN) {
+          let subtype = parseInt(type.split('s')[1]);
+          if (subtype === CLAIM.PAIR) winOptions.pair = true;
+          if (subtype >= CLAIM.CHOW && subtype < CLAIM.PUNG) winOptions.chow = true;
+          if (subtype >= CLAIM.PUNG) winOptions.pung = true;
+        }
+      });
+    }
+
+    let options = [
+      { label: "Actually, it doesn't", value: CLAIM.IGNORE },
+      winOptions.pair ? { label: "Pair", value: CLAIM.PAIR } : false,
+      winOptions.chow && this.canChow(discard, CLAIM.CHOW1) ? { label: "Chow (▮▯▯)", value: CLAIM.CHOW1 } : false,
+      winOptions.chow && this.canChow(discard, CLAIM.CHOW2) ? { label: "Chow (▯▮▯)", value: CLAIM.CHOW2 } : false,
+      winOptions.chow && this.canChow(discard, CLAIM.CHOW3) ? { label: "Chow (▯▯▮)", value: CLAIM.CHOW3 } : false,
+      winOptions.pung ? { label: "Pung", value: CLAIM.PUNG } : false
+    ];
+
+    modal.choiceInput("How does this tile make you win?", options, result => {
+      if (result === CLAIM.IGNORE) resolve({ claimtype: CLAIM.IGNORE });
+      else resolve({ claimtype: CLAIM.WIN, wintype: result });
+    }, cancel);
   }
 }

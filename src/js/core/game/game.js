@@ -304,7 +304,10 @@ class Game {
     players.forEach(p => p.nextPlayer());
     this.currentPlayerId = (this.currentPlayerId + 1) % 4;
 
-    return setTimeout(() => {player.disable(); this.play();}, this.playDelay);
+    return setTimeout(() => {
+      player.disable();
+      this.play();
+    }, this.playDelay);
   }
 
   // shorthand function to wrap the do/while loop.

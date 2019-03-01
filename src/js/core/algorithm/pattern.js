@@ -138,6 +138,10 @@ class Pattern {
         this.markWin(results, single[0]+1, Constants.CHOW2);
       }
     }
+
+    // Everything else isn't really all that worth evaluating.
+
+    // TODO: OR IS IT??
   }
 
   /**

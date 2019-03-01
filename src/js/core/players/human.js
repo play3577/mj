@@ -12,6 +12,10 @@ class HumanPlayer extends BotPlayer {
     this.ui = new ClientUI(this, this.tracker);
   }
 
+  /**
+   *
+   * @param {*} resolve
+   */
   determineDiscard(resolve) {
     // Let's ask our "bot" assistant for what
     // it would suggest we throw away:
@@ -41,6 +45,14 @@ class HumanPlayer extends BotPlayer {
     });
   }
 
+  /**
+   *
+   * @param {*} pid
+   * @param {*} discard
+   * @param {*} resolve
+   * @param {*} interrupt
+   * @param {*} claimTimer
+   */
   determineClaim(pid, discard, resolve, interrupt, claimTimer) {
     // And of course, the same applies here:
     super.determineClaim(pid, discard, suggestion => {
