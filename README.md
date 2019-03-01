@@ -24,7 +24,7 @@ The following URL query parameters are supported for debugging purposes:
 - `seed=<num>` makes pseudo-random number generator use the specified seed value.
 - `nosound=true` bypasses audio playback, nice for silent debugging.
 - `autoplay=true` immediately starts a game with four bots playing each other.
-- `pause_on_blur=true` pauses the game when the document loses focus (e.g. tabbing out/multitasking).
+- `pause_on_blur=false` disables pausing the game when the document loses focus (e.g. tabbing out/multitasking).
 - `play=<num>` sets the number of milliseconds between bots taking turns.
 - `hand=<num>` sets the number of milliseconds paused on the score breakdown before starting a new hand.
 - `force_open_bot_play=true` shows all player tiles irrespective of normal gameplay vs. automated bot play.

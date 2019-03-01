@@ -22,7 +22,7 @@ if (!DEBUG) console.debug = () => {};
 const NO_SOUND = (params.nosound==='true') ? true : false;
 const SEED = params.seed ? parseInt(params.seed) : 0;
 const PLAY_IMMEDIATELY = (params.autoplay==='true') ? true : false;
-const PAUSE_ON_BLUR = (params.pause_on_blur==='true') ? true : false;
+const PAUSE_ON_BLUR = (params.pause_on_blur==='false') ? false: true;
 const FORCE_DRAW = (params.force_draw==='true') ? true : false;
 const FORCE_OPEN_BOT_PLAY = (params.force_open_bot_play==='true') ? true : false;
 const SHOW_BOT_CLAIM_SUGGESTION = (params.show_bot_claim_suggestion==='true') ? true : false;

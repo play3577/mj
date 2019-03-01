@@ -33,13 +33,9 @@ class Player extends PlayerMeta {
 
     new TaskTimer(
       timer => {
-        this.determineClaim(
-          pid,
-          discard,
-          claim => timer.hasTimedOut() ? false : resolve(claim),
-          () => timer.cancel(),
-          timer
-        );
+        let claimfn = claim => timer.hasTimedOut() ? false : resolve(claim);
+        let cancelfn = () => timer.cancel();
+        this.determineClaim(pid, discard, claimfn, cancelfn, timer);
       },
       () => resolve({ claimtype: CLAIM.IGNORE }),
       config.CLAIM_INTERVAL
