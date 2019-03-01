@@ -4,6 +4,7 @@ if (typeof process !== "undefined") {
   }
 }
 
+
 /**
  * https://gist.github.com/blixt/f17b47c62508be59987b
  */
@@ -36,7 +37,6 @@ Random.prototype.next = function () {
   return this._seed = this._seed * 16807 % 2147483647;
 };
 
-
 /**
  * Returns a pseudo-random floating point number in range [0, 1).
  */
@@ -44,6 +44,7 @@ Random.prototype.nextFloat = function (opt_minOrMax, opt_max) {
   // We know that result of next() will be 1 to 2147483646 (inclusive).
   return (this.next() - 1) / 2147483646;
 };
+
 
 if(typeof process !== "undefined") {
   module.exports = Random;

@@ -32,7 +32,7 @@ class TileTracker {
    * player (but not necessarily to all players!)
    */
   seen(tileNumber) {
-    if (tile.dataset) {
+    if (tileNumber.dataset) {
       console.log(`Player ${this.id} tracker was passed an HTMLElement instead of a tile`);
       console.trace();
       throw new Error('why is the tracker being given an HTML element?');

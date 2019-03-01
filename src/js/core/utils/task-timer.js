@@ -55,7 +55,9 @@ class TaskTimer {
     delete TaskTimer.timers[timer.id];
   }
 
-  // activate the override function
+  /**
+   * activate the override function
+   */
   startTimeout() {
     this.overrideTrigger = setTimeout(() => {
       this.overrideKickedIn = true;
@@ -63,7 +65,9 @@ class TaskTimer {
     }, this.timeoutInterval);
   }
 
-  // send a regular(ish) signal while the timeout is active.
+  /**
+   * send a regular(ish) signal while the timeout is active.
+   */
   sendSignal() {
     let handler = this.signalHandler;
     if(!handler) return;

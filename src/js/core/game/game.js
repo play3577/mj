@@ -12,6 +12,9 @@ class Game {
     this._playLock = false;
   }
 
+  /**
+   * Start a game of mahjong!
+   */
   startGame() {
     playClip('start');
     document.body.classList.remove(`finished`);
@@ -23,13 +26,22 @@ class Game {
     this.startHand();
   }
 
+  /**
+   * Pause this game. Which is harder than it sounds,
+   * really what this function does is it sets a
+   * local lock that we can check at every point
+   * in the code where we being in a paused state
+   * means waiting for the lock to be released again.
+   *
+   * Note that the corresponding `.resume()` is
+   * built as part of this function call, and so
+   * does not have its own class definition.
+   */
   pause() {
     console.debug('pausing game');
     this._playLock = new Promise(resolve => {
       this.resume = () => {
         console.debug('resuming game');
-        // create the Game.resume() function
-        // only in response to a Game.pause()
         this._playLock = false;
         this.players.forEach(p => p.resume());
         resolve();
@@ -38,10 +50,12 @@ class Game {
     this.players.forEach(p => p.pause(this._playLock));
   }
 
-
-  // A function that triggers the s hand's play.
-  // Unless the game is over because we've played
-  // enough rounds to rotate the winds fully.
+  /**
+   * Triggered immediately after `startGame`, as well as
+   * at the end of every `play()` cycle, this function
+   * keeps getting called for as long as there are hands
+   * left to play in this particular game.
+   */
   async startHand(result = {}) {
     if (this._playLock) {
       console.debug("paused at startHand");
@@ -106,7 +120,88 @@ class Game {
   }
 
   /**
-   * Resolve kongs in hand for as long as necessary.
+   * Called as part of `startHand`, this function deals
+   * 13 play tiles to each player, making sure that any
+   * bonus tiles are compensated for.
+   */
+  async dealTiles() {
+    if (this._playLock) {
+      console.debug("paused at dealTiles");
+      await this._playLock;
+    }
+
+    let wall = this.wall;
+    let players = this.players;
+
+    // The internal function for actually
+    // giving initial tiles to players.
+    let runDeal = async (player, done) => {
+      let bank = wall.get(13);
+      for (let t=0, tile; t<bank.length; t++) {
+        tile = bank[t];
+        players.forEach(p => p.receivedTile(player));
+        let revealed = player.append(tile);
+        if (revealed) {
+          // bonus tile are shown to all other players.
+          players.forEach(p => p.see(revealed, player));
+          bank.push(wall.get());
+        }
+      }
+      done();
+    };
+
+    // make sure the game can wait for all deals to finish:
+    return Promise.all([
+      new Promise(done => runDeal(players[0], done)),
+      new Promise(done => runDeal(players[1], done)),
+      new Promise(done => runDeal(players[2], done)),
+      new Promise(done => runDeal(players[3], done)),
+    ]);
+  }
+
+  /**
+   * Called as part of `startHand`, right after `dealTiles`,
+   * this function preps all players for the start of actual
+   * game play.
+   */
+  async preparePlay(redraw) {
+    if (this._playLock) {
+      console.debug("paused at preparePlay");
+      await this._playLock;
+    }
+
+    this.currentPlayerId = (this.wind % 4);
+    this.discard = undefined;
+    this.counter = 0;
+
+    let players = this.players;
+
+    // wait for "ready" from each player in response to a "hand will start" notice
+    await Promise.all([
+      new Promise(ready => players[0].handWillStart(redraw, ready)),
+      new Promise(ready => players[1].handWillStart(redraw, ready)),
+      new Promise(ready => players[2].handWillStart(redraw, ready)),
+      new Promise(ready => players[3].handWillStart(redraw, ready)),
+    ]);
+
+    // at this point, the game can be said to have started, but
+    // we want to make sure that any player that, at the start
+    // of actual play, has a kong in their hand, is given the
+    // option to declare that kong before tiles start getting
+    // discarded:
+
+    await Promise.all([
+      new Promise(done => this.resolveKongs(players[0], done)),
+      new Promise(done => this.resolveKongs(players[1], done)),
+      new Promise(done => this.resolveKongs(players[2], done)),
+      new Promise(done => this.resolveKongs(players[3], done)),
+    ]);
+  }
+
+  /**
+   * Called as the last step in `preparePlay`, to give
+   * players an opportunity to declare any hidden kongs
+   * before the first player gets to "draw one, play one".
    */
   async resolveKongs(player, resolve) {
     if (this._playLock) {
@@ -136,77 +231,13 @@ class Game {
   }
 
   /**
-   * Dealing tiles means getting each player 13 play tiles,
-   * with any bonus tiles replaced by normal tiles.
-   */
-  async dealTiles() {
-    if (this._playLock) {
-      console.debug("paused at dealTiles");
-      await this._playLock;
-    }
-
-    let wall = this.wall;
-    let players = this.players;
-
-    let runDeal = async (player, resolve) => {
-      let bank = wall.get(13);
-
-      for (let t=0, tile; t<bank.length; t++) {
-        tile = bank[t];
-        players.forEach(p => p.receivedTile(player));
-        let revealed = player.append(tile);
-        if (revealed) {
-          // bonus tile are shown to all other players.
-          players.forEach(p => p.see(revealed, player));
-          bank.push(wall.get());
-        }
-      }
-
-      resolve();
-    };
-
-    return Promise.all([
-      new Promise(resolve => runDeal(players[0], resolve)),
-      new Promise(resolve => runDeal(players[1], resolve)),
-      new Promise(resolve => runDeal(players[2], resolve)),
-      new Promise(resolve => runDeal(players[3], resolve)),
-    ]);
-  }
-
-  /**
-   * Set up and run the main game loop.
-   */
-  async preparePlay(redraw) {
-    if (this._playLock) {
-      console.debug("paused at preparePlay");
-      await this._playLock;
-    }
-
-    this.currentPlayerId = (this.wind % 4);
-    this.discard = undefined;
-    this.counter = 0;
-
-    let players = this.players;
-
-    // wait for "ready" from each player
-    await Promise.all([
-      new Promise(resolve => players[0].handWillStart(redraw, resolve)),
-      new Promise(resolve => players[1].handWillStart(redraw, resolve)),
-      new Promise(resolve => players[2].handWillStart(redraw, resolve)),
-      new Promise(resolve => players[3].handWillStart(redraw, resolve)),
-    ]);
-
-    // resolve kongs for each player
-    await Promise.all([
-      new Promise(resolve => this.resolveKongs(players[0], resolve)),
-      new Promise(resolve => this.resolveKongs(players[1], resolve)),
-      new Promise(resolve => this.resolveKongs(players[2], resolve)),
-      new Promise(resolve => this.resolveKongs(players[3], resolve)),
-    ]);
-  }
-
-  /**
-   * The actual main game loop.
+   * This is the last call in `startHand`, and is our main game
+   * loop. This function coordinates players drawing a tile
+   * (either from the wall, or as a claimed discard from a
+   * previous player), rewarding claims on discards, and
+   * determining whether the hand has been won or drawn based
+   * on whether or not players are witholding their discard,
+   * or the wall has run out of tiles to deal from.
    */
   async play(claim) {
     if (this._playLock) {
@@ -225,12 +256,12 @@ class Game {
     let player = players[currentPlayerId];
     players.forEach(p => p.activate(currentPlayerId));
 
-    // increase the play counter;
+    // increase the play counter for debugging purposes:
     this.counter++;
     this.playDelay = (hand===config.PAUSE_ON_HAND && this.counter===config.PAUSE_ON_PLAY) ? 60*60*1000 : config.PLAY_INTERVAL;
     if (config.DEBUG) console.log(`%chand ${hand}, play ${this.counter}`, `color: red; font-weight: bold;`);
 
-    // "Draw one"
+    // GAME LOOP: "Draw one"
     if (!claim) this.dealTile(player);
     else {
       let tiles = player.receiveDiscardForClaim(claim, discard);
@@ -244,7 +275,7 @@ class Game {
       if (tiles.length === 4) this.dealTile(player);
     }
 
-    // "Play one"
+    // GAME LOOP: "Play one"
     do {
       if (discard) discard.classList.remove('discard');
 
@@ -276,7 +307,7 @@ class Game {
         // "waiting for discard from player" state again.
         discard = false;
       }
-    } while (!discard); // note: we exit the function on a "no discard" win.
+    } while (!discard); // note: we will have exited `play()` in the event of a "no discard" win.
 
     // No winner - process the discard.
     this.processDiscard(player);
@@ -296,7 +327,7 @@ class Game {
       return setTimeout(() => this.startHand({ draw: true }), this.playDelay);
     }
 
-    // Nothing of note happened: game on.
+    // If we get here, nothing of note happened, and we just move on to the next player.
     if (this._playLock) {
       console.debug("paused before next play schedule");
       await this._playLock;
@@ -304,13 +335,14 @@ class Game {
     players.forEach(p => p.nextPlayer());
     this.currentPlayerId = (this.currentPlayerId + 1) % 4;
 
-    return setTimeout(() => {
-      player.disable();
-      this.play();
-    }, this.playDelay);
+    return setTimeout(() => { player.disable(); this.play(); }, this.playDelay);
   }
 
-  // shorthand function to wrap the do/while loop.
+  /**
+   * Called as part of `play()` during the "draw one"
+   * phase, this function simply gets a tile from the
+   * wall, and then deals it to the indicated player.
+   */
   dealTile(player) {
     let tile, wall = this.wall;
     do {
@@ -321,11 +353,12 @@ class Game {
   }
 
   /**
-   * At the start of a player's turn, deal them a tile. This
-   * might actually turn into several tiles, as bonus tiles and
-   * tiles that form kongs may require a supplement tile being
-   * dealt to that player. And of course, that supplement can
-   * also be a bonus or kong tile.
+   * Called as part of `dealTile`, this function hands
+   * a to-be-dealt tile to whoever it should be dealt with,
+   * but knows how to deal with having to give that player
+   * supplementary tiles in case the original tile was a
+   * bonus tile, or lead to that player declaring a
+   * self-drawn kong.
    */
   async dealTileToPlayer(player, tile) {
     if (this._playLock) {
@@ -356,7 +389,63 @@ class Game {
   }
 
   /**
-   * Handle a discard and let all players know that discard occurred.
+   * Called as part of `play()` during the "play one"
+   * phase, this function is triggered when the player
+   * opts _not_ to discard a tile, instead discarding
+   * the value `undefined`. This signals that the player
+   * has managed to form a winning hand during the
+   * "draw on" phase of their turn, and we should
+   * wrap up this hand of play, calculate the scores,
+   * and schedule a call to `startHand` so that play
+   * can move on to the next hand (or end, if this
+   * was the last hand to be played and it resolved
+   * in a way that would normally rotate the winds).
+   */
+  processWin(player) {
+    let hand = this.hand;
+    let players = this.players;
+    let currentPlayerId = this.currentPlayerId;
+    let windOfTheRound = this.windOfTheRound;
+
+    player.markWinner();
+
+    let play_length = (Date.now() - this.PLAY_START);
+    console.log(`Player ${currentPlayerId} wins hand ${hand}! (hand took ${play_length}ms)`);
+
+    // Let everyone know what everyone had. It's the nice thing to do.
+    let disclosure = players.map(p => p.getDisclosure());
+    console.debug('disclosure array:', disclosure);
+    players.forEach(p => p.endOfHand(disclosure));
+
+    // And od course, calculate the scores.
+    let scores = disclosure.map((d,id) => this.rules.scoreTiles(d, id, windOfTheRound, this.wall.remaining));
+
+    // In order to make sure payment is calculated correctly,
+    // check which player is currently playing east, and then
+    // ask the current ruleset to settle the score differences.
+    let eastid = 0;
+    players.forEach(p => { if(p.wind === 0) eastid = p.id; });
+    let adjustments = this.rules.settleScores(scores, player.id, eastid);
+    players.forEach(p => p.recordScores(adjustments));
+
+    // Before we move on, record this step in the game,
+    // and show the score line in a dismissable modal.
+    this.scoreHistory.push({ disclosure, scores, adjustments });
+    scores[player.id].winner = true;
+    modal.setScores(hand, scores, adjustments, () => {
+      // The code will start a new hand when the modal gets dismissed.
+      this.startHand({ winner: player });
+    });
+    playClip('win');
+  }
+
+  /**
+   * Called as part of `play()` during the "play one"
+   * phase, this function processes the discard as
+   * declared by the current player. Note that this
+   * function only deals with actual discards: if the
+   * player opted not to discard because they were
+   * holding a winning tile, this function is not called.
    */
   processDiscard(player) {
     playClip(this.counter===1 ? 'thud' : 'click');
@@ -369,11 +458,19 @@ class Game {
   }
 
   /**
-   * Ask all players to stake a claim on a discard, and pause
-   * general game logic until each player has either indicated
-   * they are not intereted, or what they are interested in it for.
+   * Called as part of `play()` during the "play one"
+   * phase, after `processDiscard()` takes place, this
+   * function ask all players to state whether they are
+   * interested in the discarded tile, and if so: what
+   * kind of play they intend to make with that tile.
    *
-   * If there are multiple claims, the highest valued claim wins.
+   * This is asynchronous code in that all players are
+   * asked to make their determinations simultaneously,
+   * and the game is on hold until all claims (including
+   * passes) are in.
+   *
+   * If there are multiple claims, claims are ordered
+   * by value, and the higest claim "wins".
    */
   async getAllClaims() {
     if (this._playLock) {
@@ -416,55 +513,16 @@ class Game {
   }
 
   /**
-   * Handle a claim on a discard. Note that the actual "awarding"
-   * of the claim happens in the play loop, where the fact that
-   * play started with a pending claim means that instead of tile
-   * being drawn, the player "draws" the discard tile instead.
+   * Called in `play()` during the "play one" phase, after
+   * `getAllClaims()` resolves, this function schedules the
+   * "recursive" call to `play()` with the winning claim
+   * passed in, so that the next "draw one" resolves the
+   * claim, instead of drawing a new tile from the wall.
    */
   processClaim(player, claim) {
     let discard = this.discard;
     console.debug(`${claim.p} wants ${discard.dataset.tile} for ${claim.claimtype}`);
     player.disable();
     setTimeout(() => this.play(claim), this.playDelay);
-  }
-
-  /**
-   * Once a plyer has won, process that win in terms of scoring and
-   * letting everyone know what the result of the hand is.
-   */
-  processWin(player) {
-    let hand = this.hand;
-    let players = this.players;
-    let currentPlayerId = this.currentPlayerId;
-    let windOfTheRound = this.windOfTheRound;
-
-    player.markWinner();
-
-    let play_length = (Date.now() - this.PLAY_START);
-    console.log(`Player ${currentPlayerId} wins hand ${hand}! (hand took ${play_length}ms)`);
-
-    // Let everyone know what everyone had. It's the nice thing to do.
-    let disclosure = players.map(p => p.getDisclosure());
-    console.debug('disclosure array:', disclosure);
-    players.forEach(p => p.endOfHand(disclosure));
-
-    // And calculate the scores.
-    let scores = disclosure.map((d,id) => this.rules.scoreTiles(d, id, windOfTheRound, this.wall.remaining));
-
-    // check who is currently playing east and calculate payments
-    let eastid = 0;
-    players.forEach(p => { if(p.wind === 0) eastid = p.id; });
-    let adjustments = this.rules.settleScores(scores, player.id, eastid);
-    players.forEach(p => p.recordScores(adjustments));
-
-    // Before we move on, record this step in the game.
-    this.scoreHistory.push({ disclosure, scores, adjustments });
-
-    // Show the score line, and the move on to the next hand.
-    scores[player.id].winner = true;
-    modal.setScores(hand, scores, adjustments, () => {
-      this.startHand({ winner: player });
-    });
-    playClip('win');
   }
 }
