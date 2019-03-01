@@ -17,8 +17,10 @@ class GameManager {
    */
   create() {
     let game = new Game(this.players);
-    document.addEventListener('blur', evt => game.pause());
-    document.addEventListener('focus', evt => game.resume());
+    if (config.PAUSE_ON_BLUR) {
+      document.addEventListener('blur', evt => game.pause());
+      document.addEventListener('focus', evt => game.resume());
+    }
     return game;
   }
 }

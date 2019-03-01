@@ -47,38 +47,43 @@ class ClientUIMeta {
     this.bar.classList.add('countdown-bar');
     this.discards.appendChild(this.bar);
 
-    this.clearTimeouts();
+    if (this.countdownTimer) this.countdownTimer.cancel();
   }
 
-  /**
-   *
-   */
-  clearTimeouts() {
-    this.timeouts.forEach(t => clearTimeout(t));
-    this.bar.style.width = `0%`;
-    this.bar.classList.remove('active');
+  pause(lock) {
+    this.paused = lock;
+    if (this.countdownTimer) this.countdownTimer.pause();
+  }
+
+  resume() {
+    if (this.countdownTimer) this.countdownTimer.resume();
+    this.paused = false;
   }
 
   /**
    *
    */
   startCountDown(ms) {
-    // TODO make this pause when the game is paused
-    let i=0, e=10, step_interval = ms/(e+1);
-    let step = () => {
-      if (i<=e) {
-        let fraction = i/e;
-        let handle = setTimeout(() => {
-          i++;
-          this.bar.style.width = `${100 - 100 * fraction}%`;
-          step();
-        }, step_interval);
-        this.timeouts.push(handle);
-      } else update(1);
-    }
+    new TaskTimer(
+      timer => {
+        this.countdownTimer = timer;
+      },
+      () => {
+        this.countdownTimer = false;
+      },
+      ms,
+      (count) => {
+        let fraction = count===10 ? 1 : count/10;
+        this.bar.style.width = `${100 - 100 * fraction}%`;
+        if (fraction === 1) {
+          this.bar.classList.remove('active');
+          this.countdownTimer = false;
+        }
+      },
+      10
+    );
 
     this.bar.classList.add('active');
-    step();
   }
 
   /**
@@ -384,7 +389,9 @@ class ClientUIMeta {
     discard.dataset.from = player.id;
     this.discards.appendChild(discard);
 
-    if (!config.BOT_PLAY && player.id !== this.id) this.startCountDown(config.CLAIM_INTERVAL);
+    if (!config.BOT_PLAY && player.id !== this.id) {
+      this.startCountDown(config.CLAIM_INTERVAL);
+    }
 
     this.sortTiles(bank);
   }

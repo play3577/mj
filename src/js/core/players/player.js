@@ -33,18 +33,20 @@ class Player extends PlayerMeta {
 
     new TaskTimer(
       timer => {
-        this.determineClaim(pid, discard, claim => {
-          if (!timer.hasTimedOut()) {
-            resolve(claim);
-          }
-        }, () => timer.cancel());
+        this.determineClaim(
+          pid,
+          discard,
+          claim => timer.hasTimedOut() ? false : resolve(claim),
+          () => timer.cancel(),
+          timer
+        );
       },
       () => resolve({ claimtype: CLAIM.IGNORE }),
       config.CLAIM_INTERVAL
     );
   }
 
-  determineClaim(pid, discard, resolve, interrupt) {
+  determineClaim(pid, discard, resolve, interrupt, timer) {
     // Just like determineDiscard, players have a way
     // to determine whether they want a discard, and
     // for what, but we're not going to say how to

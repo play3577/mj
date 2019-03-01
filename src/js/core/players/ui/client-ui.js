@@ -235,21 +235,34 @@ class ClientUI extends ClientUIMeta {
   }
 
   /**
-   *
+   * FIXME: split this monster up, it's too much code in a single function.
    */
-  listenForClaim(pid, discard, suggestion, resolve, interrupt) {
-    let tile = this.discards.lastChild;
+  listenForClaim(pid, discard, suggestion, resolve, interrupt, timer) {
+    let discards = this.discards;
+    let tile = discards.lastChild;
     let mayChow = (((pid + 1)%4) == this.id);
 
-    if (config.SHOW_BOT_CLAIM_SUGGESTION && suggestion && suggestion.claimtype) {
-      this.discards.lastChild.classList.add('highlight');
+    let registerUIInput = () => {
+      if (this.countdownTimer) this.countdownTimer.cancel();
+      interrupt();
     }
 
+    if (config.SHOW_BOT_CLAIM_SUGGESTION && suggestion && suggestion.claimtype) {
+      discards.lastChild.classList.add('highlight');
+    }
+
+    // We need a flag that bypasses `ignore()` if we click
+    // on the part of the page that normally triggers ignore
+    // as part of a document focus action.
+    let regainedFocus = false;
+    let brb = () => timer.pause();
+    let frb = (evt) => { evt.stopPropagation(); evt.preventDefault(); regainedFocus = true; timer.resume() };
+
+    // Set up the dialog spawning for when the user elects to stake a claim.
     let triggerClaimDialog = evt => {
       if(evt) evt.stopPropagation();
 
-      interrupt();
-      this.clearTimeouts();
+      registerUIInput();
       let CLAIM = config.CLAIM;
 
       // let's spawn a little modal to see what the user actually wanted to do here.
@@ -263,27 +276,40 @@ class ClientUI extends ClientUIMeta {
         this.canKong(discard) ? { label: "Kong", value: CLAIM.KONG } : false,
         { label: "Win", value: CLAIM.WIN }, // Let's not pre-filter this one
       ], result => {
-        this.discards.lastChild.classList.remove('highlight');
+        discards.lastChild.classList.remove('highlight');
         tile.classList.remove('selectable');
-        tile.removeEventListener("click", triggerClaimDialog);
+        removeAllListeners();
         if (result === CLAIM.WIN) return this.spawnWinDialog(discard, resolve, cancel);
         resolve({ claimtype: result });
       }, cancel);
     }
 
+    // Let the game know we're not interested in the current discard.
     let ignore = () => {
-      interrupt();
+      if (regainedFocus) return (regainedFocus = false);
+      registerUIInput();
       tile.classList.remove('selectable');
-      tile.removeEventListener("click", triggerClaimDialog);
-      this.clearTimeouts();
-      this.discards.removeEventListener("click", ignore);
+      removeAllListeners();
       resolve(CLAIM.IGNORE);
     };
 
     // mouse interaction
     tile.classList.add('selectable');
     tile.addEventListener("click", triggerClaimDialog);
-    this.discards.addEventListener("click", ignore);
+    discards.addEventListener("click", ignore);
+
+    // and make sure to set up that focus-regain-bypass
+    document.addEventListener("focus", frb, true);
+    document.addEventListener("blur", brb);
+
+    // rely on this function getting hoisted because we
+    // need to call it in code above this function.
+    function removeAllListeners() {
+      tile.removeEventListener("click", triggerClaimDialog);
+      discards.removeEventListener("click", ignore);
+      document.removeEventListener("focus", frb, true);
+      document.removeEventListener("blur", brb);
+    }
 
     // keyboard interaction
     let listenForKeys = evt => {

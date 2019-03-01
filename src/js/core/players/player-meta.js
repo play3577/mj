@@ -28,6 +28,16 @@ class PlayerMeta {
     if (this.ui) this.ui.reset(hand, wind, windOfTheRound);
   }
 
+  pause(lock) {
+    this.paused = lock;
+    if (this.ui) this.ui.pause(lock);
+  }
+
+  resume() {
+    if (this.ui) this.ui.resume();
+    this.paused = false;
+  }
+
   setRules(rules) {
     this.rules = rules;
     this._score = this.rules.player_start_score;

@@ -22,6 +22,7 @@ if (!DEBUG) console.debug = () => {};
 const NO_SOUND = (params.nosound==='true') ? true : false;
 const SEED = params.seed ? parseInt(params.seed) : 0;
 const PLAY_IMMEDIATELY = (params.autoplay==='true') ? true : false;
+const PAUSE_ON_BLUR = (params.pause_on_blur==='true') ? true : false;
 const FORCE_DRAW = (params.force_draw==='true') ? true : false;
 const FORCE_OPEN_BOT_PLAY = (params.force_open_bot_play==='true') ? true : false;
 const SHOW_BOT_CLAIM_SUGGESTION = (params.show_bot_claim_suggestion==='true') ? true : false;
@@ -171,6 +172,9 @@ const config = {
 
     // page choice on load
     PLAY_IMMEDIATELY: simple.PLAY_IMMEDIATELY,
+
+    // Do not pause play when the game loses focus
+    PAUSE_ON_BLUR,
 
     // This setting determines which type of play
     // is initiated if PLAY_IMMEDIATELY is true

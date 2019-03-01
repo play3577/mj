@@ -40,8 +40,7 @@ function summarise(set) {
  * of the tiles involved there might be.
  */
 function tilesNeeded(tiles, locked=[], canChow=false) {
-  console.debug('tilesNeeded:', tiles, locked);
-
+  // console.debug('tilesNeeded:', tiles, locked);
   let p = new Pattern(tiles, canChow);
 
   // Transform the "locked tiles" listing to

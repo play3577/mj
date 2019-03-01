@@ -264,23 +264,21 @@ class BotPlayer extends Player {
   /**
    * Automated claim policy, see `tilesNeeded` in `./mgen.js`
    */
-  async determineClaim(pid, discard, resolve, interrupt) {
+  async determineClaim(pid, discard, resolve, interrupt, timer) {
     // which tile is this?
     let tile = discard.getTileFace();
 
     // build a quick list of what we might actually be interested in
     let canChow = ((pid+1)%4 == this.id);
-    console.debug(`${this.id} can${canChow?``:`not`} claim chow from ${pid}`);
+    // console.debug(`${this.id} can${canChow?``:`not`} claim chow from ${pid}`);
 
     let tiles = this.getTileFaces();
     tiles.sort();
-
-    console.debug(`${this.id} determining claim for ${tile} based on ${tiles}`);
+    // console.debug(`${this.id} determining claim for ${tile} based on ${tiles}`);
 
     let {lookout, waiting, composed} = tilesNeeded(tiles, this.locked, canChow);
     this.markWaiting(waiting);
-
-    console.debug(`${this.id} lookout: ${Object.keys(lookout)}`);
+    // console.debug(`${this.id} lookout: ${Object.keys(lookout)}`);
 
     // is the current discard in the list of tiles we want?
     let claim = CLAIM.IGNORE, wintype;

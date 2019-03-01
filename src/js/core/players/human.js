@@ -41,11 +41,11 @@ class HumanPlayer extends BotPlayer {
     });
   }
 
-  determineClaim(pid, discard, resolve, interrupt) {
+  determineClaim(pid, discard, resolve, interrupt, timer) {
     // And of course, the same applies here:
     super.determineClaim(pid, discard, suggestion => {
       if (config.BOT_PLAY) return resolve(suggestion);
-      this.ui.listenForClaim(pid, discard, suggestion, resolve, interrupt);
+      this.ui.listenForClaim(pid, discard, suggestion, resolve, interrupt, timer);
     });
   }
 }

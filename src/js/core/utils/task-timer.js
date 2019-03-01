@@ -17,7 +17,7 @@ class TaskTimer {
    * @param {function} timeoutFunction the function that will get called if the allocated task time runs out.
    * @param {milliseconds} timeoutInterval the timeout interval in milliseconds.
    * @param {function} signalHandler (optional) function that can be called at regular intervals over the course of the timeout.
-   * @param {int} signalCount (optional) number of signals to send over the course of the timeout.
+   * @param {int} signalCount (optional) the number of signals to send over the course of the timeout, INCLUDING signal "0" at the start.
    */
   constructor(startWaiting, timeoutFunction, timeoutInterval, signalHandler=false, signalCount=0) {
     this.id = TaskTimer.id++;
@@ -70,6 +70,7 @@ class TaskTimer {
 
     // send a signal
     let signalNumber = this.totalSignalCount - (this.signalCount--);
+    // console.debug('sendSignal in TaskTimer', this.totalSignalCount, this.signalCount);
     handler(signalNumber);
 
     // calculate how long the wait interval should now be
@@ -78,6 +79,7 @@ class TaskTimer {
       let elapsed = Date.now() - this.created;
       let remaining = this.timeoutInterval - elapsed;
       let timeoutValue = remaining / this.signalCount;
+      // console.debug('nextSignal in TaskTimer =', timeoutValue, 'from', this.signalCount,"over", remaining);
       this.nextSignal = setTimeout(() => this.sendSignal(), timeoutValue);
     }
   }
@@ -104,7 +106,10 @@ class TaskTimer {
 
     if (!this.overrideKickedIn) {
       clearTimeout(this.overrideTrigger);
-      if (!__preserveTimer) TaskTimer.__forget__(this);
+      if (!__preserveTimer) {
+        if (this.signalHandler) this.signalHandler(this.totalSignalCount-1);
+        TaskTimer.__forget__(this);
+      }
     }
   }
 
