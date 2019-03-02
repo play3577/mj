@@ -196,10 +196,10 @@ modal.setScores = (hand, scores, adjustments, resolve) => {
     </tr>
     <tr class="details">
       <td>&nbsp;</td>
-      <td><button class='detail-button'>details</button></td>
-      <td><button class='detail-button'>details</button></td>
-      <td><button class='detail-button'>details</button></td>
-      <td><button class='detail-button'>details</button></td>
+      <td><button>details</button></td>
+      <td><button>details</button></td>
+      <td><button>details</button></td>
+      <td><button>details</button></td>
     </tr>
   </table>
   `;
