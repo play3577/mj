@@ -1,5 +1,12 @@
-// keyhandling maps
-const VK_LEFT = {
+/**
+ * This file contains a bunch of "virtual key" definitions,
+ * that specify which key codes map to a specific virtual
+ * interpration. For example, the "left" action can be
+ * represented by both the left cursor key, but also the
+ * 'a' key, for those who are used to WASD controls.
+ */
+
+ const VK_LEFT = {
   "37": true, // left cursor
   "65": true  // 'a' key
 };
@@ -32,9 +39,12 @@ const VK_SIGNAL = {
   "32": true  // space
 };
 
-// Make sure we put in the signal lock to prevent
-// OS/application-level keyrepeat from incorrectly
-// triggering click events:
+/**
+ * In addition to the key maps, we also need to
+ * make sure we put in the signal lock to prevent
+ * OS/application-level keyrepeat from incorrectly
+ * triggering click events:
+ */
 
 let vk_signal_lock = false;
 

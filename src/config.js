@@ -8,28 +8,22 @@ if (typeof process !== "undefined") Random = require('./js/core/utils/prng.js');
  */
 
 let params = {};
-if (typeof window !== "undefined") {
-    params = location.search
-        .slice(1)
-        .split('&')
-        .map(p => p.split('='))
-        .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {});
-}
+if (typeof window !== "undefined") params = new URLSearchParams(window.location.search);
 
-const DEBUG = (params.debug==='true') ? true : false;
+const NO_SOUND = (params.get(`nosound`)==='true') ? true : false;
+const SEED = params.get(`seed`) ? parseInt(params.get(`seed`)) : 0;
+const PLAY_IMMEDIATELY = (params.get(`autoplay`)==='true') ? true : false;
+const PAUSE_ON_BLUR = (params.get(`pause_on_blur`)==='false') ? false: true;
+const FORCE_DRAW = (params.get(`force_draw`)==='true') ? true : false;
+const FORCE_OPEN_BOT_PLAY = (params.get(`force_open_bot_play`)==='true') ? true : false;
+const SHOW_BOT_CLAIM_SUGGESTION = (params.get(`show_bot_claim_suggestion`)==='true') ? true : false;
+const PLAY_INTERVAL = params.get(`play`) ? params.get(`play`) : 100;
+const HAND_INTERVAL = params.get(`hand`) ? params.get(`hand`) : 3000;
+const BOT_DELAY_BEFORE_DISCARD_ENDS = params.get(`bot_delay`) ? parseInt(params.get(`bot_delay`)) : 300;
+const WALL_HACK = params.get(`wall_hack`) ? params.get(`wall_hack`) : '';
+const DEBUG = (params.get(`debug`)==='true') ? true : false;
+
 if (!DEBUG) console.debug = () => {};
-
-const NO_SOUND = (params.nosound==='true') ? true : false;
-const SEED = params.seed ? parseInt(params.seed) : 0;
-const PLAY_IMMEDIATELY = (params.autoplay==='true') ? true : false;
-const PAUSE_ON_BLUR = (params.pause_on_blur==='false') ? false: true;
-const FORCE_DRAW = (params.force_draw==='true') ? true : false;
-const FORCE_OPEN_BOT_PLAY = (params.force_open_bot_play==='true') ? true : false;
-const SHOW_BOT_CLAIM_SUGGESTION = (params.show_bot_claim_suggestion==='true') ? true : false;
-const PLAY_INTERVAL = params.play ? params.play : 100;
-const HAND_INTERVAL = params.hand ? params.hand : 3000;
-const BOT_DELAY_BEFORE_DISCARD_ENDS = params.bot_delay ? parseInt(params.bot_delay) : 300;
-const WALL_HACK = params.wall_hack ? params.wall_hack : false;
 
 // The simple config is for settings I
 // personally change a lot during development.

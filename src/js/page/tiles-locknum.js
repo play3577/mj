@@ -1,5 +1,8 @@
 /**
- *
+ * This is a bit of JS that helps generate all the necessary CSS
+ * to ensure sets in the hand have the correct separators. We could
+ * write this out by hand, but it'd be a lot of repetition, and
+ * programming languages were literally invented to prevent that.
  */
 (function generateLockedSetSeparationCSS() {
 

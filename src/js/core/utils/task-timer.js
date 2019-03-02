@@ -141,14 +141,16 @@ class TaskTimer {
   }
 
   /**
-   *Resume this timer's timeout.
+   * Resume this timer's timeout.
    */
   resume() {
-    this.paused = false;
-    this.created = Date.now();
-    this._resolve_pause_lock();
-    this.startTimeout();
-    this.sendSignal();
+    if (this._resolve_pause_lock) {
+      this.paused = false;
+      this.created = Date.now();
+      this._resolve_pause_lock();
+      this.startTimeout();
+      this.sendSignal();
+    }
   }
 
   /**
