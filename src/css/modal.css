@@ -48,6 +48,7 @@
   white-space: nowrap;
   background: #DDD;
   font-size: 100%;
+  border-width: 3px;
 }
 
 .modal .panel button:active,
@@ -120,7 +121,9 @@
   font-variant: small-caps;
 }
 
-.modal .panel.scores table tr.details td {
+.modal .panel.scores table tr.details td button {
+  border: none;
+  background: inherit;
   color: blue;
   text-align: right;
   cursor: pointer;

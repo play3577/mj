@@ -196,10 +196,10 @@ modal.setScores = (hand, scores, adjustments, resolve) => {
     </tr>
     <tr class="details">
       <td>&nbsp;</td>
-      <td>details</td>
-      <td>details</td>
-      <td>details</td>
-      <td>details</td>
+      <td><button class='detail-button'>details</button></td>
+      <td><button class='detail-button'>details</button></td>
+      <td><button class='detail-button'>details</button></td>
+      <td><button class='detail-button'>details</button></td>
     </tr>
   </table>
   `;
@@ -340,7 +340,12 @@ modal.pickPlaySettings = () => {
   modal.classList.remove("hidden");
 
   document.addEventListener('focus', panel.gainFocus);
-  panel.addEventListener('click', panel.gainFocus);
-  panel.addEventListener('touchstart', panel.gainFocus);
+  let formFocus = evt => {
+    let name = evt.target.nodeName.toLowerCase();
+    if (['input','select','option'].indexOf(name) !== -1) return;
+    panel.gainFocus();
+  };
+  panel.addEventListener('click', formFocus);
+  panel.addEventListener('touchstart', formFocus);
   panel.gainFocus();
 }
