@@ -19,10 +19,11 @@
 
     // Optional bot play.
     function offerChoice() {
-        modal.choiceInput("Welcome! Would you like to play a game, or watch a game?", [
+        modal.choiceInput("Welcome! What would you like to do?", [
             { label: "I'd like to play some mahjong!", value: 'play' },
             { label: "I want to see the bots play each other...", value: 'watch' },
-            { label: "I'd like to change the play settings", value: 'settings' },
+            { heading: "- or - "},
+            { label: "Change play setting", value: 'settings' },
         ], result => {
             config.BOT_PLAY = (result === 'watch');
 

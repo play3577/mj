@@ -43,6 +43,17 @@ modal.choiceInput = (label, options, resolve, cancel) => {
   let btns = [];
 
   options.filter(v=>v).forEach(data => {
+    if (Object.keys(data).length===0) {
+      return panel.appendChild(document.createElement('br'));
+    }
+
+    if (data.heading) {
+      let heading = document.createElement('h1');
+      heading.textContent = data.heading;
+      return panel.appendChild(heading);
+    }
+
+
     let btn = document.createElement("button");
     btn.textContent = data.label;
     btn.addEventListener("click", e => {

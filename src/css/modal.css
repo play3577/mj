@@ -22,10 +22,12 @@
 
 .modal .panel h1 {
   font-size: 1rem;
+  text-align: center;
   position: relative;
 }
 
 .modal .panel h3 {
+  text-align: center;
   position: relative;
 }
 
