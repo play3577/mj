@@ -58,6 +58,8 @@ function tilesNeeded(tiles, locked=[], canChow=false) {
     }
   });
 
+  // FIXME: we lose the "locked" state for the pair here.
+
   // Then run a pattern expansion!
   let {results, paths} = p.expand(pair, locked);
 
