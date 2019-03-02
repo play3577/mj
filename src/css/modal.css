@@ -31,6 +31,10 @@
   position: relative;
 }
 
+.modal .panel p.left   { text-align: left;   }
+.modal .panel p.center { text-align: center; }
+.modal .panel p.right  { text-align: right;  }
+
 .modal .panel h3 .close {
   font-variant: small-caps;
   font-family: Verdana;
@@ -127,4 +131,19 @@
   color: blue;
   text-align: right;
   cursor: pointer;
+}
+
+
+form table tr th:first-child {
+    text-align: left;
+}
+
+form table tr th:last-child {
+  text-align: left;
+  padding-left: 2em;
+}
+
+form table tr td:last-child {
+  text-align: left;
+  padding-left: 2em;
 }

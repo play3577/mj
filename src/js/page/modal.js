@@ -57,11 +57,17 @@ modal.choiceInput = (label, options, resolve, cancel) => {
       return panel.appendChild(heading);
     }
 
+    if (data.description) {
+      let description = document.createElement('p');
+      if (data.align) description.classList.add(data.align);
+      description.textContent = data.description;
+      return panel.appendChild(description);
+    }
 
     let btn = document.createElement("button");
     btn.textContent = data.label;
     btn.addEventListener("click", e => {
-      close([{ object:document, evntName:'focus', handler: panel.gainFocus }]);
+      if (!data.back) close([{ object:document, evntName:'focus', handler: panel.gainFocus }]);
       resolve(data.value);
     });
     btn.addEventListener("keydown", e => {
@@ -247,7 +253,14 @@ modal.setScores = (hand, scores, adjustments, resolve) => {
  */
 modal.pickPlaySettings = () => {
   let panel = makePanel(`settings`);
-  panel.innerHTML = `<h3>Change game settings</h3>`;
+  panel.innerHTML = `
+    <h3>Change the game settings</h3>
+    <p>
+      The follow settings change how the game works, but while
+      the first two options help with learning to play the game,
+      all the other options are primarily intended for debugging.
+    </p>
+  `;
 
   let form = document.createElement('form');
   form.setAttribute("name", "settings");
@@ -265,14 +278,14 @@ modal.pickPlaySettings = () => {
 
   // add all config options here
   const values = {
+    force_open_bot_play: FORCE_OPEN_BOT_PLAY.toString(),
+    show_bot_claim_suggestion: SHOW_BOT_CLAIM_SUGGESTION.toString(),
     debug: DEBUG.toString(),
     seed: SEED.toString(),
     nosound: NO_SOUND.toString() ,
     autoplay: PLAY_IMMEDIATELY.toString(),
     pause_on_blur: PAUSE_ON_BLUR.toString(),
     force_draw: FORCE_DRAW.toString(),
-    force_open_bot_play: FORCE_OPEN_BOT_PLAY.toString(),
-    show_bot_claim_suggestion: SHOW_BOT_CLAIM_SUGGESTION.toString(),
     play: PLAY_INTERVAL.toString(),
     hand: HAND_INTERVAL.toString(),
     bot_delay: BOT_DELAY_BEFORE_DISCARD_ENDS.toString(),
@@ -280,14 +293,15 @@ modal.pickPlaySettings = () => {
   };
 
   const options = {
+    'Always show everyone\'s tiles': { key: 'force_open_bot_play', options: ['true','false'] },
+    'Highlight discards if they can be claimed': { key: 'show_bot_claim_suggestion', options: ['true','false'] },
+    '-': {},
     'Turn on debug logging' : { key: 'debug', options: ['true','false'] },
     'Set random number seed': { key: 'seed' },
     'Play without sound': { key: 'nosound', options: ['true','false'] },
     'Autostart bot play': { key: 'autoplay', options: ['true','false'] },
     'Pause game unless focused': { key: 'pause_on_blur', options: ['true','false'] },
     'Pretend hands start after a draw': { key: 'force_draw', options: ['true','false'] },
-    'Always show everyone\'s tiles': { key: 'force_open_bot_play', options: ['true','false'] },
-    'Highligh discard if you can claim it': { key: 'show_bot_claim_suggestion', options: ['true','false'] },
     'Delay (in ms) between player turns': { key: 'play' },
     'Delay (in ms) before starting next hand': { key: 'hand' },
     'Delay (in ms) for bots reacting to things': { key: 'bot_delay' },
@@ -296,6 +310,11 @@ modal.pickPlaySettings = () => {
 
 
   Object.keys(options).forEach(label => {
+    if (label==='-') {
+      let row = document.createElement('tr');
+      row.innerHTML = `<td colspan="2">&nbsp;</td>`;
+      return table.appendChild(row);
+    }
     let data = options[label];
     let value = values[data.key];
     let row = document.createElement('tr');
@@ -337,9 +356,19 @@ modal.pickPlaySettings = () => {
   let reset = table.querySelector('#reset');
   reset.addEventListener('click', evt => (window.location.search=''));
 
+  document.addEventListener('focus', panel.gainFocus);
+  row = document.createElement('tr');
+  row.innerHTML = `<td colspan="2">&nbsp;</td>`;
+  table.appendChild(row);
+  let back = document.createElement('button');
+  back.textContent = "Exit this menu";
+  back.addEventListener("click", evt => {
+    close([{ object:document, evntName:'focus', handler: panel.gainFocus }]);
+  });
+  panel.appendChild(back);
+
   modal.classList.remove("hidden");
 
-  document.addEventListener('focus', panel.gainFocus);
   let formFocus = evt => {
     let name = evt.target.nodeName.toLowerCase();
     if (['input','select','option'].indexOf(name) !== -1) return;
