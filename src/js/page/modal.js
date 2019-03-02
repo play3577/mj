@@ -19,7 +19,11 @@ function makePanel(name) {
  * Close the currently-active modal, which will either
  * reveal the underlying modal, or hide the master overlay.
  */
-function close() {
+function close(unbind=[]) {
+  unbind.forEach(opt => {
+    opt.object.addEventListener(opt.evtName, opt.handler);
+  });
+
   let panel = panels.pop();
   if (panel) modal.removeChild(panel);
   if (panels.length) {
@@ -57,8 +61,7 @@ modal.choiceInput = (label, options, resolve, cancel) => {
     let btn = document.createElement("button");
     btn.textContent = data.label;
     btn.addEventListener("click", e => {
-      close();
-      document.removeEventListener('focus', panel.gainFocus);
+      close([{ object:document, evntName:'focus', handler: panel.gainFocus }]);
       resolve(data.value);
     });
     btn.addEventListener("keydown", e => {
@@ -78,22 +81,25 @@ modal.choiceInput = (label, options, resolve, cancel) => {
 
   modal.classList.remove("hidden");
 
-  btns = panel.querySelectorAll(`button`);
-  panel.gainFocus = () => btns[bid].focus();
-
   if (cancel) {
     let handleKey = evt => {
       if (evt.keyCode === 27) {
         evt.preventDefault();
-        document.removeEventListener('keydown', handleKey);
-        modal.classList.add("hidden");
+        close([
+          { object:document, evntName:'focus', handler: panel.gainFocus },
+          { object:document, evntName:'keydown', handler: handleKey },
+        ]);
         cancel();
       }
     }
     document.addEventListener('keydown', handleKey);
   }
 
+  btns = panel.querySelectorAll(`button`);
+  panel.gainFocus = () => btns[bid].focus();
   document.addEventListener('focus', panel.gainFocus);
+  panel.addEventListener('click', panel.gainFocus);
+  panel.addEventListener('touchstart', panel.gainFocus);
   panel.gainFocus();
 };
 
@@ -122,9 +128,18 @@ function showScoreDetails(pid, log) {
 
   let ok = document.createElement('button');
   ok.textContent = 'OK';
-  ok.addEventListener('click', close);
+  ok.addEventListener('click', () => {
+    close([
+      { object:document, evntName:'focus', handler: panel.gainFocus }
+    ]);
+  });
   panel.appendChild(ok);
-  ok.focus();
+
+  panel.gainFocus = () => ok.focus();
+  document.addEventListener('focus', panel.gainFocus);
+  panel.addEventListener('click', panel.gainFocus);
+  panel.addEventListener('touchstart', panel.gainFocus);
+  panel.gainFocus();
 }
 
 /**
@@ -202,8 +217,7 @@ modal.setScores = (hand, scores, adjustments, resolve) => {
   let ok = document.createElement('button');
   ok.textContent = 'OK';
   ok.addEventListener('click', () => {
-    close();
-    document.removeEventListener('focus', panel.gainFocus);
+    close([{ object:document, evntName:'focus', handler: panel.gainFocus }]);
     resolve();
   });
   panel.appendChild(ok);
@@ -221,6 +235,8 @@ modal.setScores = (hand, scores, adjustments, resolve) => {
 
   panel.gainFocus = () => ok.focus();
   document.addEventListener('focus', panel.gainFocus);
+  panel.addEventListener('click', panel.gainFocus);
+  panel.addEventListener('touchstart', panel.gainFocus);
   panel.gainFocus();
 };
 
@@ -299,7 +315,14 @@ modal.pickPlaySettings = () => {
   });
 
   let row = document.createElement('tr');
-  row.innerHTML = `<td colspan="2"><input id="ok" type="submit" value="Play using these settings"></td>`;
+  row.innerHTML = `
+    <td>
+      <input id="ok" type="submit" value="Play using these settings">
+    </td>
+    <td>
+      <input id="reset" type="reset" value="Reset to default settings">
+    </td>
+  `;
   table.appendChild(row);
 
   form.addEventListener("submit", evt => {
@@ -308,9 +331,16 @@ modal.pickPlaySettings = () => {
     window.location.search = `?${query.join('&')}`;
   });
 
+  let ok = table.querySelector('#ok');
+  panel.gainFocus = () => ok.focus();
+
+  let reset = table.querySelector('#reset');
+  reset.addEventListener('click', evt => (window.location.search=''));
+
   modal.classList.remove("hidden");
 
-  panel.gainFocus = () => ok.focus();
   document.addEventListener('focus', panel.gainFocus);
+  panel.addEventListener('click', panel.gainFocus);
+  panel.addEventListener('touchstart', panel.gainFocus);
   panel.gainFocus();
 }

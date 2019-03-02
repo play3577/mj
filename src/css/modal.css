@@ -50,7 +50,6 @@
   font-size: 100%;
 }
 
-.modal .panel button:only-of-type,
 .modal .panel button:active,
 .modal .panel button:focus {
   --light: rgb(130, 181, 238);
