@@ -26,7 +26,10 @@
             { description: "Alternatively, you can modify the game settings:", align: "center" },
             { label: "Change settings", value: 'settings', back: true },
         ], result => {
-            config.BOT_PLAY = (result === 'watch');
+            if (result === 'watch') {
+                config.BOT_PLAY = true;
+                config.FORCE_OPEN_BOT_PLAY = true;
+            }
 
             if (result === 'settings') {
                 return modal.pickPlaySettings();
