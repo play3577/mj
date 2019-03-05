@@ -115,7 +115,7 @@ class PlayerMeta {
     return this.wincount;
   }
 
-  append(t, claimed) {
+  append(t, claimed, supplement) {
     let revealed = false;
     if (typeof t !== 'object') {
       if (t > 33) {
@@ -131,6 +131,9 @@ class PlayerMeta {
     if (!claimed) {
       this.tracker.seen(t.dataset.tile);
       this.lastClaim = false;
+    }
+    if (supplement) {
+      t.dataset.supplement = 'supplement';
     }
     if (this.ui) this.ui.append(t);
     return revealed;

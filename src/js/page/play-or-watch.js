@@ -14,7 +14,9 @@
     function play() {
         let manager = new GameManager();
         let game = manager.create();
-        game.startGame();
+        game.startGame(() => {
+            offerChoice();
+        });
     }
 
     // Optional bot play.
@@ -27,12 +29,8 @@
             { label: "Change settings", value: 'settings', back: true },
         ], result => {
             config.BOT_PLAY = (result === 'watch');
-            config.FORCE_OPEN_BOT_PLAY = (result === 'watch');
-
-            if (result === 'settings') {
-                return modal.pickPlaySettings();
-            }
-
+            if (result === 'watch') config.FORCE_OPEN_BOT_PLAY = true;
+            if (result === 'settings') return modal.pickPlaySettings();
             play();
         });
     }

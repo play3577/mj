@@ -1,29 +1,40 @@
 if (typeof process !== "undefined") Random = require('./js/core/utils/prng.js');
 
-/**
- * We're using a javascript config, not a
- * JSON config, because JSON doesn't allow
- * comments, and a config that can't document
- * itself is a thoroughly useless config.
- */
+// defaults
+let DEBUG = false;
+let NO_SOUND = false;
+let SEED = 0;
+let PLAY_IMMEDIATELY = false;
+let PAUSE_ON_BLUR = true;
+let FORCE_DRAW = false;
+let FORCE_OPEN_BOT_PLAY = false;
+let SHOW_BOT_CLAIM_SUGGESTION = false;
+let PLAY_INTERVAL = 100;
+let HAND_INTERVAL = 3000;
+let BOT_DELAY_BEFORE_DISCARD_ENDS = 300;
+let WALL_HACK = '';
 
-let params = {};
-if (typeof window !== "undefined") params = new URLSearchParams(window.location.search);
+// overrides?
+if (typeof window !== "undefined") {
+    let params = new URLSearchParams(window.location.search);
+    NO_SOUND = (params.get(`nosound`)==='true') ? true : false;
+    SEED = params.get(`seed`) ? parseInt(params.get(`seed`)) : 0;
+    PLAY_IMMEDIATELY = (params.get(`autoplay`)==='true') ? true : false;
+    PAUSE_ON_BLUR = (params.get(`pause_on_blur`)==='false') ? false: true;
+    FORCE_DRAW = (params.get(`force_draw`)==='true') ? true : false;
+    FORCE_OPEN_BOT_PLAY = (params.get(`force_open_bot_play`)==='true') ? true : false;
+    SHOW_BOT_CLAIM_SUGGESTION = (params.get(`show_bot_claim_suggestion`)==='true') ? true : false;
+    PLAY_INTERVAL = params.get(`play`) ? params.get(`play`) : 100;
+    HAND_INTERVAL = params.get(`hand`) ? params.get(`hand`) : 3000;
+    BOT_DELAY_BEFORE_DISCARD_ENDS = params.get(`bot_delay`) ? parseInt(params.get(`bot_delay`)) : 300;
+    WALL_HACK = params.get(`wall_hack`) ? params.get(`wall_hack`) : '';
+    DEBUG = (params.get(`debug`)==='true') ? true : false;
+    if (!DEBUG) console.debug = () => {};
+}
 
-const NO_SOUND = (params.get(`nosound`)==='true') ? true : false;
-const SEED = params.get(`seed`) ? parseInt(params.get(`seed`)) : 0;
-const PLAY_IMMEDIATELY = (params.get(`autoplay`)==='true') ? true : false;
-const PAUSE_ON_BLUR = (params.get(`pause_on_blur`)==='false') ? false: true;
-const FORCE_DRAW = (params.get(`force_draw`)==='true') ? true : false;
-const FORCE_OPEN_BOT_PLAY = (params.get(`force_open_bot_play`)==='true') ? true : false;
-const SHOW_BOT_CLAIM_SUGGESTION = (params.get(`show_bot_claim_suggestion`)==='true') ? true : false;
-const PLAY_INTERVAL = params.get(`play`) ? params.get(`play`) : 100;
-const HAND_INTERVAL = params.get(`hand`) ? params.get(`hand`) : 3000;
-const BOT_DELAY_BEFORE_DISCARD_ENDS = params.get(`bot_delay`) ? parseInt(params.get(`bot_delay`)) : 300;
-const WALL_HACK = params.get(`wall_hack`) ? params.get(`wall_hack`) : '';
-const DEBUG = (params.get(`debug`)==='true') ? true : false;
-
-if (!DEBUG) console.debug = () => {};
+if (WALL_HACK || PLAY_IMMEDIATELY) {
+    FORCE_OPEN_BOT_PLAY = true;
+}
 
 // The simple config is for settings I
 // personally change a lot during development.
@@ -70,7 +81,6 @@ const simple = {
     // load the page.
     PLAY_IMMEDIATELY: PLAY_IMMEDIATELY
 };
-
 
 // Constants used during play, for determining
 // claim types on discarded tiles.
@@ -151,7 +161,10 @@ const TILE_NAMES = {
 const SUIT_NAMES = {
     "0": "bamboo",
     "1": "characters",
-    "2": "dots"
+    "2": "dots",
+    "3": "winds",
+    "4": "dragons",
+    "5": "bonus"
 }
 
 // And then rest of the configuration.

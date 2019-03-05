@@ -42,8 +42,8 @@ class BotPlayer extends Player {
     }
   }
 
-  append(tile, claimed) {
-    let _ = super.append(tile, claimed);
+  append(tile, claimed, supplement) {
+    let _ = super.append(tile, claimed, supplement);
     this.showTilesAnyway();
     return _;
   }

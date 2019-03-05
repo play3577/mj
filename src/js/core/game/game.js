@@ -10,12 +10,17 @@ class Game {
     this.wall = new Wall(players);
     this.scoreHistory = [];
     this._playLock = false;
+    this.GAME_START = false;
+
+    // This gets redeclared by pause(), but we allocate
+    // it here so that it exists as callable noop.
+    this.resume = () => {};
   }
 
   /**
    * Start a game of mahjong!
    */
-  startGame() {
+  startGame(whenDone) {
     playClip('start');
     document.body.classList.remove(`finished`);
     this.GAME_START = Date.now();
@@ -24,20 +29,24 @@ class Game {
     this.hand = 0;
     this.draws = 0;
     this.startHand();
+    this.finish = whenDone;
   }
 
   /**
    * Pause this game. Which is harder than it sounds,
    * really what this function does is it sets a
    * local lock that we can check at every point
-   * in the code where we being in a paused state
-   * means waiting for the lock to be released again.
+   * in the code where we can reasonably pause.
+   *
+   * Being paused is then effected by waiting for
+   * the lock to be released again.
    *
    * Note that the corresponding `.resume()` is
-   * built as part of this function call, and so
-   * does not have its own class definition.
+   * not part of the class definition, and is built
+   * only as needed by when `pause()` is invoked.
    */
   pause() {
+    if (!this.GAME_START) return;
     console.debug('pausing game');
     this._playLock = new Promise(resolve => {
       this.resume = () => {
@@ -48,6 +57,19 @@ class Game {
       }
     });
     this.players.forEach(p => p.pause(this._playLock));
+    return this.resume;
+  }
+
+  /**
+   * A utility function that works together with
+   * the pause lock to ensure that is we're paused,
+   * execution is suspended until the lock is released.
+   */
+  async continue(where='continue') {
+    if (this._playLock) {
+      console.debug(`paused at ${where}`);
+      await this._playLock;
+    }
   }
 
   /**
@@ -57,12 +79,8 @@ class Game {
    * left to play in this particular game.
    */
   async startHand(result = {}) {
-    if (this._playLock) {
-      console.debug("paused at startHand");
-      await this._playLock;
-    }
+    await this.continue();
 
-    let pre = result.draw ? 'Res' : 'S';
     let players = this.players;
 
     if (result.winner) {
@@ -82,7 +100,12 @@ class Game {
             let finalScores = players.map(p => p.getScore());
             players.forEach(p => p.endOfGame(finalScores));
             document.body.classList.add('finished');
-            return playClip('end');
+            playClip('end');
+            return modal.choiceInput("Game finished", [{label: "OK"}], () => {
+              document.body.classList.remove('finished');
+              rotateWinds.reset();
+              this.finish();
+            });
           }
         }
       } else console.debug(`Winner player was East, winds will not rotate.`);
@@ -93,18 +116,21 @@ class Game {
       this.draws = 0;
     } else {
       this.draws++;
-      playClip('draw');
     }
 
-    console.log(`\n%c${pre}tarting hand ${this.hand}.`, `color: red; font-weight: bold; font-size: 120%; border-bottom: 1px solid black;`); // Starting hand / Restarting hand
     console.debug("Rotated winds:", this.wind, this.windOfTheRound);
     rotateWinds(this.wind, this.windOfTheRound, this.hand, this.draws);
 
-    this.wall.reset();
     this.players.forEach((player,p) => {
-      // Player winds have to rotate in the opposite direction as the winds do.
-      let playerWind = (4 + this.wind - p) % 4;
-      player.reset(this.hand, playerWind, this.windOfTheRound);
+      let playerwind = (this.wind + p) % 4;
+
+      // Do we need to rotate player winds in the
+      // opposite direction of the round winds?
+      if (this.rules.reverse_wind_direction) {
+        playerwind = (4 + this.wind - p) % 4;
+      }
+
+      player.reset(this.hand, playerwind, this.windOfTheRound);
     });
 
     // used for play debugging:
@@ -112,10 +138,17 @@ class Game {
       config.HAND_INTERVAL = 60 * 60 * 1000;
     }
 
-    this.PLAY_START = Date.now();
+    let pre = result.draw ? 'Res' : 'S';
+    console.log(
+      `\n%c${pre}tarting hand ${this.hand} (current seed: ${config.PRNG.seed()}, wind: ${this.wind}).`,  // Starting hand / Restarting hand
+      `color: red; font-weight: bold; font-size: 120%; border-bottom: 1px solid black;`
+    );
 
+    this.wall.reset();
+    console.debug(`wall: ${this.wall.tiles}`);
     await this.dealTiles();
     await this.preparePlay(config.FORCE_DRAW || this.draws > 0);
+    this.PLAY_START = Date.now();
     this.play();
   }
 
@@ -125,10 +158,7 @@ class Game {
    * bonus tiles are compensated for.
    */
   async dealTiles() {
-    if (this._playLock) {
-      console.debug("paused at dealTiles");
-      await this._playLock;
-    }
+    await this.continue("dealTiles");
 
     let wall = this.wall;
     let players = this.players;
@@ -151,12 +181,9 @@ class Game {
     };
 
     // make sure the game can wait for all deals to finish:
-    return Promise.all([
-      new Promise(done => runDeal(players[0], done)),
-      new Promise(done => runDeal(players[1], done)),
-      new Promise(done => runDeal(players[2], done)),
-      new Promise(done => runDeal(players[3], done)),
-    ]);
+    return Promise.all(players.map(p => {
+      return new Promise(done => runDeal(p, done));
+    }));
   }
 
   /**
@@ -165,10 +192,7 @@ class Game {
    * game play.
    */
   async preparePlay(redraw) {
-    if (this._playLock) {
-      console.debug("paused at preparePlay");
-      await this._playLock;
-    }
+    await this.continue("preparePlay");
 
     this.currentPlayerId = (this.wind % 4);
     this.discard = undefined;
@@ -177,12 +201,9 @@ class Game {
     let players = this.players;
 
     // wait for "ready" from each player in response to a "hand will start" notice
-    await Promise.all([
-      new Promise(ready => players[0].handWillStart(redraw, ready)),
-      new Promise(ready => players[1].handWillStart(redraw, ready)),
-      new Promise(ready => players[2].handWillStart(redraw, ready)),
-      new Promise(ready => players[3].handWillStart(redraw, ready)),
-    ]);
+    await Promise.all(players.map(p => {
+      return new Promise(ready => p.handWillStart(redraw, ready))
+    }));
 
     // at this point, the game can be said to have started, but
     // we want to make sure that any player that, at the start
@@ -190,12 +211,9 @@ class Game {
     // option to declare that kong before tiles start getting
     // discarded:
 
-    await Promise.all([
-      new Promise(done => this.resolveKongs(players[0], done)),
-      new Promise(done => this.resolveKongs(players[1], done)),
-      new Promise(done => this.resolveKongs(players[2], done)),
-      new Promise(done => this.resolveKongs(players[3], done)),
-    ]);
+    await Promise.all(players.map(p => {
+      return new Promise(done => this.resolveKongs(p, done));
+    }));
   }
 
   /**
@@ -203,11 +221,8 @@ class Game {
    * players an opportunity to declare any hidden kongs
    * before the first player gets to "draw one, play one".
    */
-  async resolveKongs(player, resolve) {
-    if (this._playLock) {
-      console.debug("paused at resolveKongs");
-      await this._playLock;
-    }
+  async resolveKongs(player, done) {
+    await this.continue("resolveKongs");
 
     let players = this.players;
     let kong;
@@ -227,7 +242,7 @@ class Game {
       }
     } while (kong);
 
-    resolve();
+    done();
   }
 
   /**
@@ -240,10 +255,7 @@ class Game {
    * or the wall has run out of tiles to deal from.
    */
   async play(claim) {
-    if (this._playLock) {
-      console.debug("paused at play");
-      await this._playLock;
-    }
+    await this.continue("start of play()");
 
     let hand = this.hand;
     let players = this.players;
@@ -259,10 +271,10 @@ class Game {
     // increase the play counter for debugging purposes:
     this.counter++;
     this.playDelay = (hand===config.PAUSE_ON_HAND && this.counter===config.PAUSE_ON_PLAY) ? 60*60*1000 : config.PLAY_INTERVAL;
-    if (config.DEBUG) console.log(`%chand ${hand}, play ${this.counter}`, `color: red; font-weight: bold;`);
+    console.debug(`%chand ${hand}, play ${this.counter}`, `color: red; font-weight: bold;`);
 
-    // GAME LOOP: "Draw one"
-    if (!claim) this.dealTile(player);
+    // GAME LOOP: "Draw one" phase
+    if (!claim) await this.dealTile(player);
     else {
       let tiles = player.receiveDiscardForClaim(claim, discard);
       playClip(tiles.length===4 ? 'kong' : 'multi');
@@ -272,10 +284,10 @@ class Game {
 
       // If the player locks away a total of 4 tiles,
       // they need a supplement tile.
-      if (tiles.length === 4) this.dealTile(player);
+      if (tiles.length === 4) await this.dealTile(player);
     }
 
-    // GAME LOOP: "Play one"
+    // GAME LOOP: "Play one" phase
     do {
       if (discard) discard.classList.remove('discard');
 
@@ -313,10 +325,7 @@ class Game {
     this.processDiscard(player);
 
     // Does someone want to claim this discard?
-    if (this._playLock) {
-      console.debug("paused before claim awaiting");
-      await this._playLock;
-    }
+    await this.continue("just before getAllClaims() in play()");
     claim = await this.getAllClaims(); // players take note of the fact that a discard happened as part of their determineClaim()
     if (claim) return this.processClaim(player, claim);
 
@@ -324,14 +333,16 @@ class Game {
     if (wall.dead) {
       console.log(`Hand ${hand} is a draw.`);
       players.forEach(p => p.endOfHand());
-      return setTimeout(() => this.startHand({ draw: true }), this.playDelay);
+      let nextHand = () => this.startHand({ draw: true });
+      if (!config.BOT_PLAY) {
+        playClip('draw');
+        return modal.choiceInput("Hand was a draw", [{label:"OK"}], nextHand, nextHand);
+      } else return setTimeout(nextHand, this.playDelay);
     }
 
     // If we get here, nothing of note happened, and we just move on to the next player.
-    if (this._playLock) {
-      console.debug("paused before next play schedule");
-      await this._playLock;
-    }
+    await this.continue("just before scheduling the next play() call");
+
     players.forEach(p => p.nextPlayer());
     this.currentPlayerId = (this.currentPlayerId + 1) % 4;
 
@@ -343,12 +354,13 @@ class Game {
    * phase, this function simply gets a tile from the
    * wall, and then deals it to the indicated player.
    */
-  dealTile(player) {
+  async dealTile(player, first=true) {
     let tile, wall = this.wall;
     do {
       tile = wall.get();
-      this.dealTileToPlayer(player, tile);
-    } while (tile>33 && !wall.dead);
+      first = false;
+      await this.dealTileToPlayer(player, tile, !first);
+    } while (tile>33);
     return wall.dead;
   }
 
@@ -360,19 +372,15 @@ class Game {
    * bonus tile, or lead to that player declaring a
    * self-drawn kong.
    */
-  async dealTileToPlayer(player, tile) {
-    if (this._playLock) {
-      console.debug("paused at dealTileToPlayer");
-      await this._playLock;
-    }
+  async dealTileToPlayer(player, tile, supplement) {
+    await this.continue("dealTileToPlayer");
 
     let players = this.players;
-
-    console.debug(`${player.id} was given tile ${tile}`);
-    console.debug(`dealing ${tile} to player ${player.id}`);
-
-    let revealed = player.append(tile);
+    let revealed = player.append(tile, supplement);
     players.forEach(p => p.receivedTile(player));
+
+    console.debug(`${player.id} was given tile`, tile);
+    console.debug(`${player.id} tiles:`, player.tiles.slice());
 
     // bonus tile are shown to all other players.
     if (revealed) players.forEach(p => p.see(revealed, player));
@@ -384,7 +392,7 @@ class Game {
       console.debug(`${player.id} plays self-drawn kong ${kong[0].dataset.tile} during play`);
       players.forEach(p => p.seeKong(kong, player));
       console.debug(`Dealing ${player.id} a supplement tile.`);
-      this.dealTile(player);
+      await this.dealTile(player, false);
     }
   }
 
@@ -473,10 +481,7 @@ class Game {
    * by value, and the higest claim "wins".
    */
   async getAllClaims() {
-    if (this._playLock) {
-      console.debug("paused at getAllClaims");
-      await this._playLock;
-    }
+    await this.continue("getAllClaims");
 
     let players = this.players;
     let currentpid = this.currentPlayerId;

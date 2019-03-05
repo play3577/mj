@@ -41,6 +41,11 @@ const rotateWinds = (function generateRotateWindsFunction() {
     });
   }
 
+  rotateWinds.reset = function() {
+    previous = 0;
+    indicator.classList.remove('done');
+  };
+
   // and of course, make sure to remember to expose that function...
   return rotateWinds;
 })();
