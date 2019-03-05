@@ -59,7 +59,7 @@ class OptionsDialog {
         if (evt.keyCode === 27) {
           evt.preventDefault();
           this.modal.close([
-            { object:this.modal.gameBoard, evntName:'focus', handler: panel.gainFocus },
+            { object:document, evntName:'focus', handler: panel.gainFocus },
             { object:this.modal.gameBoard, evntName:'keydown', handler: handleKey },
           ]);
           cancel();
@@ -70,7 +70,7 @@ class OptionsDialog {
 
     btns = panel.querySelectorAll(`button`);
     panel.gainFocus = () => btns[bid].focus();
-    this.modal.gameBoard.addEventListener('focus', panel.gainFocus);
+    document.addEventListener('focus', panel.gainFocus);
     panel.addEventListener('click', panel.gainFocus);
     panel.addEventListener('touchstart', panel.gainFocus);
     panel.gainFocus();

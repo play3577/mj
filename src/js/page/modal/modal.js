@@ -65,7 +65,7 @@ class Modal {
     let ok = document.createElement('button');
     ok.textContent = modalLabel;
     ok.addEventListener('click', () => {
-      this.close([{ object:this.gameBoard, evntName:'focus', handler: panel.gainFocus }]);
+      this.close([{ object:document, evntName:'focus', handler: panel.gainFocus }]);
       resolve();
     });
     panel.appendChild(ok);
@@ -74,15 +74,19 @@ class Modal {
     // UNLESS the user interacts with the modal.
     let dismiss = () => ok.click();
     if(config.BOT_PLAY) setTimeout(() => dismiss(), config.HAND_INTERVAL);
-    panel.addEventListener('click', () => {
-      dismiss = () => {};
-      panel.gainFocus();
-    });
+    panel.addEventListener('click', () => dismiss = () => {});
 
     panel.gainFocus = () => ok.focus();
-    this.gameBoard.addEventListener('focus', panel.gainFocus);
-    panel.addEventListener('click', panel.gainFocus);
-    panel.addEventListener('touchstart', panel.gainFocus);
+    document.addEventListener('focus', panel.gainFocus);
+
+    let defaultFocus = evt => {
+      let name = evt.target.nodeName.toLowerCase();
+      if (name === 'select' || name === 'input') return;
+      panel.gainFocus();
+    };
+
+    panel.addEventListener('click', defaultFocus);
+    panel.addEventListener('touchstart', defaultFocus);
     panel.gainFocus();
   }
 
