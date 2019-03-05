@@ -18,19 +18,7 @@ I can hear the web devs amongst you thinking "but... then isn't it horribly inef
 
 ### Debugging using query parameters
 
-The following URL query parameters are supported for debugging purposes:
-
-- `debug=true` turns on extended debug logging to the console.
-- `seed=<num>` makes pseudo-random number generator use the specified seed value.
-- `nosound=true` bypasses audio playback, nice for silent debugging.
-- `autoplay=true` immediately starts a game with four bots playing each other.
-- `pause_on_blur=false` disables pausing the game when the document loses focus (e.g. tabbing out/multitasking).
-- `play=<num>` sets the number of milliseconds between bots taking turns.
-- `hand=<num>` sets the number of milliseconds paused on the score breakdown before starting a new hand.
-- `force_open_bot_play=true` shows all player tiles irrespective of normal gameplay vs. automated bot play.
-- `show_bot_claim_suggestion=true` highlights a discard if the player's bot superclass would have bid a claim.
-- `force_draw=true` starts a hand as if the previous hand was a draw.
-- `wall_hack=<wall hack name>` overrides the wall instantiation with specific tile sequences for debugging specific plays. See [`core/wall-hack.js`](https://github.com/Pomax/mj/blob/master/src/js/core/wall-hack.js) for the list of available pattern names.
+Debugging options are set via URL query parameter, however, the way to toggle these is via the settings menu.
 
 ### I have (a) question(s)!
 
