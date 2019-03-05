@@ -1,3 +1,9 @@
+/**
+ * A modal dialog handling class. The actual dialog
+ * content is written up in other files, this file
+ * merely houses the code that sets up the modal
+ * functionality such as show/hide and dialog stacking.
+ */
 class Modal {
   constructor() {
     this.modal = document.querySelector(".modal");
@@ -8,13 +14,11 @@ class Modal {
     this.scores = new ScoreModal(this);
   }
 
-  reveal() {
-    this.modal.classList.remove("hidden");
-  }
+  // show the modal stack
+  reveal() { this.modal.classList.remove("hidden"); }
 
-  hide() {
-    this.modal.classList.add("hidden");
-  }
+  // hide the modal stack
+  hide() { this.modal.classList.add("hidden"); }
 
   /**
    * Create a new modal panel to show data in.
