@@ -16,7 +16,7 @@ class ClientUI extends ClientUIMeta {
   listenForDiscard(resolve, suggestion, lastClaim) {
     let listenForInput = true;
     let tiles = this.getAvailableTiles();
-    let latestTile = this.getLatestTile();
+    let latestTile = this.player.latest;
     let currentTile = latestTile;
     let curid = currentTile ? Array.from(tiles).indexOf(currentTile) : 0;
     if (curid===0) currentTile = tiles[0];
@@ -81,7 +81,7 @@ class ClientUI extends ClientUIMeta {
         if (!listenForInput) return;
         e.stopPropagation();
         e.target.removeEventListener("click", pickAsDiscard);
-        this.spawnDeclarationModal(this.getLatestTile(), pickAsDiscard, () => {
+        this.spawnDeclarationModal(e.target, pickAsDiscard, () => {
           e.target.addEventListener("click", pickAsDiscard);
         });
       }, 1000);

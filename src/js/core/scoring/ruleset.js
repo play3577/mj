@@ -10,12 +10,13 @@ class Ruleset {
   allFlowers(bonus) { return [34, 35, 36, 37].every(t => bonus.indexOf(t) > -1); }
   allSeasons(bonus) { return [38, 39, 40, 41].every(t => bonus.indexOf(t) > -1); }
 
-  constructor(startscore, limit, points_for_winning, losers_settle_scores=config.LOSERS_SETTLE_SCORES, east_doubles_up=false) {
+  constructor(startscore, limit, points_for_winning, losers_settle_scores=config.LOSERS_SETTLE_SCORES, east_doubles_up=false, reverse_wind_direction=false) {
     this.player_start_score = startscore;
     this.limit = limit;
     this.points_for_winning = points_for_winning;
     this.losers_settle_scores = losers_settle_scores;
     this.east_doubles_up = east_doubles_up;
+    this.reverse_wind_direction = reverse_wind_direction;
     this.limits = new LimitHands();
   }
 
@@ -177,6 +178,7 @@ class Ruleset {
       wotrPung: false,
       ownWindKong: false,
       wotrKong: false,
+      chowCount: 0,
       windPungCount: 0,
       windKongCount: 0,
       dragonPungCount: 0,
@@ -189,7 +191,7 @@ class Ruleset {
     };
 
     // classic limit hands
-    state.allGreen = scorePattern.every(set => set.every(t => [1,2,3,5,7,31].indexOf(t) > -1))
+    state.allGreen = scorePattern.every(set => set.every(t => [1,2,3,5,7,31].indexOf(t) > -1));
 
     // FIXME: still missing
     //        - out on supplement tile
@@ -216,8 +218,8 @@ class Ruleset {
       }
 
       if (set.length === 2) {
-        if (winset && winset.length !== 2) {
-          state.outonPair = false;
+        if (winset) {
+          state.outonPair = (winset.length===2 && winset[0]===set[0]);
         }
         else if (!winset && selfdraw && set[0] === selftile) {
           state.outonPair = true;
@@ -253,7 +255,10 @@ class Ruleset {
           }
           if (tile > 30) state.dragonPungCount++;
           state.allchow = false;
-        } else state.punghand = false;
+        } else {
+          state.chowCount++;
+          state.punghand = false;
+        }
       }
 
       if (set.length === 4) {

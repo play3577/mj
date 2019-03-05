@@ -8,12 +8,12 @@ class ClientUIMeta {
   constructor(player, tracker) {
     this.player = player;
     this.tracker = tracker;
-    // seed the "knowledge" panel with our tracker
-    this.tracker.bindTo(document.querySelector(".knowledge"));
+    this.tracker.setUI(this);
     this.id = player.id;
     this.timeouts = [];
     this.discards = document.querySelector(".discards");
     this.playerbanks = document.querySelectorAll(".player");
+    this.knowledge = document.querySelector(".knowledge");
     this.el = this.playerbanks[this.id];
     this.reset();
 
@@ -33,7 +33,7 @@ class ClientUIMeta {
     this.el.setAttribute("class", "player");
     this.playerbanks.forEach(b => {
       b.innerHTML = '';
-      b.classList.remove('winner');
+      b.setAttribute("class", "player");
     });
     this.el.innerHTML = '';
 
@@ -46,6 +46,35 @@ class ClientUIMeta {
     this.discards.appendChild(this.bar);
 
     if (this.countdownTimer) this.countdownTimer.cancel();
+  }
+
+  /**
+   * Reset the player's tile tracker panel
+   */
+  resetTracker(tiles) {
+    if (!this.knowledge) return; // happens when initialised before the DOM
+
+    this.knowledge.innerHTML = '';
+
+    Object.keys(tiles).forEach(tile => {
+      let div = document.createElement('div');
+      div.classList.add('tile-count');
+      if (tile>33) div.classList.add('hidden');
+      for(let i=0; i<4; i++) {
+        let e = create(tile);
+        div.appendChild(e);
+      }
+      this.knowledge.appendChild(div);
+    });
+  }
+
+  /**
+   * Remove a tile from the tile tracker panel.
+   */
+  reduceTracker(tileNumber) {
+    if (tileNumber>33) return; // don't track bouns tiles explicitly
+    let tile = this.knowledge.querySelector(`.tile[data-tile="${tileNumber}"]`);
+    tile.remove();
   }
 
   /**
@@ -109,8 +138,9 @@ class ClientUIMeta {
    */
   handWillStart(redraw, resolve) {
     if (config.BOT_PLAY) return resolve();
-    if (redraw) modal.choiceInput('Hand was a draw, ready to start again?', [{label: "ready",value: false}], resolve);
-    else modal.choiceInput('Ready to start playing?', [{label: "ready!",value: false}], resolve);
+    let heading = "Ready to start playing?";
+    if (redraw) heading = "Ready to replay hand?";
+    modal.choiceInput(heading, [{label: "ready!",value: false}], resolve);
   }
 
   /**
@@ -553,13 +583,6 @@ class ClientUIMeta {
   }
 
   /**
-   * Get the latest-received tile.
-   */
-  getLatestTile() {
-    return this.el.querySelector(`.latest`);
-  }
-
-  /**
    * Sort tiles ordered as:
    * 1: bonus tiles
    * 2: locked tiles, sorted
@@ -570,8 +593,8 @@ class ClientUIMeta {
     let la = a.dataset.locknum;
     let lb = b.dataset.locknum;
 
-    a = a.getTileFace();
-    b = b.getTileFace();
+    a = a.dataset.tile|0;
+    b = b.dataset.tile|0;
 
     // 1: bonus tiles always go on the far left
     if (a>33 || b>33) {

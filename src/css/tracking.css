@@ -18,10 +18,16 @@
   padding-left: 1px;
 }
 
-.tile-count [data-tile] {
+.tile-count .tile[data-tile] {
   display: inline-block;
   background-size: auto 100%;
   background-repeat: no-repeat;
   height: calc(100% - 2px);
-  width: 25%;
+  width: calc(calc(100% - 4px) / 4);
+  min-width: auto;
+  max-width: auto;
+  min-height: auto;
+  max-height: auto;
+  border: none;
+  border-radius: 0;
 }

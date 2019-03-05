@@ -15,7 +15,8 @@ class ChineseClassical extends Ruleset {
       1000, // limit
       10,   // points for winning
       true, // losers settle their scores after paying the winner
-      true  // east pays and receives double
+      true, // east pays and receives double
+      true, // player winds rotate counter to the wind of the round
     );
   }
 

@@ -32,8 +32,9 @@ const rotateWinds = (function generateRotateWindsFunction() {
     let p = (((h/4)|0)%4);
     let offset = (2 * p);
 
+    indicator.style.setProperty('--slide', offset + 'em');
+
     winds.forEach(e => {
-      indicator.style.setProperty('--slide', offset + 'em');
            if (e.classList.contains('tc')) { e.classList.remove('tc'); e.classList.add('rc'); }
       else if (e.classList.contains('rc')) { e.classList.remove('rc'); e.classList.add('bc'); }
       else if (e.classList.contains('bc')) { e.classList.remove('bc'); e.classList.add('lc'); }
@@ -43,6 +44,11 @@ const rotateWinds = (function generateRotateWindsFunction() {
 
   rotateWinds.reset = function() {
     previous = 0;
+    indicator.style.setProperty('--slide', '0em');
+    winds[0].setAttribute('class', 'player-wind tc e');
+    winds[1].setAttribute('class', 'player-wind rc');
+    winds[2].setAttribute('class', 'player-wind bc');
+    winds[3].setAttribute('class', 'player-wind lc');
     indicator.classList.remove('done');
   };
 

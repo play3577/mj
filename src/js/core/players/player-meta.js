@@ -20,6 +20,7 @@ class PlayerMeta {
     this.tiles = [];
     this.locked = [];
     this.bonus = [];
+    this.waiting = false;
     this.has_won = false;
     this.selfdraw = false;
     this.tracker.reset();
@@ -68,7 +69,7 @@ class PlayerMeta {
       wincount: this.getWinCount(),
       // If this player has won, did they self-draw their winning tile?
       selfdraw: this.has_won ? this.selfdraw : false,
-      selftile: (this.has_won && this.selfdraw) ? this.getLatestTile() : false,
+      selftile: (this.has_won && this.selfdraw) ? this.latest : false,
       // If this player has won, the last-claimed tile can matter.
       final: this.has_won ? this.latest.dataset.tile : false
     };
@@ -99,8 +100,9 @@ class PlayerMeta {
     if (this.ui) this.ui.disable();
   }
 
-  markWaiting(val) {
-    if (this.ui) this.ui.markWaiting(val)
+  markWaiting(winTiles={}) {
+    this.waiting = winTiles;
+    if (this.ui) this.ui.markWaiting(winTiles)
   }
 
   markWinner() {
@@ -234,12 +236,6 @@ class PlayerMeta {
 
   getLockedTileFaces() {
     return this.locked.map(set => `[${set.map(v=>v.dataset.tile|0)}]${set.winning?'!':''}`);
-  }
-
-  getLatestTile() {
-    let filtered = this.tiles.filter(t => t.classList.contains('latest'));
-    if (filtered.length) return filtered[0];
-    return false;
   }
 
   sortTiles() {

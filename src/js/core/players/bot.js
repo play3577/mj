@@ -7,40 +7,49 @@ class BotPlayer extends Player {
   constructor(id) {
     super(id);
     this.personality = new Personality();
-  }
 
-  showTilesAnyway() {
-    if (!config.FORCE_OPEN_BOT_PLAY) return;
+    // Don't bind this function unless the config says we should.
+    if (config.FORCE_OPEN_BOT_PLAY) {
+      this.showTilesAnyway = () => {
+        if (!config.FORCE_OPEN_BOT_PLAY) return;
 
-    // HACK: this function only exists to allow bot play debugging.
-    if (window.PLAYER_BANKS && this.id !== 0) {
-      let bank = window.PLAYER_BANKS[this.id];
-      bank.innerHTML = '';
+        if (window.PLAYER_BANKS && this.id !== 0) {
+          let bank = window.PLAYER_BANKS[this.id];
+          bank.innerHTML = '';
 
-      this.getTileFaces().forEach(t => {
-        t = create(t);
-        bank.appendChild(t);
-      })
+          this.getTileFaces().forEach(t => {
+            t = create(t);
+            bank.appendChild(t);
+          })
 
-      this.locked.forEach((s,sid) => {
-        s.forEach(t => {
-          t = create(t.dataset.tile);
-          t.dataset.locked = 'locked';
-          t.dataset.locknum = 1 + sid;
-          bank.appendChild(t);
-        });
-      })
+          this.locked.forEach((s,sid) => {
+            s.forEach(t => {
+              t = t.cloneNode();
+              t.dataset.locked = 'locked';
+              t.dataset.locknum = 1 + sid;
+              bank.appendChild(t);
+            });
+          })
 
-      this.bonus.forEach(t => {
-        t = create(t);
-        t.dataset.locked = 'locked';
-        t.dataset.bonus = 'bonus';
-        bank.appendChild(t);
-      });
+          this.bonus.forEach(t => {
+            t = create(t);
+            t.dataset.locked = 'locked';
+            bank.appendChild(t);
+          });
 
-      window.PLAYER_BANKS.sortTiles(bank);
+          if (this.waiting) bank.classList.add('waiting');
+          else bank.classList.remove('waiting');
+
+          window.PLAYER_BANKS.sortTiles(bank);
+        }
+      }
     }
   }
+
+  // We only assign this a function body
+  // in the constructor, and use an empty
+  // function so that calls don't error out.
+  showTilesAnyway() {}
 
   append(tile, claimed, supplement) {
     let _ = super.append(tile, claimed, supplement);
@@ -102,6 +111,46 @@ class BotPlayer extends Player {
       return resolve(undefined);
     }
 
+    // If we're waiting to win, then this was not (one of)
+    // our winning tile(s), so in the absence of determining
+    // whether something would be more points, we immediately
+    // get rid of this tile again.
+    if (this.waiting) {
+      console.debug(this.id,"waiting to win but",this.latest,"is not in our wait list",this.waiting);
+
+      // If we're waiting on a pair, then we can throw out either tile.
+      // Decide on which to throw based on how nice the tile is for the hand.
+      let winTiles = Object.keys(this.waiting);
+      if (winTiles.length === 1) {
+        let tileNumber = (winTiles[0]|0); // remember: object keys are strings, but we need a number!
+        let ways = this.waiting[tileNumber];
+        if (ways.length === 1 && ways[0] === "32s1") {
+          let had = this.getSingleTileFromHand(tileNumber);
+          let received = this.latest;
+          console.debug(`${this.id} has two singles in hand:`, had, received);
+          let tile = this.determineWhichPairTileToThrow(had, received);
+          console.debug(`${this.id} wants to throw out:`, tile);
+          // If we throw out the tile we already had, then we'll have to update
+          // our "waiting" object so it's set to wait for the right tile.
+          if (tile === had) {
+            let nid = received.getTileFace();
+            let oid = had.getTileFace();
+            console.debug(`${this.id} swapping win information from ${oid} to ${nid}`);
+            this.waiting[nid] = this.waiting[oid];
+            delete this.waiting[oid];
+            console.debug(`${this.id} post-swap:`, this.waiting);
+          }
+          return resolve(tile);
+        }
+      }
+
+      // If we're not waiting on a pair, then there is no ambiguity:
+      // get rid of the tile we just got, because we need a different tile.
+      return resolve(this.latest);
+    }
+
+
+
     // Did we self-draw a limit hand?
     let allTiles = this.getTileFaces(true).filter(t => t<34);
     let limithand = this.rules.checkForLimit(allTiles);
@@ -110,6 +159,54 @@ class BotPlayer extends Player {
     // Now then. We haven't won, let's figure out which tiles are worth keeping,
     // and which tiles are worth throwing away.
     this.determineDiscardUsingTracker(resolve);
+  }
+
+  /**
+   * Determine what the inate value of a tile is in terms
+   * of using it to win on a pair, given the rest of our hand.
+   */
+  determineWhichPairTileToThrow(had, received) {
+    // absolute base step 1: can we even GET another copy of this tile?
+    if (this.tracker.get(had.getTileFace()) === 0) return had;
+    if (this.tracker.get(received.getTileFace()) === 0) return received;
+
+    // If both tiles are viable pair tiles, we check some more things.
+    let tiles = this.getAvailableTiles(true).slice();
+    let pos = tiles.indexOf(had);
+    tiles.splice(pos,1);
+
+    // For instance: is one of these tiles nicer for our suit composition?
+    let suits = [0, 0, 0, 0, 0];
+    tiles.forEach(tile => {
+      suits[tile.getTileSuit()]++;
+    });
+    let hsuit = had.getTileSuit();
+    let rsuit = received.getTileSuit();
+    // If either tile "introduces a new suit", get rid of it.
+    if (hsuit < 3 && suits[hsuit] === 0) return had;
+    if (rsuit < 3 && suits[rsuit] === 0) return received;
+
+    // if not, going out on a major pair is always nicer
+    let hnum = had.getTileFace();
+    let rnum = received.getTileFace();
+    if (hnum > 26) {
+      if (rnum > 26) {
+        // keep any dragon, player wind, or wind of the round.
+        if (hnum > 30) return received;
+        if (hnum === 27 + this.wind) return received;
+        if (hnum === 27 + this.windOfTheRound) return received;
+        // if the tile was had was none of those, is the received tile?
+        if (rnum > 30) return had;
+        if (rnum === 27 + this.wind) return had;
+        if (rnum === 27 + this.windOfTheRound) return had;
+        // okay, so at this point it doesn't matter: just stick with what we had.
+        return received;
+      }
+      return received;
+    }
+    if (rnum > 26) return had;
+    // If we get here, it also doesn't matter: stick with what we had.
+    return received;
   }
 
   /**
@@ -277,26 +374,48 @@ class BotPlayer extends Player {
     // console.debug(`${this.id} determining claim for ${tile} based on ${tiles}`);
 
     let {lookout, waiting, composed} = tilesNeeded(tiles, this.locked, canChow);
-    this.markWaiting(waiting);
-    // console.debug(`${this.id} lookout: ${Object.keys(lookout)}`);
 
-    // is the current discard in the list of tiles we want?
+    // Are we waiting to win?
+    let winTiles = {};
+    if (waiting) {
+      console.debug("we're waiting to win!", lookout);
+      lookout.forEach((list,tileNumber) => {
+        if (list) {
+          list = list.filter(v => v.indexOf('32')===0);
+          if (list.length) winTiles[tileNumber] = list;
+        }
+      });
+      console.debug("marking win tiles", winTiles);
+      this.markWaiting(winTiles);
+    }
+
+    // Is the current discard in the list of tiles we want?
     let claim = CLAIM.IGNORE, wintype;
-    if (lookout[tile]) {
+
+
+    // First, if we're waiting to win, ignore any tile that won't let us win.
+    if (this.waiting) {
+      let ways = this.waiting[tile];
+      // not the tile(s) we need: ignore it, unless we can form a kong.
+      if (!ways || !ways.length) {
+        if (lookout[tile] && lookout[tile].indexOf('16') !== -1) return resolve({claimtype: CLAIM.KONG });
+        return resolve({claimtype: CLAIM.IGNORE});
+      }
+      // (one of) the tile(s) we need: claim a win.
+      let wintype = ways.map(v => parseInt(v.substring(3))).sort((a,b)=>(b-a))[0];
+      return resolve({claimtype: CLAIM.WIN, wintype });
+    }
+
+    // Then, if we're NOT waiting to win, consider regular claim policies.
+    else if (lookout[tile]) {
       lookout[tile].map(print => unhash(print,tile)).forEach(set => {
         let type = set.type;
         console.debug(`lookout for ${tile} = type: ${type}, canChow: ${canChow}`);
-        if (type === Constants.PAIR) return;
-        if (type === Constants.CHOW1 || type === Constants.CHOW2 || type === Constants.CHOW3) {
-          if (!canChow) return;
-        }
-        if (type === CLAIM.WIN) {
-          wintype = set.subtype ? set.subtype : 'normal';
-        }
-        if (type > claim) {
-          claim = type;
-        }
+        if (type === Constants.CHOW1 || type === Constants.CHOW2 || type === Constants.CHOW3) if (!canChow) return;
+        if (type === CLAIM.WIN) wintype = set.subtype ? set.subtype : 'normal';
+        if (type > claim) claim = type;
       });
+
       return resolve({claimtype: claim, wintype});
     }
 

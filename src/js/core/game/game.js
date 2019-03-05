@@ -24,6 +24,7 @@ class Game {
     playClip('start');
     document.body.classList.remove(`finished`);
     this.GAME_START = Date.now();
+    this.currentpid = 0;
     this.wind = 0;
     this.windOfTheRound = 0;
     this.hand = 0;
@@ -376,7 +377,7 @@ class Game {
     await this.continue("dealTileToPlayer");
 
     let players = this.players;
-    let revealed = player.append(tile, supplement);
+    let revealed = player.append(tile, false, supplement);
     players.forEach(p => p.receivedTile(player));
 
     console.debug(`${player.id} was given tile`, tile);
