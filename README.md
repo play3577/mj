@@ -20,6 +20,8 @@ I can hear the web devs amongst you thinking "but... then isn't it horribly inef
 
 Debugging options are set via URL query parameter, however, the way to toggle these is via the settings menu.
 
+![A screenshot of the settings menu](https://user-images.githubusercontent.com/177243/53782965-9b358980-3ec4-11e9-8dd1-f81ed3aeba59.png)
+
 ### I have (a) question(s)!
 
 I'd be happy to answer them! Feel free to [tweet at me](https://twitter.com/TheRealPomax) for shallow engagement, or file an issue over on [the issue tracker](https://github.com/Pomax/mj/issues) if you need deeper engagement.
