@@ -15,5 +15,13 @@ const create = (tileNumber, hidden) => {
     span.dataset.locked = 'locked';
   }
   span.getTileFace = () => (span.dataset.tile|0);
+  span.getTileSuit = () => {
+    let num = span.getTileFace();
+    if (num < 9) return 0;
+    if (num < 18) return 1;
+    if (num < 27) return 2;
+    if (num < 30) return 3;
+    return 4;
+  };
   return span;
 }

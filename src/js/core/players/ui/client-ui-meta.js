@@ -570,8 +570,8 @@ class ClientUIMeta {
     let la = a.dataset.locknum;
     let lb = b.dataset.locknum;
 
-    a = a.getTileFace();
-    b = b.getTileFace();
+    a = a.dataset.tile|0;
+    b = b.dataset.tile|0;
 
     // 1: bonus tiles always go on the far left
     if (a>33 || b>33) {
