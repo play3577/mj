@@ -64,7 +64,7 @@ function tilesNeeded(tiles, locked=[], canChow=false) {
   let {results, paths} = p.expand(pair, locked);
 
   // Is this a winning hand?
-  let winpaths = (results.win || []).map(path => ['2p-' + path.pair[0], ...path.set]);
+  let winpaths = (results.win || []).map(path => ['2p-' + path.pair[0] + (path.pair[0]===pair[0]?'-!':''), ...path.set]);
   let winner = (winpaths.length > 0);
 
   // Is this a waiting hand?
