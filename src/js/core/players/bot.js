@@ -255,13 +255,21 @@ class BotPlayer extends Player {
 
 
     // We will find the lowest scoring tile, and discard that one
-    let tile = 0;
-    let l = Number.MAX_VALUE;
-    immediateValue
-      .map((v,tile) => this.balanceDiscardMetrics(v, tileStats[tile]))
-      .forEach((value,pos) => { if (value < l) { l = value; tile = pos; }});
+    let sorted = immediateValue
+      .map((v,tile) => {
+        return {
+          tile,
+          score: this.balanceDiscardMetrics(v, tileStats[tile])
+        };
+      }).sort((a,b) => (a.score - b.score));
 
-    resolve(this.getSingleTileFromHand(tile));
+    // "randomly" pick one of the lowest scoring tiles to discard
+    let lowest = sorted[0];
+    let candidates = sorted.filter(v => v.score===lowest.score);
+    let idx = (config.PRNG.nextFloat() * candidates.length)|0;
+    let candidate = candidates[idx].tile;
+
+    resolve(this.getSingleTileFromHand(candidate));
   }
 
   /**
