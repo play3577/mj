@@ -9,18 +9,20 @@ The main play loop
 ```
 Game:
     - startHand
-    ^   +- dealTiles -> dealTileToPlayer
-    |   |
+    ^   |
+    |   +- dealTiles
     |   +- preparePlay -> resolveKongs
-    |   |
+    |   |                  ^      |
+    |   |                  |      +--processKong
+    |   |                   `-----'
     |   `- play <-----------------------------------------------------+---,
     |      ^  |                                                       |   |
     |      |  +- dealTile                                             |   |
     |      |  +- getDiscard -------------(no discard)--> processWin --'   |
-    |      |  |    ^  |                                                   |
-    |      |  |    |  +-resolve kong declaration                          |
-    |      |  |    |  |                                                   |
-    |      |  |    `--'                                                   |
+    |      |  |   ^     |                                                 |
+    |      |  |   |     +-processKong                                     |
+    |      |  |   |     |                                                 |
+    |      |  |   `-----'                                                 |
     |      |  +- processDiscard                                           |
     |      |  +- getAllClaims -------------(claim)-----> processClaim ----'
     |    no|  |
