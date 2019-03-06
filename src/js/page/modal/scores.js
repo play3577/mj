@@ -8,10 +8,59 @@ class ScoreModal {
   /**
    * Show the entire game's score progression
    */
-  showFullGame(scoreHistory) {
-    let panel = this.modal.makePanel(`scores`);
-    panel.innerHTML = `<h3>Scores for hand ${hand}</h3>`;
+  showFinalScores(gameui, rules, scoreHistory, resolve) {
+    console.log(scoreHistory);
 
+    let panel = this.modal.makePanel(`final-scores`);
+    panel.innerHTML = `<h3>Game finished</h3>`;
+
+    let base = new Array(4).fill(rules.player_start_score);
+
+    let table = document.createElement('table');
+    let tbody = document.createElement('tbody');
+    table.appendChild(tbody);
+    tbody.innerHTML = `
+      <tr>
+        <th>hand</th>
+        <th>player 0</th>
+        <th>player 1</th>
+        <th>player 2</th>
+        <th>player 3</th>
+        <th>&nbsp;</th>
+      </tr>
+      <tr>
+        <td>&nbsp;</td>
+        ${base.map(v => `<td>${v}</td>`).join('\n')}
+        <td>&nbsp;</td>
+      </tr>
+    `;
+
+    scoreHistory.forEach((record,hand) => {
+      hand = hand + 1;
+      let row = document.createElement('tr');
+      let content = [0,1,2,3].map(id => {
+        let winner = record.disclosure[id].winner;
+        let value = record.adjustments[id];
+        let score = (base[id] = base[id] + value);
+        return `<td>${winner ? `<strong>${score}</strong>` : score}</td>`;
+      });
+      row.innerHTML = `
+        <td>${hand}</td>
+        ${content.join('\n')}
+        <td><button>details</button></td>
+      `;
+      row.querySelector('button').addEventListener('click', () => {
+        // load a specific hand ending into the UI
+        gameui.loadHandPostGame(record.disclosure);
+        // and show the score breakdown for that hand
+        this.show(hand, record.scores, record.adjustments);
+      });
+      tbody.appendChild(row);
+    });
+    panel.appendChild(table);
+
+    this.modal.addFooter(panel, "Back to the menu", resolve);
+    panel.scrollTop = 0;
   }
 
   /**
@@ -86,7 +135,8 @@ class ScoreModal {
       });
     panel.appendChild(table);
 
-    this.modal.addFooter(panel, "Play next hand", resolve);
+    if (resolve) this.modal.addFooter(panel, "Play next hand", resolve, true);
+    else this.modal.addFooter(panel, "OK");
   }
 
   /**

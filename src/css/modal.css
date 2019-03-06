@@ -18,6 +18,8 @@
   background: white;
   padding: 0em 1em 1em;
   display: inline-block;
+  max-height: calc(100% - 2.5em);
+  overflow: auto;
 }
 
 .modal .panel h1 {
@@ -100,9 +102,33 @@
   color: #999;
 }
 
+.modal .panel.final-scores table {
+  border-collapse: collapse;
+  min-width: 28em;
+  margin: 1em;
+}
+
+.modal .panel.final-scores table + button {
+  margin: 1em 0;
+}
+
+.modal .panel.final-scores table tr:nth-child(2n) {
+  background: #f0f0f0;
+}
+
+.modal .panel.final-scores table tr th,
 .modal .panel.scores table tr th {
   border-bottom: 1px solid black;
 }
+
+.modal .panel.final-scores table tr td {
+  text-align: center;
+}
+
+.modal .panel.final-scores table tr th:last-child {
+  border-bottom: none;
+}
+
 
 .modal .panel.scores table tr:nth-last-child(2) td {
   border-top: 1px solid black;
@@ -125,6 +151,7 @@
   font-variant: small-caps;
 }
 
+.modal .panel.final-scores table tr td button,
 .modal .panel.scores table tr.details td button {
   border: none;
   background: inherit;

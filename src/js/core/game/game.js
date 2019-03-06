@@ -29,6 +29,7 @@ class Game {
     this.windOfTheRound = 0;
     this.hand = 0;
     this.draws = 0;
+    this.players.forEach(p => p.gameWillStart());
     this.startHand();
     this.finish = whenDone;
   }
@@ -102,7 +103,8 @@ class Game {
             players.forEach(p => p.endOfGame(finalScores));
             document.body.classList.add('finished');
             playClip('end');
-            return modal.choiceInput("Game finished", [{label: "OK"}], () => {
+            let gameui = this.players.find(p => p.ui).ui;
+            return modal.showFinalScores(gameui, this.rules, this.scoreHistory, () => {
               document.body.classList.remove('finished');
               rotateWinds.reset();
               this.finish();
@@ -141,7 +143,7 @@ class Game {
 
     let pre = result.draw ? 'Res' : 'S';
     console.log(
-      `\n%c${pre}tarting hand ${this.hand} (current seed: ${config.PRNG.seed()}, wind: ${this.wind}).`,  // Starting hand / Restarting hand
+      `\n%c${pre}tarting hand ${this.hand} (current seed: ${config.PRNG.seed()}, wind: ${this.wind}, wotd: ${this.windOfTheRound}).`,  // Starting hand / Restarting hand
       `color: red; font-weight: bold; font-size: 120%; border-bottom: 1px solid black;`
     );
 
@@ -230,20 +232,31 @@ class Game {
     do {
       kong = await player.checkKong();
       if (kong) {
-        console.debug(`${player.id} plays kong ${kong[0].dataset.tile} during initial tile dealing`);
-        players.forEach(p => p.seeKong(kong, player));
-        // deal supplement tile(s) for as long as necessary
-        let revealed = false;
-        do {
-          let tile = this.wall.get();
-          players.forEach(p => p.receivedTile(player));
-          revealed = player.append(tile);
-          if (revealed) players.forEach(p => p.see(revealed, player));
-        } while (revealed);
+        this.processKong(player, kong);
       }
     } while (kong);
 
     done();
+  }
+
+  /**
+   * When a player declares a kong, show this to all other
+   * players and issue them a compensation tile. Which
+   * may, of course, be a bonus tile, so keep going until
+   * the player no longer reveals their just-dealt tile.
+   */
+  processKong(player, kong, melded=false) {
+    console.debug(`${player.id} plays kong ${kong[0].dataset.tile} (melded: ${melded})`);
+    players.forEach(p => p.seeKong(kong, player));
+
+    // deal supplement tile(s) for as long as necessary
+    let revealed = false;
+    do {
+      let tile = this.wall.get();
+      players.forEach(p => p.receivedTile(player));
+      revealed = player.append(tile);
+      if (revealed) players.forEach(p => p.see(revealed, player));
+    } while (revealed);
   }
 
   /**
@@ -304,17 +317,7 @@ class Game {
         let kong = discard.kong;
         let melded = (kong.length === 1);
 
-        console.debug(`${player.id} ${melded ? `melds`:`plays`} kong ${kong}`);
-        players.forEach(p => p.seeKong(kong, player, melded));
-
-        // deal supplement tile(s) for as long as necessary
-        let revealed = false;
-        do {
-          let tile = wall.get();
-          players.forEach(p => p.receivedTile(player));
-          revealed = player.append(tile);
-          if (revealed) players.forEach(p => p.see(revealed, player));
-        } while (revealed);
+        this.processKong(player, kong, melded);
 
         // Then set the discard to `false` so that we enter the
         // "waiting for discard from player" state again.
@@ -357,44 +360,21 @@ class Game {
    */
   async dealTile(player, first=true) {
     let tile, wall = this.wall;
+    let revealed = false;
     do {
-      tile = wall.get();
-      first = false;
-      await this.dealTileToPlayer(player, tile, !first);
-    } while (tile>33);
+      let tile = wall.get();
+      this.players.forEach(p => p.receivedTile(player));
+      revealed = player.append(tile);
+      if (revealed) { this.players.forEach(p => p.see(revealed, player)); }
+      else {
+        let kong = await player.checkKong(tile);
+        if (kong) {
+          console.debug(`${player.id} plays self-drawn kong ${kong[0].dataset.tile} during play`);
+          this.processKong(player, kong);
+        }
+      }
+    } while (revealed);
     return wall.dead;
-  }
-
-  /**
-   * Called as part of `dealTile`, this function hands
-   * a to-be-dealt tile to whoever it should be dealt with,
-   * but knows how to deal with having to give that player
-   * supplementary tiles in case the original tile was a
-   * bonus tile, or lead to that player declaring a
-   * self-drawn kong.
-   */
-  async dealTileToPlayer(player, tile, supplement) {
-    await this.continue("dealTileToPlayer");
-
-    let players = this.players;
-    let revealed = player.append(tile, false, supplement);
-    players.forEach(p => p.receivedTile(player));
-
-    console.debug(`${player.id} was given tile`, tile);
-    console.debug(`${player.id} tiles:`, player.tiles.slice());
-
-    // bonus tile are shown to all other players.
-    if (revealed) players.forEach(p => p.see(revealed, player));
-
-    // if a played got a kong, and declared it, notify all
-    // other players and issue a supplement tile.
-    let kong = await player.checkKong(tile);
-    if (kong) {
-      console.debug(`${player.id} plays self-drawn kong ${kong[0].dataset.tile} during play`);
-      players.forEach(p => p.seeKong(kong, player));
-      console.debug(`Dealing ${player.id} a supplement tile.`);
-      await this.dealTile(player, false);
-    }
   }
 
   /**

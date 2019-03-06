@@ -92,7 +92,10 @@ class ClientUIMeta {
   pause(lock) {
     this.paused = lock;
     if (this.countdownTimer) this.countdownTimer.pause();
-    this.discards.classList.add("paused");
+    // don't mark as paused if the modal dialogs are open
+    if (modal.isHidden()) {
+      this.discards.classList.add("paused");
+    }
   }
 
   /**
@@ -130,6 +133,18 @@ class ClientUIMeta {
     );
 
     this.bar.classList.add('active');
+  }
+
+  /**
+   * Triggered at the start of the game, before any hand is
+   * started, so that players can be reset properly if more
+   * than one game is played consecutively.
+   */
+  gameWillStart() {
+    this.playerbanks.forEach(b => {
+      if (this.rules) b.dataset.score = this.rules.player_start_score;
+      b.dataset.wins = 0;
+    });
   }
 
   /**
@@ -241,16 +256,17 @@ class ClientUIMeta {
    * Triggered when either the hand was a draw, or someone won,
    * with the full game disclosure available in case of a win.
    */
-  endOfHand(disclosure) {
+  endOfHand(disclosure, force_reveal_player=false) {
     if (!disclosure) {
       this.discards.classList.add('exhausted');
       return;
     }
 
     disclosure.forEach( (res,id) => {
-      if (id == this.id) return;
+      if (id == this.id && !force_reveal_player) return;
       let bank = this.playerbanks[id];
       bank.innerHTML = '';
+      bank.setAttribute('class', 'player');
 
       res.bonus.forEach(t => {
         t = create(t);
@@ -323,6 +339,14 @@ class ClientUIMeta {
       if (!d.score) d.score = 0;
       d.score = parseInt(d.score) + score;
     });
+  }
+
+  /**
+   * At the end of the game, people can go through the scores
+   * and see which tiles weres associated with that.
+   */
+  loadHandPostGame(disclosure) {
+    this.endOfHand(disclosure, true);
   }
 
   /**

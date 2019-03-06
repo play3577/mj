@@ -45,6 +45,10 @@ class PlayerMeta {
     if (this.ui) this.ui.setRules(rules);
   }
 
+  gameWillStart() {
+    if (this.ui) this.ui.gameWillStart();
+  }
+
   handWillStart(redraw, resolve) {
     if (this.ui) this.ui.handWillStart(redraw, resolve);
     else resolve();

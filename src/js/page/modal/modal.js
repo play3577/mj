@@ -17,6 +17,9 @@ class Modal {
   // show the modal stack
   reveal() { this.modal.classList.remove("hidden"); }
 
+  // is the modal stack visible?
+  isHidden() { return this.modal.classList.contains('hidden'); }
+
   // hide the modal stack
   hide() { this.modal.classList.add("hidden"); }
 
@@ -61,7 +64,7 @@ class Modal {
    * Add a generic footer with an "OK" button,
    * and automated focus handling.
    */
-  addFooter(panel, modalLabel="OK", resolve=(()=>{})) {
+  addFooter(panel, modalLabel="OK", resolve=(()=>{}), botDismissible) {
     let ok = document.createElement('button');
     ok.textContent = modalLabel;
     ok.addEventListener('click', () => {
@@ -72,9 +75,11 @@ class Modal {
 
     // Auto-dismiss the score panel during bot play,
     // UNLESS the user interacts with the modal.
-    let dismiss = () => ok.click();
-    if(config.BOT_PLAY) setTimeout(() => dismiss(), config.HAND_INTERVAL);
-    panel.addEventListener('click', () => dismiss = () => {});
+    if(config.BOT_PLAY && botDismissible) {
+      let dismiss = () => ok.click();
+      setTimeout(() => dismiss(), config.HAND_INTERVAL);
+      panel.addEventListener('click', () => dismiss = () => {});
+    }
 
     panel.gainFocus = () => ok.focus();
     document.addEventListener('focus', panel.gainFocus);
@@ -105,6 +110,14 @@ class Modal {
     this.reveal()
     this.scores.show(hand, scores, adjustments, resolve);
   };
+
+  /**
+   * Show the end-of-game score breakdown.
+   */
+  showFinalScores(gameui, rules, scoreHistory, resolve) {
+    this.reveal();
+    this.scores.showFinalScores(gameui, rules, scoreHistory, resolve);
+  }
 
   /**
    * Show all available settings for the game.
