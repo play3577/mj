@@ -21,7 +21,6 @@ class Game {
    * Start a game of mahjong!
    */
   startGame(whenDone) {
-    playClip('start');
     document.body.classList.remove(`finished`);
     this.GAME_START = Date.now();
     this.currentpid = 0;
@@ -102,7 +101,6 @@ class Game {
             let finalScores = players.map(p => p.getScore());
             players.forEach(p => p.endOfGame(finalScores));
             document.body.classList.add('finished');
-            playClip('end');
             let gameui = this.players.find(p => p.ui).ui;
             return modal.showFinalScores(gameui, this.rules, this.scoreHistory, () => {
               document.body.classList.remove('finished');
@@ -291,7 +289,6 @@ class Game {
     if (!claim) await this.dealTile(player);
     else {
       let tiles = player.receiveDiscardForClaim(claim, discard);
-      playClip(tiles.length===4 ? 'kong' : 'multi');
 
       // Awarded claims are shown to all other players.
       players.forEach(p => p.seeClaim(tiles, player, discard, claim));
@@ -339,7 +336,6 @@ class Game {
       players.forEach(p => p.endOfHand());
       let nextHand = () => this.startHand({ draw: true });
       if (!config.BOT_PLAY) {
-        playClip('draw');
         return modal.choiceInput("Hand was a draw", [{label:"OK"}], nextHand, nextHand);
       } else return setTimeout(nextHand, this.playDelay);
     }
@@ -358,8 +354,8 @@ class Game {
    * phase, this function simply gets a tile from the
    * wall, and then deals it to the indicated player.
    */
-  async dealTile(player, first=true) {
-    let tile, wall = this.wall;
+  async dealTile(player) {
+    let wall = this.wall;
     let revealed = false;
     do {
       let tile = wall.get();
@@ -425,7 +421,6 @@ class Game {
       // The code will start a new hand when the modal gets dismissed.
       this.startHand({ winner: player });
     });
-    playClip('win');
   }
 
   /**
@@ -437,13 +432,12 @@ class Game {
    * holding a winning tile, this function is not called.
    */
   processDiscard(player) {
-    playClip(this.counter===1 ? 'thud' : 'click');
     let discard = this.discard;
     console.debug(`${player.id} discarded ${discard.dataset.tile}`);
     player.remove(discard);
     discard.dataset.from = player.id;
     delete discard.dataset.hidden;
-    this.players.forEach(p => p.playerDiscarded(player, discard));
+    this.players.forEach(p => p.playerDiscarded(player, discard, this.counter));
   }
 
   /**

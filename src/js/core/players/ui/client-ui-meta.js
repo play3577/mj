@@ -141,6 +141,7 @@ class ClientUIMeta {
    * than one game is played consecutively.
    */
   gameWillStart() {
+    playClip('start');
     this.playerbanks.forEach(b => {
       if (this.rules) b.dataset.score = this.rules.player_start_score;
       b.dataset.wins = 0;
@@ -258,9 +259,12 @@ class ClientUIMeta {
    */
   endOfHand(disclosure, force_reveal_player=false) {
     if (!disclosure) {
+      playClip('draw');
       this.discards.classList.add('exhausted');
       return;
     }
+
+    playClip('win');
 
     disclosure.forEach( (res,id) => {
       if (id == this.id && !force_reveal_player) return;
@@ -306,6 +310,8 @@ class ClientUIMeta {
    * to the user.
    */
   endOfGame(scores) {
+    playClip('end');
+
     let v=0, b=-1;
     scores.forEach( (score,id) => { if (score>v) { v = score; b = id; }});
     this.playerbanks.forEach( (e,id) => {
@@ -423,6 +429,8 @@ class ClientUIMeta {
    * from tiles in their hand, and the current discard
    */
   lockClaim(tiles) {
+    playClip(tiles.length===4 ? 'kong' : 'multi');
+
     this.removeLastDiscard();
     let locknum = 1 + this.getLockedTiles().length;
     tiles.forEach(tile => {
@@ -448,7 +456,9 @@ class ClientUIMeta {
   /**
    * Triggered when a player discards a tile from their hand.
    */
-  playerDiscarded(player, tile) {
+  playerDiscarded(player, tile, playcounter) {
+    playClip(playcounter===1 ? 'thud' : 'click');
+
     let bank = this.playerbanks[player.id];
 
     console.debug(`${this.id} sees discard ${tile} from ${player.id}`);
@@ -506,6 +516,8 @@ class ClientUIMeta {
    * This function falls through to `see()`
    */
   seeClaim(tiles, player, claim) {
+    playClip(tiles.length===4 ? 'kong' : 'multi');
+
     // this differs from see() in that we know we need to remove one
     // "blank" tile fewer than are being revealed. So we add one, and
     // then call see() to offset the otherwise superfluous removal.

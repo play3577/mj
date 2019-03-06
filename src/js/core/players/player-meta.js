@@ -190,10 +190,10 @@ class PlayerMeta {
     if (this.ui) this.ui.receivedTile(player);
   }
 
-  playerDiscarded(player, discard) {
+  playerDiscarded(player, discard, playcounter) {
     let tile = discard.dataset.tile;
     if (this.id != player.id) this.tracker.seen(tile);
-    if (this.ui) this.ui.playerDiscarded(player, tile);
+    if (this.ui) this.ui.playerDiscarded(player, tile, playcounter);
   }
 
   seeKong(tiles, player) {
