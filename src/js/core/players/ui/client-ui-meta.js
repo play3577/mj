@@ -264,7 +264,7 @@ class ClientUIMeta {
       return;
     }
 
-    playClip('win');
+    if (!force_reveal_player) playClip('win');
 
     disclosure.forEach( (res,id) => {
       if (id == this.id && !force_reveal_player) return;
