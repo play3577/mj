@@ -9,8 +9,6 @@ class ScoreModal {
    * Show the entire game's score progression
    */
   showFinalScores(gameui, rules, scoreHistory, resolve) {
-    console.log(scoreHistory);
-
     let panel = this.modal.makePanel(`final-scores`);
     panel.innerHTML = `<h3>Game finished</h3>`;
 
@@ -39,10 +37,17 @@ class ScoreModal {
       hand = hand + 1;
       let row = document.createElement('tr');
       let content = [0,1,2,3].map(id => {
+        // console.log(record.disclosure[id]);
         let winner = record.disclosure[id].winner;
         let value = record.adjustments[id];
         let score = (base[id] = base[id] + value);
-        return `<td>${winner ? `<strong>${score}</strong>` : score}</td>`;
+        let wind = record.disclosure[id].wind;
+        let title = [winner?'winner':false, wind===0?'east':false].filter(v=>v).join(', ');
+        return `
+          <td title="${title}">
+            <span${wind===0 ? ` class="east"`:``} >${winner ? `<strong>${score}</strong>` : score}</span>
+          </td>
+        `;
       });
       row.innerHTML = `
         <td>${hand}</td>

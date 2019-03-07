@@ -122,7 +122,13 @@
 }
 
 .modal .panel.final-scores table tr td {
-  text-align: center;
+  text-align: right;
+}
+
+.modal .panel.final-scores table tr td span.east {
+  display: inline-block;
+  width: 100%;
+  background: lemonchiffon;
 }
 
 .modal .panel.final-scores table tr th:last-child {

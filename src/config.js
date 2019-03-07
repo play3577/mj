@@ -1,21 +1,75 @@
 if (typeof process !== "undefined") Random = require('./js/core/utils/prng.js');
 
-// defaults
+// This flag needs no explanation
 let DEBUG = false;
+
+// This flag also needs no explanation
 let NO_SOUND = false;
+
+// The pseudo-random number generator seed.
+// This value lets us "replay" problematic
+// games to find out where things go wrong.
 let SEED = 0;
+
+// This determines whether you get asked to
+// choose normal vs. automated play when you
+// load the page.
 let PLAY_IMMEDIATELY = false;
+
+// Do not pause games when the page loses focus
 let PAUSE_ON_BLUR = true;
+
+// Debugging around drawn hands requires
+// being able to force a draw
 let FORCE_DRAW = false;
+
+// This determines whether we bypass the
+// separation of concern and force bots to
+// update the player's ui, even though they
+// normally would have no way to access it.
 let FORCE_OPEN_BOT_PLAY = false;
+
+// Highlight discarded tiles if the bot
+// superclass to the human player recommends
+// claiming it for something.
 let SHOW_BOT_CLAIM_SUGGESTION = false;
+
+// How likely are bots to go for chicken
+// hands, rather than for hands worth points?
 let BOT_CHICKEN_THRESHOLD = 0.8;
+
+// The number of milliseconds the game
+// allows players to lay claim to a discard.
+// Bots need nowhere near this much, but
+// humans tend to need more than a few ms!
+let CLAIM_INTERVAL = 5000;
+
+// The number of milliseconds between
+// players taking their turn.
 let PLAY_INTERVAL = 100;
+
+// The number of milliseconds pause
+// between playing "hands".
 let HAND_INTERVAL = 3000;
+
+// The number of milliseconds that
+// the bots will wait before putting
+// in their claim for a discard.
+// If this is 0, humans feel like they
+// are playing bots. Which they are.
+// But if this is a few hundred ms,
+// game play "Feel" more natural.
 let BOT_DELAY_BEFORE_DISCARD_ENDS = 300;
+
+// Turning on wall hacks will set the wall
+// to very specific walls for debugging
+// purposes. This option simple fixes the
+// wall to a pattern on reset() so you can't
+// play a game if you use this. You just
+// get to debug a very specific situation.
 let WALL_HACK = '';
 
-// overrides?
+// runtime overrides?
 if (typeof window !== "undefined") {
     let params = new URLSearchParams(window.location.search);
 
@@ -30,6 +84,7 @@ if (typeof window !== "undefined") {
     FORCE_OPEN_BOT_PLAY = (params.get(`force_open_bot_play`)==='true') ? true : FORCE_OPEN_BOT_PLAY;
     SHOW_BOT_CLAIM_SUGGESTION = (params.get(`show_bot_claim_suggestion`)==='true') ? true : SHOW_BOT_CLAIM_SUGGESTION;
     BOT_CHICKEN_THRESHOLD = params.get(`bot_chicken_threshold`) ? parseFloat(params.get(`bot_chicken_threshold`)) : BOT_CHICKEN_THRESHOLD;
+    CLAIM_INTERVAL = params.get(`claim`) ? parseInt(params.get(`claim`)) : CLAIM_INTERVAL;
     PLAY_INTERVAL = params.get(`play`) ? parseInt(params.get(`play`)) : PLAY_INTERVAL;
     HAND_INTERVAL = params.get(`hand`) ? parseInt(params.get(`hand`)) : HAND_INTERVAL;
     BOT_DELAY_BEFORE_DISCARD_ENDS = params.get(`bot_delay`) ? parseInt(params.get(`bot_delay`)) : BOT_DELAY_BEFORE_DISCARD_ENDS;
@@ -45,25 +100,6 @@ if (WALL_HACK || PLAY_IMMEDIATELY) {
 // The simple config is for settings I
 // personally change a lot during development.
 const simple = {
-    // The pseudo-random number generator seed.
-    // This value lets us "replay" problematic
-    // games to find out where things go wrong.
-    SEED: SEED,
-
-    // The number of milliseconds between
-    // players taking their turn.
-    PLAY_INTERVAL: PLAY_INTERVAL,
-
-    // The number of milliseconds the game
-    // allows players to lay claim to a discard.
-    // Bots need nowhere near this much, but
-    // humans tend to need more than a few ms!
-    CLAIM_INTERVAL: 5000,
-
-    // The number of milliseconds pause
-    // between playing "hands".
-    HAND_INTERVAL: HAND_INTERVAL,
-
     // For debugging purposes, we can tell
     // the game to effectively pause play
     // at the end of the following "hand".
@@ -75,11 +111,6 @@ const simple = {
     // tile getting dealt during a hand.
     // A value of 0 means "don't pause".
     PAUSE_ON_PLAY: 0,
-
-    // This determines whether you get asked to
-    // choose normal vs. automated play when you
-    // load the page.
-    PLAY_IMMEDIATELY: PLAY_IMMEDIATELY
 };
 
 // Constants used during play, for determining
@@ -169,30 +200,30 @@ const SUIT_NAMES = {
 
 // And then rest of the configuration.
 const config = {
-    DEBUG,
-    NO_SOUND,
-    SEED: simple.SEED,
-
     // The pseudo-random number generator used by
     // any code that needs to randomise data.
     PRNG: new Random(simple.SEED),
-
-    // page choice on load
-    PLAY_IMMEDIATELY: simple.PLAY_IMMEDIATELY,
-
-    // Do not pause play when the game loses focus
+    DEBUG,
+    NO_SOUND,
+    SEED,
+    PLAY_IMMEDIATELY,
     PAUSE_ON_BLUR,
+    FORCE_DRAW,
+    FORCE_OPEN_BOT_PLAY,
+    SHOW_BOT_CLAIM_SUGGESTION,
+    BOT_CHICKEN_THRESHOLD,
+    WALL_HACK,
+
+    CLAIM_INTERVAL,
+    PLAY_INTERVAL,
+    HAND_INTERVAL,
+    PAUSE_ON_HAND: simple.PAUSE_ON_HAND,
+    PAUSE_ON_PLAY: simple.PAUSE_ON_PLAY,
 
     // This setting determines which type of play
     // is initiated if PLAY_IMMEDIATELY is true
     BOT_PLAY: true,
-    BOT_DELAY_BEFORE_DISCARD_ENDS: BOT_DELAY_BEFORE_DISCARD_ENDS,
-
-    CLAIM_INTERVAL: simple.CLAIM_INTERVAL,
-    PLAY_INTERVAL: simple.PLAY_INTERVAL,
-    HAND_INTERVAL: simple.HAND_INTERVAL,
-    PAUSE_ON_HAND: simple.PAUSE_ON_HAND,
-    PAUSE_ON_PLAY: simple.PAUSE_ON_PLAY,
+    BOT_DELAY_BEFORE_DISCARD_ENDS,
 
     // This value determines how long bots will
     // "wait" before discarding a tile. This is
@@ -206,8 +237,8 @@ const config = {
     // the losers paying the winner, or the losers
     // also paying each other.
     //
-    // This setting will eventually migrate int
-    // a ruleset config instead.
+    // Note that this is purely a fallback value,
+    // and rulesets should specify this instead.
     LOSERS_SETTLE_SCORES: true,
 
     // See above
@@ -236,34 +267,7 @@ const config = {
         if(diff === 1) return CLAIM.CHOW2;
         if(diff === 2) return CLAIM.CHOW1;
         return diff;
-    },
-
-    // This determines whether we bypass the
-    // separation of concern and force bots to
-    // update the player's ui, even though they
-    // normally would have no way to access it.
-    FORCE_OPEN_BOT_PLAY,
-
-    // Highlight discarded tiles if the bot
-    // superclass to the human player recommends
-    // claiming it for something.
-    SHOW_BOT_CLAIM_SUGGESTION,
-
-    // How likely are bots to go for chicken
-    // hands, rather than for hands worth points?
-    BOT_CHICKEN_THRESHOLD,
-
-    // Debugging around drawn hands requires
-    // being able to force a draw
-    FORCE_DRAW,
-
-    // Turning on wall hacks will set the wall
-    // to very specific walls for debugging
-    // purposes. This option simple fixes the
-    // wall to a pattern on reset() so you can't
-    // play a game if you use this. You just
-    // get to debug a very specific situation.
-    WALL_HACK: WALL_HACK
+    }
 };
 
 // in node context?
