@@ -1,55 +1,77 @@
 /**
- * ...docs go here...
+ * This is a class that regulates, given a tile that a bot might
+ * have the opportunity to claim, whether or not to claim it.
  */
 class Personality {
-  constructor() {
-    this.type = false;
+  constructor(player) {
+    this.player = player;
   }
 
   /**
-  * A quick way to switch a personality
-  * to a "score lots of points" discard
-  * policy rather than the default.
-  */
-  goBig() {
-    this.type = 'big';
+   * Analyze the start tiles in a hand, to see what a
+   * reasonable policy is going to be for these tiles.
+   */
+  determinePersonality(tiles) {
+    this.willChow = (config.PRNG.nextFloat() > config.BOT_CHICKEN_THRESHOLD);
+    /* other flags: one suit? clean and honors? etc. */
   }
 
   /**
-  * This is a routing function to go from stats
-  * object to a score based on that object.
-  */
-  getStatScore(stats) {
-    if (this.type === false) return 0;
-    if (this.type === 'big') return this.getBigScore(stats);
+   * This is a simple stats gathering function that we can use
+   * to understand the effect of removing a tile from a hand,
+   * by looking the stats prior to, and after removal.
+   */
+  getLookoutStats(tile) {
+    let tiles = this.player.getTileFaces();
+    let pos = tiles.indexOf(tile);
+    tiles.splice(pos, 1);
+    let testPattern = new Pattern(tiles, true);
+
+    let { results } = testPattern.expand();
+    delete results.win;
+
+    let stats = {
+      discard: tile,
+      chowCount: 0,
+      pungCount: 0,
+      suit: [0, 0, 0],
+      winds: 0,
+      dragons: 0,
+    };
+
+    let suit;
+
+    tiles.forEach(tile => {
+      if (tile <= 26) { suit = (tile/9)|0; stats.suit[suit]++; }
+      if (tile > 26 && tile < 31) stats.winds++;
+      if (tile > 31 && tile < 34) stats.dragons++;
+    });
+
+    results.forEach((v,tile) => {
+      if (v >= CLAIM.CHOW && v < CLAIM.PUNG) stats.chowCount++;
+      if (v >= CLAIM.PUNG && v < CLAIM.WIN) stats.pungCount++; // we're counting kongs as pungs
+    });
+
+    return stats;
   }
 
   /**
-  * This personality, hopefully, prioritises
-  * nice, high scoring hands, by penalising
-  * chows and unclean hands, and boosting one
-  * suit, honours, and pungs.
-  */
-  getBigScore(stats) {
-    let score = 0;
-
-    // as few chows as possible thanks
-    score += -10 * stats.chowCount;
-
-    // and clean, please.
-    let s = stats.suit, s1 = s[0]>0, s2 = s[1]>0, s3 = s[2]>0;
-    if (s1 || s2 || s3) {
-    if (s1 && s2 && s[2]) score -= 30; // eww
-    else if ((s1 && s2) || (s2 && s3)) score -= 10; // still meh
-    else score += 30; // clean. now we're talking
-    } else {
-    // goodness, all honours! *_*
-    score += 20;
+   * Do we want to claim a (particular) chow?
+   */
+  determineWhetherToClaim(tile, concealed, open, reason) {
+    if (CLAIM.CHOW <= reason && reason < CLAIM.PUNG) {
+      if (!this.willChow) return false;
     }
 
-    // and pung hand.
-    score += 25 * stats.pungCount;
+    // Do we want this kind of tile?
+    // - do we want numbers?
+    //   - if we do, do we want this suit?
+    // - do we want honours?
+    //   - if we do, do we want this particular one?
+    // If this is a win: is this how we want to win?
+    // - do we want to win on a pair
 
-    return score;
+    // if we get here, nothing's ruled out this claim.
+    return true;
   }
 }

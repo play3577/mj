@@ -160,6 +160,15 @@ class ClientUIMeta {
   }
 
   /**
+   * Called right before play(), after all players have been given a chance
+   * to declare any kongs, but right before the first player gets their
+   * first player tile, to set up the first discard.
+   */
+  playWillStart() {
+    // we don't actually have any UI that needs to kick in at this point.
+  }
+
+  /**
    * Note how many tiles are left to be played with in the current hand.
    */
   markTilesLeft(remaining) {

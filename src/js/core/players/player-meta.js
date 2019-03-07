@@ -54,6 +54,12 @@ class PlayerMeta {
     else resolve();
   }
 
+  // Called after all tiles have been dealt, and all players
+  // have declared any kongs they might have had in their hand.
+  playWillStart() {
+    if (this.ui) this.ui.playWillStart();
+  }
+
   markTilesLeft(left, dead) {
     this.tilesLeft = left;
     this.tilesDead = dead;

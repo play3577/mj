@@ -6,7 +6,7 @@
 class BotPlayer extends Player {
   constructor(id) {
     super(id);
-    this.personality = new Personality();
+    this.personality = new Personality(this);
 
     // Don't bind this function unless the config says we should.
     if (config.FORCE_OPEN_BOT_PLAY) {
@@ -46,20 +46,30 @@ class BotPlayer extends Player {
     }
   }
 
-  // We only assign this a function body
-  // in the constructor, and use an empty
-  // function so that calls don't error out.
+  // We only assign this a function body in the constructor,
+  // and use an empty function so that calls don't error out.
   showTilesAnyway() {}
 
+  // pass-through for "show tiles anyway" functionality
   append(tile, claimed, supplement) {
     let _ = super.append(tile, claimed, supplement);
     this.showTilesAnyway();
     return _;
   }
 
+  // pass-through for "show tiles anyway" functionality
   remove(tile) {
     super.remove(tile);
     this.showTilesAnyway();
+  }
+
+  /**
+   * When real play is about to start, examine our start
+   * tiles to determine the kind of plays we'll make.
+   */
+  playWillStart() {
+    super.playWillStart();
+    this.personality.determinePersonality(this.tiles);
   }
 
   /**
@@ -217,7 +227,6 @@ class BotPlayer extends Player {
     let tiles = this.getAvailableTiles();
     let tileCount = [];
     let immediateValue = [];
-    let tileStats = [];
 
     // First, let's see how many of each tile we have.
     let faces = Array.from(tiles).map(tile => {
@@ -245,23 +254,10 @@ class BotPlayer extends Player {
 
       // Record the (by definition) highest value for this tile.
       immediateValue[tile] = value;
-
-      // Now that we know the basic values of each tile: what are the
-      // potential ramifications of discarding each? Specifically,
-      // we're interested in whether we can change our pontential
-      // score.
-      tileStats[tile] = this.getLookoutStats(tile);
     });
 
-
     // We will find the lowest scoring tile, and discard that one
-    let sorted = immediateValue
-      .map((v,tile) => {
-        return {
-          tile,
-          score: this.balanceDiscardMetrics(v, tileStats[tile])
-        };
-      }).sort((a,b) => (a.score - b.score));
+    let sorted = immediateValue.map((score, tile) => ({ tile, score })).sort((a,b) => (a.score - b.score));
 
     // "randomly" pick one of the lowest scoring tiles to discard
     let lowest = sorted[0];
@@ -312,61 +308,6 @@ class BotPlayer extends Player {
   }
 
   /**
-   * This is a simple stats gathering function that we can use
-   * to understand the effect of removing a tile from a hand,
-   * by looking the stats prior to, and after removal.
-   */
-  getLookoutStats(tile) {
-    let tiles = this.getTileFaces();
-    let pos = tiles.indexOf(tile);
-    tiles.splice(pos, 1);
-    let testPattern = new Pattern(tiles, true);
-
-    let { results } = testPattern.expand();
-    delete results.win;
-    let lookout = results;
-
-    let stats = {
-      discard: tile,
-      chowCount: 0,
-      pungCount: 0,
-      suit: [0, 0, 0],
-      winds: 0,
-      dragons: 0,
-    };
-
-    let suit;
-
-    tiles.forEach(tile => {
-      if (tile <= 26) { suit = (tile/9)|0; stats.suit[suit]++; }
-      if (tile > 26 && tile < 31) stats.winds++;
-      if (tile > 31 && tile < 34) stats.dragons++;
-    });
-
-    lookout.forEach((v,tile) => {
-      if (v >= CLAIM.CHOW && v < CLAIM.PUNG) stats.chowCount++;
-      if (v >= CLAIM.PUNG && v < CLAIM.WIN) stats.pungCount++; // we're counting kongs as pungs
-    });
-
-    return stats;
-  }
-
-  /**
-   * This function performs the balacing of immediate value
-   * of a tile in a hand vs. the potential increase in value
-   * of the hand on the whole if we discard this tile.
-   */
-  balanceDiscardMetrics(baseScore, stats) {
-    // convert the stats object to a 0-100 score based
-    // on the bot's play profile, then balance that
-    // against the base score for just "trying to form
-    // a winning hand".
-    let personalityScore = this.personality.getStatScore(stats);
-    return (baseScore + personalityScore) / 2;
-  }
-
-
-  /**
    * Automated claim policy, see `tilesNeeded` in `./mgen.js`
    */
   async determineClaim(pid, discard, resolve, interrupt, claimTimer) {
@@ -387,12 +328,12 @@ class BotPlayer extends Player {
       let winTiles = {};
       lookout.forEach((list,tileNumber) => {
         if (list) {
-          let goForChow = this.determineWhetherToChow(tileNumber);
           list = list.filter(v => {
             // first filter: this needs to be a winning tile. Of course.
             if (v.indexOf('32')===-1) return false;
             // second filter: if it's for a chow... we might not want to win?
             let wintype = parseInt(v.replace('32s',''));
+            let goForChow = this.personality.determineWhetherToClaim(tileNumber, this.tiles, this.locked, wintype);
             if (CLAIM.CHOW <= wintype && wintype < CLAIM.PUNG) return goForChow;
             return true;
           });
@@ -421,7 +362,7 @@ class BotPlayer extends Player {
         console.debug(`lookout for ${tile} = type: ${type}, canChow: ${canChow}`);
         if (type === Constants.CHOW1 || type === Constants.CHOW2 || type === Constants.CHOW3) {
           if (!canChow) return;
-          if(!this.determineWhetherToChow(tile)) return;
+          if(!this.personality.determineWhetherToClaim(tile, this.tiles, this.locked, type)) return;
         }
         if (type === CLAIM.WIN) wintype = set.subtype ? set.subtype : 'normal';
         if (type > claim) claim = type;
@@ -432,16 +373,4 @@ class BotPlayer extends Player {
 
     return resolve({claimtype: CLAIM.IGNORE});
   }
-
-  /**
-   * Do we want to claim a (particular) chow?
-   */
-  determineWhetherToChow(tile) {
-    // for the moment we make this a really simple statistical property
-    // TODO: make this an "informed" decision based on score potential,
-    // tiles left in the wall, other players perceived tactics, etc. etc.
-
-    let test = config.PRNG.nextFloat();
-    return (test <= config.BOT_CHICKEN_THRESHOLD);
- }
 }

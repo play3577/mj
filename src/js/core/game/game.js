@@ -149,6 +149,7 @@ class Game {
     console.debug(`wall: ${this.wall.tiles}`);
     await this.dealTiles();
     await this.preparePlay(config.FORCE_DRAW || this.draws > 0);
+    players.forEach(player => player.playWillStart());
     this.PLAY_START = Date.now();
     this.play();
   }
