@@ -9,46 +9,35 @@ class BotPlayer extends Player {
     this.personality = new Personality(this);
 
     // Don't bind this function unless the config says we should.
-    if (config.FORCE_OPEN_BOT_PLAY) {
-      this.showTilesAnyway = () => {
-        if (!config.FORCE_OPEN_BOT_PLAY) return;
-
-        if (window.PLAYER_BANKS && this.id !== 0) {
-          let bank = window.PLAYER_BANKS[this.id];
-          bank.innerHTML = '';
-
-          this.getTileFaces().forEach(t => {
-            t = create(t);
-            bank.appendChild(t);
-          })
-
-          this.locked.forEach((s,sid) => {
-            s.forEach(t => {
-              t = t.cloneNode();
-              t.dataset.locked = 'locked';
-              t.dataset.locknum = 1 + sid;
-              bank.appendChild(t);
-            });
-          })
-
-          this.bonus.forEach(t => {
-            t = create(t);
-            t.dataset.locked = 'locked';
-            bank.appendChild(t);
-          });
-
-          if (this.waiting) bank.classList.add('waiting');
-          else bank.classList.remove('waiting');
-
-          window.PLAYER_BANKS.sortTiles(bank);
-        }
-      }
-    }
+    if (config.FORCE_OPEN_BOT_PLAY) this.enableShowTilesAnyway();
   }
 
   // We only assign this a function body in the constructor,
   // and use an empty function so that calls don't error out.
   showTilesAnyway() {}
+
+  // And this is where we do that assigning.
+  enableShowTilesAnyway() {
+    this.showTilesAnyway = () => {
+      if (!config.FORCE_OPEN_BOT_PLAY) return;
+      if (window.PLAYER_BANKS && this.id !== 0) {
+        let bank = window.PLAYER_BANKS[this.id];
+        bank.innerHTML = '';
+        this.getTileFaces().forEach(t => { t = create(t); bank.appendChild(t); });
+        this.locked.forEach((s,sid) => {
+          s.forEach(t => {
+            t = t.cloneNode();
+            t.dataset.locked = 'locked';
+            t.dataset.locknum = 1 + sid;
+            bank.appendChild(t);
+          });
+        })
+        this.bonus.forEach(t => { t = create(t); t.dataset.locked = 'locked'; bank.appendChild(t); });
+        if (this.waiting) bank.classList.add('waiting'); else bank.classList.remove('waiting');
+        window.PLAYER_BANKS.sortTiles(bank);
+      }
+    }
+  }
 
   // pass-through for "show tiles anyway" functionality
   append(tile, claimed, supplement) {
@@ -126,40 +115,8 @@ class BotPlayer extends Player {
     // whether something would be more points, we immediately
     // get rid of this tile again.
     if (this.waiting) {
-      console.debug(this.id,"waiting to win but",this.latest,"is not in our wait list",this.waiting);
-
-      // If we're waiting on a pair, then we can throw out either tile.
-      // Decide on which to throw based on how nice the tile is for the hand.
-      let winTiles = Object.keys(this.waiting);
-      if (winTiles.length === 1) {
-        let tileNumber = (winTiles[0]|0); // remember: object keys are strings, but we need a number!
-        let ways = this.waiting[tileNumber];
-        if (ways.length === 1 && ways[0] === "32s1") {
-          let had = this.getSingleTileFromHand(tileNumber);
-          let received = this.latest;
-          console.debug(`${this.id} has two singles in hand:`, had, received);
-          let tile = this.determineWhichPairTileToThrow(had, received);
-          console.debug(`${this.id} wants to throw out:`, tile);
-          // If we throw out the tile we already had, then we'll have to update
-          // our "waiting" object so it's set to wait for the right tile.
-          if (tile === had) {
-            let nid = received.getTileFace();
-            let oid = had.getTileFace();
-            console.debug(`${this.id} swapping win information from ${oid} to ${nid}`);
-            this.waiting[nid] = this.waiting[oid];
-            delete this.waiting[oid];
-            console.debug(`${this.id} post-swap:`, this.waiting);
-          }
-          return resolve(tile);
-        }
-      }
-
-      // If we're not waiting on a pair, then there is no ambiguity:
-      // get rid of the tile we just got, because we need a different tile.
-      return resolve(this.latest);
+      return resolve(this.determineWaitDiscard());
     }
-
-
 
     // Did we self-draw a limit hand?
     let allTiles = this.getTileFaces(true).filter(t => t<34);
@@ -169,6 +126,45 @@ class BotPlayer extends Player {
     // Now then. We haven't won, let's figure out which tiles are worth keeping,
     // and which tiles are worth throwing away.
     this.determineDiscardUsingTracker(resolve);
+  }
+
+  /**
+   * If we're waiting on a pair, then we can throw out either the
+   * tile we already had, or the tile we just got. So, decide on
+   * which to throw based on how nice the tile is for the hand.
+   */
+  determineWaitDiscard() {
+    console.debug(this.id,"waiting to win but",this.latest,"is not in our wait list",this.waiting);
+
+    let winTiles = Object.keys(this.waiting);
+    if (winTiles.length === 1) {
+      let tileNumber = (winTiles[0]|0); // remember: object keys are strings, but we need a number!
+      let ways = this.waiting[tileNumber];
+
+      if (ways.length === 1 && ways[0] === "32s1") {
+        let had = this.getSingleTileFromHand(tileNumber);
+        let received = this.latest;
+        console.debug(`${this.id} has two singles in hand:`, had, received);
+        let tile = this.determineWhichPairTileToThrow(had, received);
+        console.debug(`${this.id} wants to throw out:`, tile);
+
+        // If we throw out the tile we already had, then we'll have to update
+        // our "waiting" object so it's set to wait for the right tile.
+        if (tile === had) {
+          let nid = received.getTileFace();
+          let oid = had.getTileFace();
+          console.debug(`${this.id} swapping win information from ${oid} to ${nid}`);
+          this.waiting[nid] = this.waiting[oid];
+          delete this.waiting[oid];
+          console.debug(`${this.id} post-swap:`, this.waiting);
+        }
+        return tile;
+      }
+    }
+
+    // If we're not waiting on a pair, then there is no ambiguity:
+    // get rid of the tile we just got, because we need a different tile.
+    return this.latest;
   }
 
   /**
@@ -214,7 +210,9 @@ class BotPlayer extends Player {
       }
       return received;
     }
+
     if (rnum > 26) return had;
+
     // If we get here, it also doesn't matter: stick with what we had.
     return received;
   }
