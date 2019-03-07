@@ -2,7 +2,7 @@
 //        Let's define a Player class!
 // =========================================
 
-class PlayerMeta {
+class PlayerMaster {
   constructor(id) {
     this.el = document.createElement('div');
     this.el.setAttribute('class', 'player');

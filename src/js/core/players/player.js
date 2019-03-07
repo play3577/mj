@@ -2,7 +2,7 @@
 //        Let's define a Player class!
 // =========================================
 
-class Player extends PlayerMeta {
+class Player extends PlayerMaster {
   constructor(id) {
     super(id);
   }

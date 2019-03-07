@@ -4,7 +4,7 @@
  * interaction (human overrides for bots, or just plain
  * human input for... well, humans)
  */
-class ClientUI extends ClientUIMeta {
+class ClientUI extends ClientUIMaster {
   constructor(player, tracker) {
     super(player, tracker);
   }

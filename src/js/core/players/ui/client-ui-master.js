@@ -4,7 +4,7 @@
  * interaction (human overrides for bots, or just plain
  * human input for... well, humans)
  */
-class ClientUIMeta {
+class ClientUIMaster {
   constructor(player, tracker) {
     this.player = player;
     this.tracker = tracker;
