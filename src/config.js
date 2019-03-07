@@ -9,6 +9,7 @@ let PAUSE_ON_BLUR = true;
 let FORCE_DRAW = false;
 let FORCE_OPEN_BOT_PLAY = false;
 let SHOW_BOT_CLAIM_SUGGESTION = false;
+let BOT_CHICKEN_THRESHOLD = 0.8;
 let PLAY_INTERVAL = 100;
 let HAND_INTERVAL = 3000;
 let BOT_DELAY_BEFORE_DISCARD_ENDS = 300;
@@ -17,20 +18,25 @@ let WALL_HACK = '';
 // overrides?
 if (typeof window !== "undefined") {
     let params = new URLSearchParams(window.location.search);
-    NO_SOUND = (params.get(`nosound`)==='true') ? true : false;
-    SEED = params.get(`seed`) ? parseInt(params.get(`seed`)) : 0;
-    PLAY_IMMEDIATELY = (params.get(`autoplay`)==='true') ? true : false;
-    PAUSE_ON_BLUR = (params.get(`pause_on_blur`)==='false') ? false: true;
-    FORCE_DRAW = (params.get(`force_draw`)==='true') ? true : false;
-    FORCE_OPEN_BOT_PLAY = (params.get(`force_open_bot_play`)==='true') ? true : false;
-    SHOW_BOT_CLAIM_SUGGESTION = (params.get(`show_bot_claim_suggestion`)==='true') ? true : false;
-    PLAY_INTERVAL = params.get(`play`) ? params.get(`play`) : 100;
-    HAND_INTERVAL = params.get(`hand`) ? params.get(`hand`) : 3000;
-    BOT_DELAY_BEFORE_DISCARD_ENDS = params.get(`bot_delay`) ? parseInt(params.get(`bot_delay`)) : 300;
-    WALL_HACK = params.get(`wall_hack`) ? params.get(`wall_hack`) : '';
-    DEBUG = (params.get(`debug`)==='true') ? true : false;
+
+    DEBUG = (params.get(`debug`)==='true') ? true : DEBUG;
     if (!DEBUG) console.debug = () => {};
+
+    NO_SOUND = (params.get(`nosound`)==='true') ? true : NO_SOUND;
+    SEED = params.get(`seed`) ? parseInt(params.get(`seed`)) : SEED;
+    PLAY_IMMEDIATELY = (params.get(`autoplay`)==='true') ? true : PLAY_IMMEDIATELY;
+    PAUSE_ON_BLUR = (params.get(`pause_on_blur`)==='false') ? false: PAUSE_ON_BLUR;
+    FORCE_DRAW = (params.get(`force_draw`)==='true') ? true : FORCE_DRAW;
+    FORCE_OPEN_BOT_PLAY = (params.get(`force_open_bot_play`)==='true') ? true : FORCE_OPEN_BOT_PLAY;
+    SHOW_BOT_CLAIM_SUGGESTION = (params.get(`show_bot_claim_suggestion`)==='true') ? true : SHOW_BOT_CLAIM_SUGGESTION;
+    BOT_CHICKEN_THRESHOLD = params.get(`bot_chicken_threshold`) ? parseFloat(params.get(`bot_chicken_threshold`)) : BOT_CHICKEN_THRESHOLD;
+    PLAY_INTERVAL = params.get(`play`) ? parseInt(params.get(`play`)) : PLAY_INTERVAL;
+    HAND_INTERVAL = params.get(`hand`) ? parseInt(params.get(`hand`)) : HAND_INTERVAL;
+    BOT_DELAY_BEFORE_DISCARD_ENDS = params.get(`bot_delay`) ? parseInt(params.get(`bot_delay`)) : BOT_DELAY_BEFORE_DISCARD_ENDS;
+    WALL_HACK = params.get(`wall_hack`) ? params.get(`wall_hack`) : WALL_HACK;
 }
+
+console.log(`using bot threshold ${BOT_CHICKEN_THRESHOLD}`);
 
 if (WALL_HACK || PLAY_IMMEDIATELY) {
     FORCE_OPEN_BOT_PLAY = true;
@@ -43,12 +49,6 @@ const simple = {
     // This value lets us "replay" problematic
     // games to find out where things go wrong.
     SEED: SEED,
-
-    CURRENT_TEST_SEEDS: [
-        1010612157, // first round player 0 claims pung, then discovers they have won. That should be a win claim with pung subtype instead.
-        379859036, // there seem to be an inordinate amount of draws
-        752896630, // turn 1 winner has some scorePatterns that are waaaaay too long
-    ],
 
     // The number of milliseconds between
     // players taking their turn.
@@ -248,6 +248,10 @@ const config = {
     // superclass to the human player recommends
     // claiming it for something.
     SHOW_BOT_CLAIM_SUGGESTION,
+
+    // How likely are bots to go for chicken
+    // hands, rather than for hands worth points?
+    BOT_CHICKEN_THRESHOLD,
 
     // Debugging around drawn hands requires
     // being able to force a draw

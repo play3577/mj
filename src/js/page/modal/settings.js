@@ -36,6 +36,7 @@ class SettingsModal {
     const values = {
       force_open_bot_play: FORCE_OPEN_BOT_PLAY.toString(),
       show_bot_claim_suggestion: SHOW_BOT_CLAIM_SUGGESTION.toString(),
+      bot_chicken_threshold: BOT_CHICKEN_THRESHOLD.toString(),
       debug: DEBUG.toString(),
       seed: SEED.toString(),
       nosound: NO_SOUND.toString() ,
@@ -56,6 +57,7 @@ class SettingsModal {
       'Set random number seed': { key: 'seed' },
       'Play without sound': { key: 'nosound', options: ['true','false'] },
       'Autostart bot play': { key: 'autoplay', options: ['true','false'] },
+      'Bot quick play threshold': { key: 'bot_chicken_threshold' },
       'Pause game unless focused': { key: 'pause_on_blur', options: ['true','false'] },
       'Pretend hands start after a draw': { key: 'force_draw', options: ['true','false'] },
       'Delay (in ms) between player turns': { key: 'play' },

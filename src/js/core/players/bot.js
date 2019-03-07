@@ -370,56 +370,59 @@ class BotPlayer extends Player {
    * Automated claim policy, see `tilesNeeded` in `./mgen.js`
    */
   async determineClaim(pid, discard, resolve, interrupt, claimTimer) {
-    // which tile is this?
+    let claim = CLAIM.IGNORE, wintype;
     let tile = discard.getTileFace();
-
-    // build a quick list of what we might actually be interested in
     let canChow = ((pid+1)%4 == this.id);
-    // console.debug(`${this.id} can${canChow?``:`not`} claim chow from ${pid}`);
-
     let tiles = this.getTileFaces();
     tiles.sort();
+
     // console.debug(`${this.id} determining claim for ${tile} based on ${tiles}`);
 
     let {lookout, waiting, composed} = tilesNeeded(tiles, this.locked, canChow);
 
     // Are we waiting to win?
-    let winTiles = {};
     if (waiting) {
-      console.debug("we're waiting to win!", lookout);
+      console.debug(this.id, "we're waiting to win!", lookout);
+
+      let winTiles = {};
       lookout.forEach((list,tileNumber) => {
         if (list) {
-          list = list.filter(v => v.indexOf('32')===0);
+          let goForChow = this.determineWhetherToChow(tileNumber);
+          list = list.filter(v => {
+            // first filter: this needs to be a winning tile. Of course.
+            if (v.indexOf('32')===-1) return false;
+            // second filter: if it's for a chow... we might not want to win?
+            let wintype = parseInt(v.replace('32s',''));
+            if (CLAIM.CHOW <= wintype && wintype < CLAIM.PUNG) return goForChow;
+            return true;
+          });
           if (list.length) winTiles[tileNumber] = list;
         }
       });
-      console.debug("marking win tiles", winTiles);
       this.markWaiting(winTiles);
-    }
 
-    // Is the current discard in the list of tiles we want?
-    let claim = CLAIM.IGNORE, wintype;
-
-
-    // First, if we're waiting to win, ignore any tile that won't let us win.
-    if (this.waiting) {
-      let ways = this.waiting[tile];
-      // not the tile(s) we need: ignore it, unless we can form a kong.
+      // If this is not (one of) the tile(s) we need, ignore it, unless we can form a kong.
+      let ways = winTiles[tile];
       if (!ways || !ways.length) {
         if (lookout[tile] && lookout[tile].indexOf('16') !== -1) return resolve({claimtype: CLAIM.KONG });
         return resolve({claimtype: CLAIM.IGNORE});
       }
+
       // (one of) the tile(s) we need: claim a win.
       let wintype = ways.map(v => parseInt(v.substring(3))).sort((a,b)=>(b-a))[0];
       return resolve({claimtype: CLAIM.WIN, wintype });
     }
 
+
     // Then, if we're NOT waiting to win, consider regular claim policies.
-    else if (lookout[tile]) {
+    if (lookout[tile]) {
       lookout[tile].map(print => unhash(print,tile)).forEach(set => {
         let type = set.type;
         console.debug(`lookout for ${tile} = type: ${type}, canChow: ${canChow}`);
-        if (type === Constants.CHOW1 || type === Constants.CHOW2 || type === Constants.CHOW3) if (!canChow) return;
+        if (type === Constants.CHOW1 || type === Constants.CHOW2 || type === Constants.CHOW3) {
+          if (!canChow) return;
+          if(!this.determineWhetherToChow(tile)) return;
+        }
         if (type === CLAIM.WIN) wintype = set.subtype ? set.subtype : 'normal';
         if (type > claim) claim = type;
       });
@@ -429,4 +432,16 @@ class BotPlayer extends Player {
 
     return resolve({claimtype: CLAIM.IGNORE});
   }
+
+  /**
+   * Do we want to claim a (particular) chow?
+   */
+  determineWhetherToChow(tile) {
+    // for the moment we make this a really simple statistical property
+    // TODO: make this an "informed" decision based on score potential,
+    // tiles left in the wall, other players perceived tactics, etc. etc.
+
+    let test = config.PRNG.nextFloat();
+    return (test <= config.BOT_CHICKEN_THRESHOLD);
+ }
 }
