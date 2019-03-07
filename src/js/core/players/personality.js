@@ -3,8 +3,14 @@
  * have the opportunity to claim, whether or not to claim it.
  */
 class Personality {
-  constructor(player) {
+  constructor(player, sliders={}) {
     this.player = player;
+    this.sliders = {
+      quick: sliders.quick || config.BOT_CHICKEN_THRESHOLD,
+      clean: sliders.clean || config.BOT_CLEAN_THRESHOLD,
+      limit: sliders.limit || config.BOT_LIMIT_THRESHOLD,
+    };
+    this.handtypes = { CHICKEN: 0, CHOW: 1, PUNG: 2 };
   }
 
   /**
@@ -12,8 +18,15 @@ class Personality {
    * reasonable policy is going to be for these tiles.
    */
   determinePersonality(tiles) {
-    this.willChow = (config.PRNG.nextFloat() > config.BOT_CHICKEN_THRESHOLD);
-    /* other flags: one suit? clean and honors? etc. */
+    this.handtype = this.determineHand(tiles);
+  }
+
+  /**
+   * Decide whether or not a chowhand is acceptable
+   */
+  determineHand(tiles) {
+    // ... code goes here ...
+    return this.handtypes.CHICKEN;
   }
 
   /**
@@ -56,11 +69,17 @@ class Personality {
   }
 
   /**
-   * Do we want to claim a (particular) chow?
+   * Do we want to claim a particular tile?
    */
   determineWhetherToClaim(tile, concealed, open, reason) {
+    let types = this.handtypes;
+    let type = this.handtype;
+
     if (CLAIM.CHOW <= reason && reason < CLAIM.PUNG) {
-      if (!this.willChow) return false;
+      if (type !== types.CHICKEN && type !== this.CHOW) return false;
+
+      // for now we're just basing chow-ness on the bot's "quick" slider value
+      return (config.PRNG.nextFloat() < this.sliders.quick);
     }
 
     // Do we want this kind of tile?

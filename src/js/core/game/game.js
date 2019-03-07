@@ -270,36 +270,45 @@ class Game {
   async play(claim) {
     await this.continue("start of play()");
 
+    // Bootstrap the this step of play
     let hand = this.hand;
     let players = this.players;
     let wall = this.wall;
-
     if (claim) this.currentPlayerId = claim.p;
-
     let discard = this.discard;
     let currentPlayerId = this.currentPlayerId;
+    this.playDelay = (hand===config.PAUSE_ON_HAND && this.counter===config.PAUSE_ON_PLAY) ? 60*60*1000 : config.PLAY_INTERVAL;
     let player = players[currentPlayerId];
     players.forEach(p => p.activate(currentPlayerId));
 
     // increase the play counter for debugging purposes:
     this.counter++;
-    this.playDelay = (hand===config.PAUSE_ON_HAND && this.counter===config.PAUSE_ON_PLAY) ? 60*60*1000 : config.PLAY_INTERVAL;
     console.debug(`%chand ${hand}, play ${this.counter}`, `color: red; font-weight: bold;`);
 
+    // ===========================
     // GAME LOOP: "Draw one" phase
-    if (!claim) await this.dealTile(player);
-    else {
-      let tiles = player.receiveDiscardForClaim(claim, discard);
+    // ===========================
 
-      // Awarded claims are shown to all other players.
+    if (!claim) {
+      // If this is a plain call, then the player receives
+      // a tile from the shuffled pile of tiles:
+      await this.dealTile(player);
+    }
+
+    else {
+      // If this is claim call, then the player receives
+      // the current discard instead of drawing a tile:
+      let tiles = player.receiveDiscardForClaim(claim, discard);
       players.forEach(p => p.seeClaim(tiles, player, discard, claim));
 
-      // If the player locks away a total of 4 tiles,
-      // they need a supplement tile.
+      // If the claim was for a kong, the player needs a supplement tile.
       if (tiles.length === 4) await this.dealTile(player);
     }
 
+    // ===========================
     // GAME LOOP: "Play one" phase
+    // ===========================
+
     do {
       if (discard) discard.classList.remove('discard');
 
@@ -387,7 +396,7 @@ class Game {
    * was the last hand to be played and it resolved
    * in a way that would normally rotate the winds).
    */
-  processWin(player) {
+  async processWin(player) {
     let hand = this.hand;
     let players = this.players;
     let currentPlayerId = this.currentPlayerId;

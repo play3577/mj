@@ -127,6 +127,8 @@ class Player extends PlayerMeta {
 
     tiles.forEach(tile => {
       this.remove(tile);
+      tile.classList.remove('latest');
+      tile.removeAttribute('title');
       tile.dataset.locked = 'locked';
       if(kong) tile.dataset.concealed = 'concealed';
     });

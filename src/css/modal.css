@@ -18,8 +18,10 @@
   background: white;
   padding: 0em 1em 1em;
   display: inline-block;
-  max-height: calc(100% - 2.5em);
+  max-height: 100%;
   overflow: auto;
+  border: 1px solid black;
+  box-shadow: 0 0 5px 0 black;
 }
 
 .modal .panel h1 {

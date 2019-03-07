@@ -38,6 +38,16 @@ let SHOW_BOT_CLAIM_SUGGESTION = false;
 // hands, rather than for hands worth points?
 let BOT_CHICKEN_THRESHOLD = 0.8;
 
+// How likely are bots to try to only
+// have a single suit of numbered tiles,
+// if their hand contains numbered tiles?
+let BOT_CLEAN_THRESHOLD = 0.2;
+
+// How likely are bots to try to go for
+// limit hands rather than regular hands,
+// if the starting hand might allow for it.
+let BOT_LIMIT_THRESHOLD = 0.01;
+
 // The number of milliseconds the game
 // allows players to lay claim to a discard.
 // Bots need nowhere near this much, but
@@ -84,6 +94,8 @@ if (typeof window !== "undefined") {
     FORCE_OPEN_BOT_PLAY = (params.get(`force_open_bot_play`)==='true') ? true : FORCE_OPEN_BOT_PLAY;
     SHOW_BOT_CLAIM_SUGGESTION = (params.get(`show_bot_claim_suggestion`)==='true') ? true : SHOW_BOT_CLAIM_SUGGESTION;
     BOT_CHICKEN_THRESHOLD = params.get(`bot_chicken_threshold`) ? parseFloat(params.get(`bot_chicken_threshold`)) : BOT_CHICKEN_THRESHOLD;
+    BOT_CLEAN_THRESHOLD = params.get(`bot_clean_threshold`) ? parseFloat(params.get(`bot_clean_threshold`)) : BOT_CLEAN_THRESHOLD;
+    BOT_LIMIT_THRESHOLD = params.get(`bot_limit_threshold`) ? parseFloat(params.get(`bot_limit_threshold`)) : BOT_LIMIT_THRESHOLD;
     CLAIM_INTERVAL = params.get(`claim`) ? parseInt(params.get(`claim`)) : CLAIM_INTERVAL;
     PLAY_INTERVAL = params.get(`play`) ? parseInt(params.get(`play`)) : PLAY_INTERVAL;
     HAND_INTERVAL = params.get(`hand`) ? parseInt(params.get(`hand`)) : HAND_INTERVAL;
@@ -212,6 +224,8 @@ const config = {
     FORCE_OPEN_BOT_PLAY,
     SHOW_BOT_CLAIM_SUGGESTION,
     BOT_CHICKEN_THRESHOLD,
+    BOT_CLEAN_THRESHOLD,
+    BOT_LIMIT_THRESHOLD,
     WALL_HACK,
 
     CLAIM_INTERVAL,
