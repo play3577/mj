@@ -96,11 +96,13 @@ class Game {
           if (this.windOfTheRound === 4) {
             let ms = (Date.now() - this.GAME_START);
             let s = ((ms/10)|0)/100;
-            console.log(`\nfull game played: player ${winner.id} is the winner!`);
-            console.log(`(game took ${s}s, ${this.totalDraws} draws)`);
             this.hand = this.draws = '';
             rotateWinds();
             let finalScores = players.map(p => p.getScore());
+            let highest = finalScores.reduce((t,v) => v>t?v:t, 0);
+            let gamewinner = finalScores.indexOf(highest);
+            console.log(`\nfull game played: player ${gamewinner} is the winner!`);
+            console.log(`(game took ${s}s, ${this.totalDraws} draws)`);
             players.forEach(p => p.endOfGame(finalScores));
             document.body.classList.add('finished');
             let gameui = this.players.find(p => p.ui).ui;
