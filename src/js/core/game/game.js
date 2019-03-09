@@ -28,6 +28,7 @@ class Game {
     this.windOfTheRound = 0;
     this.hand = 0;
     this.draws = 0;
+    this.totalDraws = 0;
     this.players.forEach(p => p.gameWillStart());
     this.startHand();
     this.finish = whenDone;
@@ -95,7 +96,8 @@ class Game {
           if (this.windOfTheRound === 4) {
             let ms = (Date.now() - this.GAME_START);
             let s = ((ms/10)|0)/100;
-            console.log(`\nfull game played. (game took ${s}s)`);
+            console.log(`\nfull game played: player ${winner.id} is the winner!`);
+            console.log(`(game took ${s}s, ${this.totalDraws} draws)`);
             this.hand = this.draws = '';
             rotateWinds();
             let finalScores = players.map(p => p.getScore());
@@ -117,6 +119,7 @@ class Game {
       this.draws = 0;
     } else {
       this.draws++;
+      this.totalDraws++;
     }
 
     console.debug("Rotated winds:", this.wind, this.windOfTheRound);
@@ -131,7 +134,7 @@ class Game {
         playerwind = (4 + this.wind - p) % 4;
       }
 
-      player.reset(this.hand, playerwind, this.windOfTheRound);
+      player.reset(this.hand, playerwind, this.windOfTheRound, this.draws);
     });
 
     // used for play debugging:
@@ -139,11 +142,11 @@ class Game {
       config.HAND_INTERVAL = 60 * 60 * 1000;
     }
 
+    // "Starting hand" / "Restarting hand"
     let pre = result.draw ? 'Res' : 'S';
-    console.log(
-      `\n%c${pre}tarting hand ${this.hand} (current seed: ${config.PRNG.seed()}, wind: ${this.wind}, wotd: ${this.windOfTheRound}).`,  // Starting hand / Restarting hand
-      `color: red; font-weight: bold; font-size: 120%; border-bottom: 1px solid black;`
-    );
+    console.log(`\n%c${pre}tarting hand ${this.hand}.`,  `color: red; font-weight: bold; font-size: 120%; border-bottom: 1px solid black;`);
+
+    console.log(`this.hand=${this.hand}; config.PRNG.seed(${config.PRNG.seed()}); this.wind=${this.wind}; this.windOfTheRound=${this.windOfTheRound};`);
 
     this.wall.reset();
     console.debug(`wall: ${this.wall.tiles}`);
@@ -474,7 +477,7 @@ class Game {
 
     // get all players to put in a claim bid
     let claims = await Promise.all(
-      players.map(p => new Promise(resolve => p.getClaim(currentpid, discard, resolve)))
+      players.map(p => new Promise(resolve => p.getClaim(currentpid, discard, this.wall.remaining, resolve)))
     );
 
     console.debug('all claims are in');

@@ -21,12 +21,13 @@ if (typeof process !== "undefined") {
   */
 function Random(seed) {
   this._seed = seed ? seed % 2147483647 : random(2147483647);
-  console.log(`using random seed ${this._seed}`);
+  console.log(`using initial random seed ${this._seed}`);
   if (this._seed <= 0) this._seed += 2147483646;
 }
 
 // custom addition because we need a way to know how to seed very exactly.
-Random.prototype.seed = function () {
+Random.prototype.seed = function (v) {
+  if (v !== undefined) this._seed = v;
   return this._seed;
 }
 

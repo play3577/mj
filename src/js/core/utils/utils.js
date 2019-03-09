@@ -25,3 +25,21 @@ const create = (tileNumber, hidden) => {
   };
   return span;
 }
+
+/**
+ * A tree to list-of-paths unrolling function.
+ */
+function unroll(list, seen=[], result=[]) {
+  list = list.slice();
+  seen.push(list.shift());
+  if (!list.length) result.push(seen);
+  else list.forEach(tail => unroll(tail, seen.slice(), result));
+  return result;
+}
+
+if (typeof process !== "undefined") {
+  module.exports = {
+    create,
+    unroll
+  };
+}

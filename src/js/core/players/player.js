@@ -15,41 +15,50 @@ class Player extends PlayerMaster {
     return this.determineDiscard(resolve);
   }
 
+  /**
+   * players have a way to determine what the discard,
+   * but we're not going to specify _how_ to determine
+   * that here. We'll leave that up to the specific
+   * player types instead.
+   */
   determineDiscard(resolve) {
-    // players have a way to determine what the discard,
-    // but we're not going to specify _how_ to determine
-    // that here. We'll leave that up to the specific
-    // player types instead.
     resolve(undefined);
   }
 
-  async getClaim(pid, discard, resolve) {
-    // in terms of universal behaviour, we want
-    // to make sure that we exit early if this is
-    // "our own" discard. No bidding on that please.
-    if (pid == this.id) {
-      return resolve({ claimtype: CLAIM.IGNORE });
-    }
+  /**
+   * In terms of universal behaviour, we want
+   * to make sure that we exit early if this is
+   * "our own" discard. No bidding on that please.
+   */
+  async getClaim(pid, discard, tilesRemaining, resolve) {
+    if (pid == this.id) return resolve({ claimtype: CLAIM.IGNORE });
 
     new TaskTimer(
       timer => {
         let claimfn = claim => timer.hasTimedOut() ? false : resolve(claim);
         let cancelfn = () => timer.cancel();
-        this.determineClaim(pid, discard, claimfn, cancelfn, timer);
+        this.determineClaim(pid, discard, tilesRemaining, claimfn, cancelfn, timer);
       },
       () => resolve({ claimtype: CLAIM.IGNORE }),
       config.CLAIM_INTERVAL
     );
   }
 
-  determineClaim(pid, discard, resolve, interrupt, claimTimer) {
-    // Just like determineDiscard, players have a way
-    // to determine whether they want a discard, and
-    // for what, but we're not going to say how to
-    // determine that in this class.
+  /**
+   * Just like determineDiscard, players have a way
+   * to determine whether they want a discard, and
+   * for what, but we're not going to say how to
+   * determine that in this class.
+   */
+  determineClaim(pid, discard, tilesRemaining, resolve, interrupt, claimTimer) {
     resolve({ claimtype: CLAIM.IGNORE });
   }
 
+  /**
+   * Handle receiving a tile in order to fulfill a
+   * claim that was put out on a discard by this
+   * player during a play turn.
+   */
   receiveDiscardForClaim(claim, discard) {
     this.lastClaim = claim;
     let tile = discard.getTileFace();
@@ -122,6 +131,10 @@ class Player extends PlayerMaster {
     return set;
   }
 
+  /**
+   * Lock away a set of tiles, for all
+   * to see and know about.
+   */
   lockClaim(tiles, concealed=false) {
     let kong = (tiles.length === 4);
 
@@ -133,7 +146,8 @@ class Player extends PlayerMaster {
       if(kong) tile.dataset.concealed = 'concealed';
     });
 
-    // claimed kong = concealed pung
+    // a claimed kong implies this player
+    // had a concealed pung in their hand.
     if (kong && !concealed) {
       delete tiles[0].dataset.concealed;
     }

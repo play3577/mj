@@ -134,8 +134,11 @@ class Pattern {
         if(s1 === s2 && s1 === s3) this.markWin(results, t1, Constants.CHOW1);
         if(s4 === s2 && s4 === s3) this.markWin(results, t2, Constants.CHOW3);
       }
-      else if (single[1] < 27 && single[0] + 2 === single[1]) {
-        this.markWin(results, single[0]+1, Constants.CHOW2);
+      else if (single[1] < 27 && single[0]+2 === single[1]) {
+        let s1 = this.getSuit(single[0]);
+        let s2 = this.getSuit(single[0]+1);
+        let s3 = this.getSuit(single[2]);
+        if (s1===s3 && s1===s2) this.markWin(results, single[0]+1, Constants.CHOW2);
       }
     }
 
@@ -211,7 +214,7 @@ class Pattern {
     // but if we're dealing with a suited number tile, we also need to check for chows.
     let {t1, t2} = this.getChowInformation(tile);
 
-    if (t1 ||t2) {
+    if (t1 || t2) {
       if (t1 && t2) {
         // we are holding a chow!
         head=[`3c-${tile}`];
@@ -223,7 +226,7 @@ class Pattern {
         let suit = this.getSuit(tile);
         // We might be one tile away from having a chow(3), if +2 is in the same suit.
         if (this.matchSuit(tile+2,suit)) this.markNeeded(results, tile+2, Constants.CHOW3);
-        // We might also be one tile away from having a chow(1), if -2 is in the same suit.
+        // We might also be one tile away from having a chow(1), if -1 is in the same suit.
         if (this.matchSuit(tile-1,suit)) this.markNeeded(results, tile-1, Constants.CHOW1);
         this.recurse(paths, [tile, tile+1], results, single, pair, set);
       }

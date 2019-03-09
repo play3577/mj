@@ -1,26 +1,18 @@
 if (typeof process !== "undefined") {
   Pattern = require("./pattern.js");
+  unroll = require('../utils/utils.js').unroll;
 }
 
-
-/**
- * A tree to list-of-paths unrolling function.
- */
-function unroll(list, seen=[], result=[]) {
-  list = list.slice();
-  seen.push(list.shift());
-  if (!list.length) result.push(seen);
-  else list.forEach(tail => unroll(tail, seen.slice(), result));
-  return result;
-}
 
 /**
  * A helper function for summary prints
  */
 function summarise(set) {
   if (!set.map && !set.forEach) return set;
+  set = set.map(t => t.dataset ? (t.dataset.tile|0) : t).sort();
+
   // pairs
-  let t = set.sort()[0];
+  let t = set[0];
   t = t.dataset ? t.dataset.tile : t;
   if (set.length===2) return `pair${t}`; // special notation for easy extraction
   // chows
@@ -107,6 +99,7 @@ if (typeof process !== "undefined") { (function() {
 
   let tests = [
     {
+      title: "winning mixed hand",
       hand: [7,7,7, 15,15, 19,20,21, 22,23,24],
       locked: [
         [24,26,25]
@@ -114,6 +107,18 @@ if (typeof process !== "undefined") { (function() {
       win: true
     },
     {
+      title: "winning hand with single hidden pung",
+      hand: [32,32,32],
+      locked: [
+        [1,2,3],
+        [2,3,4],
+        [5,6,7],
+        [6,6]
+      ],
+      win: true
+    },
+    {
+      title: "winning hand with single hidden pung, exposed kong",
       hand: [32,32,32],
       locked: [
         [26,24,25],
@@ -124,6 +129,7 @@ if (typeof process !== "undefined") { (function() {
        win: true
     },
     {
+      title: "winning hand, no tiles left in hand",
       hand: [],
       locked: [
         [5,5,5,5],
@@ -135,6 +141,7 @@ if (typeof process !== "undefined") { (function() {
       win: true
     },
     {
+      title: "winning hand with a kong, no tiles left in hand",
       hand: [],
       locked: [
         [10,10,10],
@@ -146,6 +153,7 @@ if (typeof process !== "undefined") { (function() {
       win: true
     },
     {
+      title: "winning hand, ambiguous pung/chow",
       hand: [14,15,16,22,23,24,24,24],
       locked: [
         [10,11,12],
@@ -154,6 +162,7 @@ if (typeof process !== "undefined") { (function() {
       win: true
     },
     {
+      title: "waiting hand, needs 18 or 30",
       hand: [18,18,27,27,27,30,30,32,32,32],
       locked: [
         [20,22,21]
@@ -162,19 +171,14 @@ if (typeof process !== "undefined") { (function() {
       need: [[18], [30]]
     },
     {
-      hand: [32,32,32],
+      title: "not a waiting hand, illegal win if 9 is claimed to form 8,9,10 (mixed suit)",
+      hand: [26,26,11,11,11,8,10],
       locked: [
-        [1,2,3],
-        [2,3,4],
-        [5,6,7],
-        [6,6]
+        [29,29,29],
+        [25,24,23]
       ],
-      win: true
-    },
-    {
-      hand: [13,17,19,20,20,26,27,28,29,31,33,5,9],
-      locked: [],
-      win: false
+      win: false,
+      waiting: false
     }
   ]
 
@@ -184,7 +188,7 @@ if (typeof process !== "undefined") { (function() {
 
 
     console.log(`--------------------------`);
-    console.log(`test ${tid}`);
+    console.log(`test ${tid}: ${test.title}`);
     console.log(`current hand: ${hand}`);
     console.log(`locked: ${list(locked)}`);
 
@@ -194,6 +198,14 @@ if (typeof process !== "undefined") { (function() {
         console.log(`test ${tid} failed: winning hand was not detected as winning.`);
       } else {
         console.log(`test ${tid} passed: winning hand was detected as such.`);
+      }
+    }
+
+    else if (test.waiting === false) {
+      if (result.waiting === false) {
+        console.log(`test ${tid} passed: non-waiting hand was detected as such.`);
+      } else {
+        console.log(`test ${tid} failed: non-waiting hand was detected as ${result.winner ? `winning`:`waiting`}.`);
       }
     }
 

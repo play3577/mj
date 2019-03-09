@@ -14,9 +14,10 @@ class PlayerMaster {
     this.reset();
   }
 
-  reset(hand, wind, windOfTheRound) {
+  reset(hand, wind, windOfTheRound, draws) {
     this.wind = wind;
     this.windOfTheRound = windOfTheRound;
+    this.draws = draws;
     this.tiles = [];
     this.locked = [];
     this.bonus = [];
@@ -26,7 +27,7 @@ class PlayerMaster {
     this.tracker.reset();
     this.el.innerHTML = '';
     this.el.classList.remove('winner');
-    if (this.ui) this.ui.reset(hand, wind, windOfTheRound);
+    if (this.ui) this.ui.reset(hand, wind, windOfTheRound, draws);
   }
 
   pause(lock) {

@@ -12,6 +12,17 @@ class BotPlayer extends Player {
     if (config.FORCE_OPEN_BOT_PLAY) this.enableShowTilesAnyway();
   }
 
+  /**
+   * Inform the personality object how many draws
+   * we've seen for the hand we're about to play,
+   * because that will change how much we'll be
+   * willing to go harder-to-achieve hands.
+   */
+  reset(hand, wind, windOfTheRound, draws) {
+    super.reset(hand, wind, windOfTheRound, draws);
+    if (this.personality) this.personality.setDraws(this.draws);
+  }
+
   // We only assign this a function body in the constructor,
   // and use an empty function so that calls don't error out.
   showTilesAnyway() {}
@@ -58,7 +69,7 @@ class BotPlayer extends Player {
    */
   playWillStart() {
     super.playWillStart();
-    this.personality.determinePersonality(this.tiles);
+    this.personality.determinePersonality();
   }
 
   /**
@@ -114,9 +125,7 @@ class BotPlayer extends Player {
     // our winning tile(s), so in the absence of determining
     // whether something would be more points, we immediately
     // get rid of this tile again.
-    if (this.waiting) {
-      return resolve(this.determineWaitDiscard());
-    }
+    if (this.waiting) return resolve(this.determineWhatToWaitFor());
 
     // Did we self-draw a limit hand?
     let allTiles = this.getTileFaces(true).filter(t => t<34);
@@ -125,15 +134,19 @@ class BotPlayer extends Player {
 
     // Now then. We haven't won, let's figure out which tiles are worth keeping,
     // and which tiles are worth throwing away.
-    this.determineDiscardUsingTracker(resolve);
+    this.determineDiscardCarefully(resolve);
   }
 
   /**
    * If we're waiting on a pair, then we can throw out either the
    * tile we already had, or the tile we just got. So, decide on
    * which to throw based on how nice the tile is for the hand.
+   *
+   * If we're _not_ waiting on a pair, but we reached this
+   * function, then we're simply not interested in the tile we
+   * just picked up: get rid of it.
    */
-  determineWaitDiscard() {
+  determineWhatToWaitFor() {
     console.debug(this.id,"waiting to win but",this.latest,"is not in our wait list",this.waiting);
 
     let winTiles = Object.keys(this.waiting);
@@ -142,6 +155,7 @@ class BotPlayer extends Player {
       let ways = this.waiting[tileNumber];
 
       if (ways.length === 1 && ways[0] === "32s1") {
+        // Waiting on a pair: do some checking
         let had = this.getSingleTileFromHand(tileNumber);
         let received = this.latest;
         console.debug(`${this.id} has two singles in hand:`, had, received);
@@ -162,8 +176,7 @@ class BotPlayer extends Player {
       }
     }
 
-    // If we're not waiting on a pair, then there is no ambiguity:
-    // get rid of the tile we just got, because we need a different tile.
+    // Not waiting on a pair: get rid of this tile.
     return this.latest;
   }
 
@@ -221,7 +234,7 @@ class BotPlayer extends Player {
    * This is the second part of determineDiscard, which handles all
    * the "we didn't just win" cases.
    */
-  determineDiscardUsingTracker(resolve) {
+  determineDiscardCarefully(resolve) {
     let tiles = this.getAvailableTiles();
     let tileCount = [];
     let immediateValue = [];
@@ -308,7 +321,7 @@ class BotPlayer extends Player {
   /**
    * Automated claim policy, see `tilesNeeded` in `./mgen.js`
    */
-  async determineClaim(pid, discard, resolve, interrupt, claimTimer) {
+  async determineClaim(pid, discard, tilesRemaining, resolve, interrupt, claimTimer) {
     let claim = CLAIM.IGNORE, wintype;
     let tile = discard.getTileFace();
     let canChow = ((pid+1)%4 == this.id);
@@ -328,11 +341,10 @@ class BotPlayer extends Player {
         if (list) {
           list = list.filter(v => {
             // first filter: this needs to be a winning tile. Of course.
-            if (v.indexOf('32')===-1) return false;
-            // second filter: if it's for a chow... we might not want to win?
+            if (v.indexOf('32') === -1) return false;
+            // second filter: we _can_ win on this, but _should_ we win on this?
             let wintype = parseInt(v.replace('32s',''));
-            let goForChow = this.personality.determineWhetherToClaim(tileNumber, this.tiles, this.locked, wintype);
-            if (CLAIM.CHOW <= wintype && wintype < CLAIM.PUNG) return goForChow;
+            if(!this.personality.determineWhetherToWin(tileNumber, wintype, tilesRemaining)) return false;
             return true;
           });
           if (list.length) winTiles[tileNumber] = list;
@@ -349,19 +361,20 @@ class BotPlayer extends Player {
 
       // (one of) the tile(s) we need: claim a win.
       let wintype = ways.map(v => parseInt(v.substring(3))).sort((a,b)=>(b-a))[0];
+      // FIXME: TODO: add in a "quick" score check to, in case of multiple ways to win, which scores more.
       return resolve({claimtype: CLAIM.WIN, wintype });
     }
 
 
-    // Then, if we're NOT waiting to win, consider regular claim policies.
+    // If we get here, we're NOT waiting to win: perform normal claim check.
     if (lookout[tile]) {
       lookout[tile].map(print => unhash(print,tile)).forEach(set => {
         let type = set.type;
         console.debug(`lookout for ${tile} = type: ${type}, canChow: ${canChow}`);
         if (type === Constants.CHOW1 || type === Constants.CHOW2 || type === Constants.CHOW3) {
           if (!canChow) return;
-          if(!this.personality.determineWhetherToClaim(tile, this.tiles, this.locked, type)) return;
         }
+        if(!this.personality.want(tile, type, tilesRemaining)) return;
         if (type === CLAIM.WIN) wintype = set.subtype ? set.subtype : 'normal';
         if (type > claim) claim = type;
       });
