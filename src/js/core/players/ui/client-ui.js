@@ -269,10 +269,26 @@ class ClientUI extends ClientUIMaster {
       resolve(CLAIM.IGNORE);
     };
 
+    // This adds a safety region around the discarded tile, for fat fingers.
+    let safeIgnore = evt => {
+      let bbox = discards.lastChild.getBoundingClientRect();
+      let midpoint = {
+        x: (bbox.left + bbox.right)/2,
+        y: (bbox.top + bbox.bottom)/2,
+      };
+      let vector = {
+        x: midpoint.x - evt.clientX,
+        y: midpoint.y - evt.clientY
+      };
+      let distance = Math.sqrt(vector.x ** 2 + vector.y ** 2);
+      if (distance > 40) return ignore();
+      return triggerClaimDialog();
+    };
+
     // mouse interaction
     tile.classList.add('selectable');
     tile.addEventListener("click", triggerClaimDialog);
-    discards.addEventListener("click", ignore);
+    discards.addEventListener("click", safeIgnore);
 
     // and make sure to set up that focus-regain-bypass
     document.addEventListener("focus", frb, true);
@@ -282,7 +298,7 @@ class ClientUI extends ClientUIMaster {
     // need to call it in code above this function.
     function removeAllListeners() {
       tile.removeEventListener("click", triggerClaimDialog);
-      discards.removeEventListener("click", ignore);
+      discards.removeEventListener("click", safeIgnore);
       document.removeEventListener("focus", frb, true);
       document.removeEventListener("blur", brb);
     }
