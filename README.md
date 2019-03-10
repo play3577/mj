@@ -6,7 +6,7 @@
 
 ### Can I play this game?
 
-You sure can! Just head on over to the live site version: https://pomax.github.io/mj
+You sure can! And you don't even need to sign up for anything, or check out any programming code, or do anything beyond just clicking through to the live website: https://pomax.github.io/mj
 
 Note that mostly due to that's what we play in our house a lot, this implementation currently uses "Chinese Classical" rules for play and scoring. Additional rules will eventually be written (the next one is most likely standard Cantonese rules with faan scoring).
 
