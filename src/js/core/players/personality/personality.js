@@ -5,7 +5,6 @@
 class Personality {
   constructor(player) {
     this.player = player;
-    this.tileCountBase = (new Array(42)).fill(0);
 
     // These flags determine how we treat available
     // discards and tiles we pick up for play.
@@ -53,11 +52,9 @@ class Personality {
    * Decide whether or not a chowhand is acceptable
    */
   analyse() {
-    let tiles = this.player.tiles.map(t => t.dataset.tile|0).sort();
-    let locked = this.player.locked.map(s => s.map(t => t.dataset.tile|0).sort());
-    let stats = this.buildStatsContainer(tiles, locked);
+    let stats = buildStatsContainer(this.player);
 
-    // Should we play clean?
+    // should we play clean?
     if (this.playClean === false) {
       let most = max(...stats.suits);
       let total = stats.numerals;
@@ -130,7 +127,6 @@ class Personality {
 
     return true;
   }
-
 
   /**
    * Can we declare a chow, given the play policy we've settled on at this point?
@@ -265,116 +261,5 @@ class Personality {
     }
 
     return false;
-  }
-
-  /**
-   * Build an object that represents "what we have"
-   * so we can reason about what we might be able
-   * to play for. E.g. if we have 3 chows, going for
-   * a pung hand is probably not a good idea, and
-   * if we have 10 tiles in one suit, and 1 tile
-   * in the other two suits, we probably want to
-   * try to get one suit hand.
-   */
-  buildStatsContainer(tiles, locked) {
-    let tileCount = this.tileCountBase.slice();
-
-    let stats = {
-      cpairs: 0, // {t,t+1} or {t,t+2}
-      pairs: 0,  // {t,t}
-      chows: 0,  // {t, t+1, t+2}
-      pungs: 0,  // {t, t, t}
-      bigpungs: 0, // dragons, own wind, wotr
-      tiles: 0,
-      counts: {},
-      numerals: 0,
-      terminals: 0,
-      honours: 0,
-      winds: 0,
-      dragons: 0,
-      suits: [0, 0, 0],
-      // Separate container specific to locked sets:
-      locked: { chows: 0, pungs: 0, bigpungs: 0, tiles: 0, numerals: 0, suits: [0, 0, 0] }
-    };
-
-    locked.forEach(set => {
-      let tileNumber = set[0];
-      if (tileNumber === set[1]) {
-        stats.pungs++;
-        stats.locked.pungs++;
-        if (tileNumber < 27) {
-          stats.numerals += set.length;
-          stats.locked.numerals += set.length;
-          stats.suits[this.suit(tileNumber)]++;
-          stats.locked.suits[this.suit(tileNumber)]++;
-        }
-        if (tileNumber + 27 === this.player.wind) {
-          stats.bigpungs++;
-          stats.locked.bigpungs++;
-        }
-        if (tileNumber + 27 === this.player.windOfTheRound) {
-          stats.bigpungs++;
-          stats.locked.bigpungs++;
-        }
-        if (tileNumber > 30) {
-          stats.bigpungs++;
-          stats.locked.bigpungs++;
-        }
-      } else {
-        stats.chows++;
-        stats.locked.chows++;
-        stats.numerals += set.length;
-        stats.locked.numerals += set.length;
-        stats.suits[this.suit(tileNumber)]++;
-        stats.locked.suits[this.suit(tileNumber)]++;
-      }
-      stats.tiles += set.length;
-      stats.locked.tiles += set.length;
-    });
-
-    tiles.forEach(tileNumber => {
-      if (tileNumber <= 26) {
-        stats.numerals++;
-        let face = (tileNumber%9);
-        if (face===0 || face===8) stats.terminals++;
-        stats.suits[this.suit(tileNumber)]++;
-      } else {
-        stats.honours++;
-        if (26 < tileNumber && tileNumber <= 30) stats.winds++;
-        if (30 < tileNumber && tileNumber <= 33) stats.dragons++;
-      }
-      tileCount[tileNumber]++;
-      stats.tiles++;
-      if (!stats.counts[tileNumber]) stats.counts[tileNumber] = 0;
-      stats.counts[tileNumber]++;
-    });
-
-    tileCount.forEach((count,tileNumber) => {
-      // because we care about chow potential, we have
-      // to basically run a three-tile sliding window.
-      if (count && tileNumber <= 24) {
-        let c2, c3;
-        let tsuit = this.suit(tileNumber);
-        let t2 = tileNumber + 1;
-        if (this.suit(t2)===tsuit) {
-          c2 = tileCount[t2];
-          let t3 = tileNumber + 2;
-          if (this.suit(t3)===tsuit) {
-            c3 = tileCount[t3];
-          }
-        }
-        if (c2 && c3) stats.chows++;
-        else if (c2 || c3) stats.cpairs++;
-      }
-      if (count===2) stats.pairs++;
-      if (count>=3) {
-        stats.pungs++;
-        if (tileNumber + 27 === this.player.wind) { stats.bigpungs++; }
-        if (tileNumber + 27 === this.player.windOfTheRound) { stats.bigpungs++; }
-        if (tileNumber > 30) { stats.bigpungs++; }
-      }
-    });
-
-    return stats;
   }
 }
