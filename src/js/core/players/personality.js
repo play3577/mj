@@ -210,13 +210,13 @@ class Personality {
   isValidWin(tilesRemaining) {
     // Are we continuing to be the fowlest of chickens?
     if (this.chicken) {
-      console.log(this.player.id,'is going for chickens');
+      console.debug(this.player.id,'is going for chickens');
       return true;
     }
 
     // Are we in panic mode?
     if (tilesRemaining < this.panicThreshold) {
-      console.log(this.player.id,'PANIC MODE: just declaring a win!','(',tilesRemaining,'left)');
+      console.debug(this.player.id,'PANIC MODE: just declaring a win!','(',tilesRemaining,'left)');
       return true;
     }
 
@@ -244,7 +244,13 @@ class Personality {
    * policy? E.g. is it a dots tile while we're trying to play clean
    * on the characters suit instead?
    */
-  deadTile(tile) {
+  deadTile(tile, tilesRemaining) {
+    // all tiles are welcome in a chicken hand.
+    if (this.chicken) return false;
+
+    // all tiles are welcome when we're desperate!
+    if (tilesRemaining < this.panicThreshold) return false;
+
     if (this.playClean !== false && tile < 27) {
       let suit = this.suit(tile);
       if (this.playClean !== suit) return true;

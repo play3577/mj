@@ -35,7 +35,8 @@ let FORCE_OPEN_BOT_PLAY = false;
 let SHOW_BOT_CLAIM_SUGGESTION = false;
 
 // How likely are bots to go for chicken
-// hands, rather than for hands orth points?
+// hands, rather than for hands worth points?
+// Set this to 0 to turn all bots into chickens!
 let BOT_CHICKEN_THRESHOLD = 0.8;
 
 // The number of milliseconds the game

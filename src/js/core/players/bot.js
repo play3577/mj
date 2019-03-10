@@ -140,7 +140,7 @@ class BotPlayer extends Player {
 
     // Now then. We haven't won, let's figure out which tiles are worth keeping,
     // and which tiles are worth throwing away.
-    this.determineDiscardCarefully(resolve);
+    this.determineDiscardCarefully(tilesRemaining, resolve);
   }
 
   /**
@@ -240,7 +240,7 @@ class BotPlayer extends Player {
    * This is the second part of determineDiscard, which handles all
    * the "we didn't just win" cases.
    */
-  determineDiscardCarefully(resolve) {
+  determineDiscardCarefully(tilesRemaining, resolve) {
     let tiles = this.getAvailableTiles();
     let tileCount = [];
     let immediateValue = [];
@@ -261,7 +261,7 @@ class BotPlayer extends Player {
 
       // Step 1: are there any tiles that our play policy
       // says need to go? If so, discard any of those.
-      if (this.personality.deadTile(tile)) {
+      if (this.personality.deadTile(tile, tilesRemaining)) {
         return (immediateValue[tile] = 0);
       }
 
