@@ -32,7 +32,7 @@ let FORCE_OPEN_BOT_PLAY = false;
 // Highlight discarded tiles if the bot
 // superclass to the human player recommends
 // claiming it for something.
-let SHOW_BOT_CLAIM_SUGGESTION = false;
+let SHOW_BOT_CLAIM_SUGGESTION = true;
 
 // How likely are bots to go for chicken
 // hands, rather than for hands worth points?
