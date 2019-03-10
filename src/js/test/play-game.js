@@ -19,6 +19,6 @@ if (typeof process !== "undefined") {
     let players = game.players;
     let scores = game.scoreHistory;
     console.log(`final scores:`);
-    console.log(players.map(p => `${p.id}: ${p._score}`).join('\n'));
+    console.log(players.map(p => `${p.id}: ${p._score} (${!p.personality.chicken ? `not `: ``}chicken)`).join('\n'));
   });
 }
