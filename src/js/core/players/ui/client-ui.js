@@ -127,6 +127,8 @@ class ClientUI extends ClientUIMaster {
         if (!willBeHandled) return;
         evt.preventDefault();
 
+        if (currentTile.dataset.locked) currentTile = false;
+
         if (VK_LEFT[code]) curid = (currentTile === false) ? tlen - 1 : (curid === 0) ? tlen - 1 : curid - 1;
         if (VK_RIGHT[code]) curid = (currentTile === false) ? 0 : (curid === tlen-1) ? 0 : curid + 1;
         if (VK_START[code]) curid = 0;
