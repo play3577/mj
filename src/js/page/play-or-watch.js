@@ -13,9 +13,16 @@
     // Forced bot play
     function play() {
         let manager = new GameManager();
-        let game = manager.create();
+        let game = manager.newGame();
         game.startGame(() => {
-            offerChoice();
+            document.body.classList.add('finished');
+            let gameui = game.players.find(p => p.ui).ui;
+
+            return modal.showFinalScores(gameui, game.rules, game.scoreHistory, () => {
+              document.body.classList.remove('finished');
+              rotateWinds.reset();
+              offerChoice();
+            });
         });
     }
 

@@ -18,9 +18,18 @@ I can hear the web devs amongst you thinking "but... then isn't it horribly inef
 
 ### Debugging using query parameters
 
-Debugging options are set via URL query parameter, however, the way to toggle these is via the settings menu.
+Open `index.html` in your browser. Debugging options are set via URL query parameter, however, the way to toggle these is via the settings menu.
 
 ![A screenshot of the settings menu](https://user-images.githubusercontent.com/177243/53782965-9b358980-3ec4-11e9-8dd1-f81ed3aeba59.png)
+
+### Node based testing
+
+Most of the code is aware of whether it's running in the browser, or in node context. As such, the following things work:
+
+- `node src/js/test/hand-generator` generates all possible hand patterns (based on tile category, not tile face)
+- `node src/js/test/play-game` plays an entire game between four bots.
+- `node src/js/core/algorithm/tiles-needed.js` runs unit tests
+- `node src/js/core/scoring/chinese-classical.js` runs unit tests
 
 ### I have (a) question(s)!
 

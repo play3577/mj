@@ -81,143 +81,147 @@ function tilesNeeded(tiles, locked=[], canChow=false) {
 
 if (typeof process !== "undefined") { (function() {
 
-  conf = require('../../../config.js');
-  Logger = conf.LOGGER;
-  Constants = conf.Constants;
+  module.exports = tilesNeeded;
 
   // shortcut if this wasn't our own invocation
+  let path = require('path');
   let invocation = process.argv.join(' ');
-  if (invocation.indexOf('tiles-needed.js') === -1) return;
+  let filename = path.basename(__filename)
+  if (invocation.indexOf(filename) > -1) {
 
-  // local:
-  let create = t => ({ dataset: { tile: t } }),
-      lock = l => l.map(s => s.map(t => create(t))),
-      list = l => l.map(s => s.map(t => t.dataset.tile));
+    conf = require('../../../config.js');
+    Logger = conf.LOGGER;
+    Constants = conf.Constants;
 
-  // global:
-  lineNumber = 0;
+    // local:
+    let create = t => ({ dataset: { tile: t } }),
+        lock = l => l.map(s => s.map(t => create(t))),
+        list = l => l.map(s => s.map(t => t.dataset.tile));
 
-  let tests = [
-    {
-      title: "winning mixed hand",
-      hand: [7,7,7, 15,15, 19,20,21, 22,23,24],
-      locked: [
-        [24,26,25]
-      ],
-      win: true
-    },
-    {
-      title: "winning hand with single hidden pung",
-      hand: [32,32,32],
-      locked: [
-        [1,2,3],
-        [2,3,4],
-        [5,6,7],
-        [6,6]
-      ],
-      win: true
-    },
-    {
-      title: "winning hand with single hidden pung, exposed kong",
-      hand: [32,32,32],
-      locked: [
-        [26,24,25],
-        [1,2,3],
-        [30,30,30,30],
-        [31,31]
-       ],
-       win: true
-    },
-    {
-      title: "winning hand, no tiles left in hand",
-      hand: [],
-      locked: [
-        [5,5,5,5],
-        [14,14,14],
-        [18,20,19],
-        [13,12,11],
-        [33,33]
-      ],
-      win: true
-    },
-    {
-      title: "winning hand with a kong, no tiles left in hand",
-      hand: [],
-      locked: [
-        [10,10,10],
-        [19,19,19],
-        [20,22,21],
-        [29,29,29,29],
-        [31,31]
-      ],
-      win: true
-    },
-    {
-      title: "winning hand, ambiguous pung/chow",
-      hand: [14,15,16,22,23,24,24,24],
-      locked: [
-        [10,11,12],
-        [20,21,22]
-      ],
-      win: true
-    },
-    {
-      title: "waiting hand, needs 18 or 30",
-      hand: [18,18,27,27,27,30,30,32,32,32],
-      locked: [
-        [20,22,21]
-      ],
-      win: false,
-      need: [[18], [30]]
-    },
-    {
-      title: "not a waiting hand, illegal win if 9 is claimed to form 8,9,10 (mixed suit)",
-      hand: [26,26,11,11,11,8,10],
-      locked: [
-        [29,29,29],
-        [25,24,23]
-      ],
-      win: false,
-      waiting: false
-    }
-  ]
+    // global:
+    lineNumber = 0;
 
-  tests.forEach((test,tid) => {
-    let hand = test.hand;
-    let locked = lock(test.locked);
-
-
-    console.log(`--------------------------`);
-    console.log(`test ${tid}: ${test.title}`);
-    console.log(`current hand: ${hand}`);
-    console.log(`locked: ${list(locked)}`);
-
-    let result = tilesNeeded(hand, locked, false);
-    if (test.win) {
-      if (result.winpaths===0) {
-        console.log(`test ${tid} failed: winning hand was not detected as winning.`);
-      } else {
-        console.log(`test ${tid} passed: winning hand was detected as such.`);
+    let tests = [
+      {
+        title: "winning mixed hand",
+        hand: [7,7,7, 15,15, 19,20,21, 22,23,24],
+        locked: [
+          [24,26,25]
+        ],
+        win: true
+      },
+      {
+        title: "winning hand with single hidden pung",
+        hand: [32,32,32],
+        locked: [
+          [1,2,3],
+          [2,3,4],
+          [5,6,7],
+          [6,6]
+        ],
+        win: true
+      },
+      {
+        title: "winning hand with single hidden pung, exposed kong",
+        hand: [32,32,32],
+        locked: [
+          [26,24,25],
+          [1,2,3],
+          [30,30,30,30],
+          [31,31]
+        ],
+        win: true
+      },
+      {
+        title: "winning hand, no tiles left in hand",
+        hand: [],
+        locked: [
+          [5,5,5,5],
+          [14,14,14],
+          [18,20,19],
+          [13,12,11],
+          [33,33]
+        ],
+        win: true
+      },
+      {
+        title: "winning hand with a kong, no tiles left in hand",
+        hand: [],
+        locked: [
+          [10,10,10],
+          [19,19,19],
+          [20,22,21],
+          [29,29,29,29],
+          [31,31]
+        ],
+        win: true
+      },
+      {
+        title: "winning hand, ambiguous pung/chow",
+        hand: [14,15,16,22,23,24,24,24],
+        locked: [
+          [10,11,12],
+          [20,21,22]
+        ],
+        win: true
+      },
+      {
+        title: "waiting hand, needs 18 or 30",
+        hand: [18,18,27,27,27,30,30,32,32,32],
+        locked: [
+          [20,22,21]
+        ],
+        win: false,
+        need: [[18], [30]]
+      },
+      {
+        title: "not a waiting hand, illegal win if 9 is claimed to form 8,9,10 (mixed suit)",
+        hand: [26,26,11,11,11,8,10],
+        locked: [
+          [29,29,29],
+          [25,24,23]
+        ],
+        win: false,
+        waiting: false
       }
-    }
+    ]
 
-    else if (test.waiting === false) {
-      if (result.waiting === false) {
-        console.log(`test ${tid} passed: non-waiting hand was detected as such.`);
-      } else {
-        console.log(`test ${tid} failed: non-waiting hand was detected as ${result.winner ? `winning`:`waiting`}.`);
+    tests.forEach((test,tid) => {
+      let hand = test.hand;
+      let locked = lock(test.locked);
+
+
+      console.log(`--------------------------`);
+      console.log(`test ${tid}: ${test.title}`);
+      console.log(`current hand: ${hand}`);
+      console.log(`locked: ${list(locked)}`);
+
+      let result = tilesNeeded(hand, locked, false);
+      if (test.win) {
+        if (result.winpaths===0) {
+          console.log(`test ${tid} failed: winning hand was not detected as winning.`);
+        } else {
+          console.log(`test ${tid} passed: winning hand was detected as such.`);
+        }
       }
-    }
 
-    else if (test.need) {
-      if (test.need.every(tile => result.lookout[tile].some(type => type.indexOf('32')===0))) {
-        console.log(`test ${tid} passed: all possible win tiles were flagged as lookout.`);
-      } else {
-        console.log(`test ${tid} failed: not all tiles required to win are marked as required.`);
+      else if (test.waiting === false) {
+        if (result.waiting === false) {
+          console.log(`test ${tid} passed: non-waiting hand was detected as such.`);
+        } else {
+          console.log(`test ${tid} failed: non-waiting hand was detected as ${result.winner ? `winning`:`waiting`}.`);
+        }
       }
-    }
 
-    else console.log(result);
-  });
+      else if (test.need) {
+        if (test.need.every(tile => result.lookout[tile].some(type => type.indexOf('32')===0))) {
+          console.log(`test ${tid} passed: all possible win tiles were flagged as lookout.`);
+        } else {
+          console.log(`test ${tid} failed: not all tiles required to win are marked as required.`);
+        }
+      }
 
+      else console.log(result);
+    });
+  }
 })()}

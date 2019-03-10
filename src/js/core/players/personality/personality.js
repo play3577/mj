@@ -1,3 +1,9 @@
+if (typeof process !== "undefined") {
+  config = require('../../../../config.js');
+  buildStatsContainer = require('./stats.js');
+  max = require('../../utils/math.js').max;
+}
+
 /**
  * This is a class that regulates, given a tile that a bot might
  * have the opportunity to claim, whether or not to claim it.
@@ -262,4 +268,8 @@ class Personality {
 
     return false;
   }
+}
+
+if (typeof process !== "undefined") {
+  module.exports = Personality;
 }

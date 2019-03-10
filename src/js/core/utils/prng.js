@@ -1,7 +1,5 @@
 if (typeof process !== "undefined") {
-  if (typeof random === "undefined") {
-    random = require('./math').random;
-  }
+  random = require('./math').random;
 }
 
 
@@ -27,7 +25,10 @@ function Random(seed) {
 
 // custom addition because we need a way to know how to seed very exactly.
 Random.prototype.seed = function (v) {
-  if (v) this._seed = v;
+  if (v) {
+    this._seed = v;
+    console.log(`Seeding PRNG: ${v}`);
+  }
   return this._seed;
 }
 

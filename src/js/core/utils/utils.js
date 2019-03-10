@@ -1,3 +1,7 @@
+if (typeof process !== "undefined") {
+  document = require('./dom-shim.js');
+}
+
 /**
  * Create a <span data-tile="..."></span> element
  * from a specified tile number. Also, because it's
@@ -38,8 +42,5 @@ function unroll(list, seen=[], result=[]) {
 }
 
 if (typeof process !== "undefined") {
-  module.exports = {
-    create,
-    unroll
-  };
+  module.exports = { create, unroll };
 }

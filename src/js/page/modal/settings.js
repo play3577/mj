@@ -117,3 +117,8 @@ class SettingsModal {
     this.modal.addFooter(panel, "Return to the previous menu instead");
   }
 }
+
+if (typeof process !== "undefined") {
+  module.exports = SettingsModal;
+}
+

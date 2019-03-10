@@ -1,3 +1,8 @@
+if (typeof process !== "undefined") {
+  playClip = require('../../../page/audio.js');
+  create = require('../../utils/utils.js').create;
+}
+
 /**
  * This is a graphical interface that players can use
  * to visualise their game knowledge, and allow external
@@ -662,4 +667,8 @@ class ClientUIMaster {
     // 3: plain compare for regular tiles
     return a - b;
   }
+}
+
+if (typeof process !== "undefined") {
+  module.exports = ClientUIMaster;
 }

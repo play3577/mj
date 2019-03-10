@@ -1,3 +1,8 @@
+if (typeof process !== "undefined") {
+  document = require('../utils/dom-shim.js');
+  TileTracker = require('./tracking/tile-tracker.js');
+}
+
 // =========================================
 //        Let's define a Player class!
 // =========================================
@@ -283,4 +288,8 @@ class PlayerMaster {
     if (c2) return CLAIM.CHOW2;
     return CLAIM.IGNORE;
   }
+}
+
+if (typeof process !== "undefined") {
+  module.exports = PlayerMaster;
 }

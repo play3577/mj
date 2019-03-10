@@ -1,5 +1,10 @@
+if (typeof process !== "undefined") {
+  LimitHands = require('./limit-hands.js');
+}
+
 /**
- *
+ * The generic ruleset object that specific
+ * rulesets can extend off of.
  */
 class Ruleset {
 
@@ -406,4 +411,7 @@ class Ruleset {
 // Node context
 if (typeof process !== "undefined") {
   module.exports = Ruleset;
+
+  // make sure CC rules are loaded.
+  require('./chinese-classical');
 }

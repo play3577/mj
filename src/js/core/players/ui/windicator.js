@@ -1,3 +1,7 @@
+if (typeof process !== "undefined") {
+  document = require('../../utils/dom-shim.js');
+}
+
 /**
  * A dedicated bit of code for rotating the winds as hands are played.
  */
@@ -55,3 +59,9 @@ const rotateWinds = (function generateRotateWindsFunction() {
   // and of course, make sure to remember to expose that function...
   return rotateWinds;
 })();
+
+
+if (typeof process !== "undefined") {
+  module.exports = rotateWinds;
+}
+

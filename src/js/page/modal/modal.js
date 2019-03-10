@@ -1,3 +1,10 @@
+if (typeof process !== "undefined") {
+  OptionsDialog = require('./options-dialog.js');
+  SettingsModal = require('./settings.js');
+  ScoreModal = require('./scores.js');
+}
+
+
 /**
  * A modal dialog handling class. The actual dialog
  * content is written up in other files, this file
@@ -129,3 +136,7 @@ class Modal {
 }
 
 let modal = new Modal();
+
+if (typeof process !== "undefined") {
+  module.exports = modal;
+}

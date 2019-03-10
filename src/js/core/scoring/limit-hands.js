@@ -30,3 +30,7 @@ class LimitHands {
     return (tiles.length === 1 && offset < tiles[0] && tiles[0] < offset+8);
   }
 }
+
+if (typeof process !== "undefined") {
+  module.exports = LimitHands;
+}

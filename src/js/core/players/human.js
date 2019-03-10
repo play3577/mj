@@ -1,3 +1,8 @@
+if (typeof process !== "undefined") {
+  BotPlayer = require('./bot.js');
+  ClientUI = require('./ui/client-ui.js');
+}
+
 /**
  * And this is a human player... which is "a kind
  * of bot player" and that might seem surprising,
@@ -60,4 +65,8 @@ class HumanPlayer extends BotPlayer {
       this.ui.listenForClaim(pid, discard, suggestion, resolve, interrupt, claimTimer);
     });
   }
+}
+
+if (typeof process !== "undefined") {
+  module.exports = HumanPlayer;
 }

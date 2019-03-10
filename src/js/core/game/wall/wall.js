@@ -56,3 +56,7 @@ class Wall {
     return this.tiles.splice(0, howmany);
   }
 }
+
+if (typeof process !== "undefined") {
+  module.exports = Wall;
+}

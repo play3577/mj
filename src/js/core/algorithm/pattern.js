@@ -2,6 +2,7 @@ if (typeof process !== "undefined") {
   let hp = require("./hash-printing.js");
   hash = hp.hash;
   unhash = hp.unhash;
+  Constants = require("../../../config.js").Constants;
 }
 
 /**

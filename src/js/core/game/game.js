@@ -1,3 +1,15 @@
+if (typeof process !== "undefined") {
+  Player = require('../players/player.js');
+  Ruleset = require('../scoring/ruleset');
+  Wall = require('./wall/wall.js');
+  CLAIM = require('../../../config.js').CLAIM;
+  modal = require('../../page/modal/modal.js');
+  console = require('../utils/console-shim.js');
+  // TODO: game.js should not know anything about UI code...
+  rotateWinds = require('../players/ui/windicator.js');
+}
+
+
 /**
  * This class models an entire game.
  */
@@ -29,6 +41,7 @@ class Game {
     this.hand = 0;
     this.draws = 0;
     this.totalDraws = 0;
+    this.totalPlays = 0;
     this.players.forEach(p => p.gameWillStart());
     this.startHand();
     this.finish = whenDone;
@@ -96,26 +109,20 @@ class Game {
           if (this.windOfTheRound === 4) {
             let ms = (Date.now() - this.GAME_START);
             let s = ((ms/10)|0)/100;
-            this.hand = this.draws = '';
-            rotateWinds();
             let finalScores = players.map(p => p.getScore());
             let highest = finalScores.reduce((t,v) => v>t?v:t, 0);
             let gamewinner = finalScores.indexOf(highest);
             console.log(`\nfull game played: player ${gamewinner} is the winner!`);
-            console.log(`(game took ${s}s, ${this.totalDraws} draws)`);
+            console.log(`(game took ${s}s. ${this.totalPlays} plays: ${this.hand} hands, ${this.totalDraws} draws)`);
             players.forEach(p => p.endOfGame(finalScores));
-            document.body.classList.add('finished');
-            let gameui = this.players.find(p => p.ui).ui;
-            return modal.showFinalScores(gameui, this.rules, this.scoreHistory, () => {
-              document.body.classList.remove('finished');
-              rotateWinds.reset();
-              this.finish();
-            });
+            rotateWinds.reset();
+            return this.finish();
           }
         }
       } else console.debug(`Winner player was East, winds will not rotate.`);
     }
 
+    this.totalPlays++;
     if (!result.draw && !config.FORCE_DRAW) {
       this.hand++;
       this.draws = 0;
@@ -251,13 +258,13 @@ class Game {
    */
   processKong(player, kong, melded=false) {
     console.debug(`${player.id} plays kong ${kong[0].dataset.tile} (melded: ${melded})`);
-    players.forEach(p => p.seeKong(kong, player));
+    this.players.forEach(p => p.seeKong(kong, player));
 
     // deal supplement tile(s) for as long as necessary
     let revealed = false;
     do {
       let tile = this.wall.get();
-      players.forEach(p => p.receivedTile(player));
+      this.players.forEach(p => p.receivedTile(player));
       revealed = player.append(tile);
       if (revealed) players.forEach(p => p.see(revealed, player));
     } while (revealed);
@@ -523,4 +530,8 @@ class Game {
     player.disable();
     setTimeout(() => this.play(claim), this.playDelay);
   }
+}
+
+if (typeof process !== "undefined") {
+  module.exports = Game;
 }

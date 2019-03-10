@@ -116,3 +116,8 @@ const WallHack = {
     wall.tiles = tiles.concat(wall.shuffle(base));
   }
 };
+
+
+if (typeof process !== "undefined") {
+  module.exports = WallHack;
+}

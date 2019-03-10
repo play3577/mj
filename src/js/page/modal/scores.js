@@ -170,3 +170,7 @@ class ScoreModal {
     this.modal.addFooter(panel, "Back to the scores");
   }
 }
+
+if (typeof process !== "undefined") {
+  module.exports = ScoreModal;
+}

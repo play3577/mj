@@ -5,5 +5,5 @@ let min = Math.min;
 let random = v => v ? (Math.random() * v)|0 : Math.random();
 
 if (typeof process !== "undefined") {
-  module.exports = { min, max, random};
+  module.exports = { min, max, random };
 }

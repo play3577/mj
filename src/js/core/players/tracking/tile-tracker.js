@@ -47,3 +47,7 @@ class TileTracker {
     if (this.ui) this.ui.reduceTracker(tileNumber);
   }
 }
+
+if (typeof process !== "undefined") {
+  module.exports = TileTracker;
+}

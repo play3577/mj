@@ -1,10 +1,17 @@
+if (typeof process !== "undefined") {
+  HumanPlayer = require('../players/human.js');
+  BotPlayer = require('../players/bot.js');
+  Game = require('./game.js');
+}
+
+
 /**
  * Nothing fancy here. Just a Game object builder.
  */
 class GameManager {
-  constructor() {
+  constructor(players) {
     this.gameBoard = document.querySelector('.board');
-    this.players = [
+    this.players = players || [
       new HumanPlayer(0),
       new BotPlayer(1),
       new BotPlayer(2),
@@ -20,7 +27,7 @@ class GameManager {
    * Create a game, with document blur/focus event handling
    * bound to game pause/resume functionality.
    */
-  create() {
+  newGame() {
     let game = new Game(this.players);
     if (config.PAUSE_ON_BLUR) {
 
@@ -37,4 +44,8 @@ class GameManager {
     this.gameBoard.focus();
     return game;
   }
+}
+
+if (typeof process !== "undefined") {
+  module.exports = GameManager;
 }

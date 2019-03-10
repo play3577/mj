@@ -1,3 +1,7 @@
+if (typeof process !== "undefined") {
+  document = require('../core/utils/dom-shim.js');
+}
+
 const filenames = {
   thud: [
     `play-01.mp3`,
@@ -62,4 +66,8 @@ function playClip(name, id) {
   let audio = bin[pos];
   if (!audio) return console.error(`audio bin ${name} does not have a clip ${pos}`);
   audio.play();
+}
+
+if (typeof process !== "undefined") {
+  module.exports = playClip;
 }

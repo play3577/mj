@@ -1,3 +1,9 @@
+if (typeof process !== "undefined") {
+  Player = require('./player.js');
+  Personality = require('./personality/personality.js');
+  tilesNeeded = require('../algorithm/tiles-needed.js');
+}
+
 /**
  * This guy should be obvious: bots are simply
  * automated processes that follow play rules
@@ -409,4 +415,8 @@ class BotPlayer extends Player {
 
     return resolve({claimtype: CLAIM.IGNORE});
   }
+}
+
+if (typeof process !== "undefined") {
+  module.exports = BotPlayer;
 }

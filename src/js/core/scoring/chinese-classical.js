@@ -1,7 +1,5 @@
 if (typeof process !== "undefined") {
-  if (typeof Ruleset === "undefined") {
-    Ruleset = require('./ruleset');
-  }
+  Ruleset = require('./ruleset.js');
 }
 
 /**
@@ -320,58 +318,66 @@ Ruleset.register(ChineseClassical);
 
 
 if (typeof process !== "undefined") {
-  (function() {
-    config = require('../../../config.js');
-    tilesNeeded = require("../algorithm/tiles-needed.js");
-    Logger = console;
 
-    // shortcut if we're merely being required
-    let invocation = process.argv.join(" ");
-    if (invocation.indexOf("chinese-classical.j") === -1) return;
+  // shortcut if this wasn't our own invocation
+  let path = require('path');
+  let invocation = process.argv.join(' ');
+  let filename = path.basename(__filename)
+  if (invocation.indexOf(filename) !== -1) {
 
-    let rules = new ChineseClassical();
+    (function() {
+      config = require('../../../config.js');
+      tilesNeeded = require("../algorithm/tiles-needed.js");
+      Logger = console;
 
-    function lock(sets, win) {
-      return sets.map((set, sid) =>
-        set.map(t => {
-          let dataset = { tile: t, locked: "locked" };
-          if (sid === win) dataset.winning = "winning";
-          return { dataset };
-        })
-      );
-    }
+      // shortcut if we're merely being required
+      let invocation = process.argv.join(" ");
+      if (invocation.indexOf("chinese-classical.j") === -1) return;
 
-    let tests = [
-      {
-        id: 0,
-        wotr: 0,
-        tilesLeft: 50,
-        winner: true,
-        selfdraw: false,
-        concealed: [32, 32, 32],
-        locked: lock([[1, 2, 3], [2, 3, 4], [3, 4, 5], [6, 6]], 3),
-        bonus: [],
-        wind: 1
-      },
-      {
-        id: 0,
-        wotr: 0,
-        tilesLeft: 50,
-        winner: true,
-        selfdraw: false,
-        concealed: [5,5,5, 11,12,13],
-        locked: lock([[20,21,22], [24,25,26], [11,11]], 3),
-        bonus: [],
-        wind: 1
-      },
-    ];
+      let rules = new ChineseClassical();
 
-    tests.forEach((test,id) => {
-      if (id < 1) return;
+      function lock(sets, win) {
+        return sets.map((set, sid) =>
+          set.map(t => {
+            let dataset = { tile: t, locked: "locked" };
+            if (sid === win) dataset.winning = "winning";
+            return { dataset };
+          })
+        );
+      }
 
-      console.log(test.concealed, test.locked.map(set => set.map(t => t.dataset.tile)), test.bonus);
-      let scores = rules.scoreTiles(test, test.id, test.wotr, test.tilesLeft);
-      console.log(scores);
-    });
-  })();
+      let tests = [
+        {
+          id: 0,
+          wotr: 0,
+          tilesLeft: 50,
+          winner: true,
+          selfdraw: false,
+          concealed: [32, 32, 32],
+          locked: lock([[1, 2, 3], [2, 3, 4], [3, 4, 5], [6, 6]], 3),
+          bonus: [],
+          wind: 1
+        },
+        {
+          id: 0,
+          wotr: 0,
+          tilesLeft: 50,
+          winner: true,
+          selfdraw: false,
+          concealed: [5,5,5, 11,12,13],
+          locked: lock([[20,21,22], [24,25,26], [11,11]], 3),
+          bonus: [],
+          wind: 1
+        },
+      ];
+
+      tests.forEach((test,id) => {
+        if (id < 1) return;
+
+        console.log(test.concealed, test.locked.map(set => set.map(t => t.dataset.tile)), test.bonus);
+        let scores = rules.scoreTiles(test, test.id, test.wotr, test.tilesLeft);
+        console.log(scores);
+      });
+    })();
+  }
 }

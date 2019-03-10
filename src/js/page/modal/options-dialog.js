@@ -76,3 +76,7 @@ class OptionsDialog {
     panel.gainFocus();
   }
 }
+
+if (typeof process !== "undefined") {
+  module.exports = OptionsDialog;
+}
