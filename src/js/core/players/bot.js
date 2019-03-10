@@ -359,7 +359,12 @@ class BotPlayer extends Player {
       // If this is not (one of) the tile(s) we need, ignore it, unless we can form a kong.
       let ways = winTiles[tile];
       if (!ways || !ways.length) {
-        if (lookout[tile] && lookout[tile].indexOf('16') !== -1) return resolve({claimtype: CLAIM.KONG });
+        if (lookout[tile] && lookout[tile].indexOf('16') !== -1) {
+          // but, *should* we kong?
+          let allowed = this.personality.want(tile, CLAIM.KONG, tilesRemaining);
+          console.log(`${this.id} wants to claim a kong ${tile} - allowed by policy? ${allowed}`);
+          if (allowed) return resolve({claimtype: CLAIM.KONG });
+        }
         return resolve({claimtype: CLAIM.IGNORE});
       }
 

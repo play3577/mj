@@ -251,9 +251,17 @@ class Personality {
     // all tiles are welcome when we're desperate!
     if (tilesRemaining < this.panicThreshold) return false;
 
+    // is this in a suit we want to get rid of?
     if (this.playClean !== false && tile < 27) {
       let suit = this.suit(tile);
       if (this.playClean !== suit) return true;
+    }
+
+    // is this tile part of a concealed pung,
+    // while we're going for a chow hand?
+    let stats = this.analyse();
+    if (stats.locked.chows > 0 && stats.counts[tile] > 2) {
+      return true;
     }
 
     return false;
@@ -278,6 +286,7 @@ class Personality {
       pungs: 0,  // {t, t, t}
       bigpungs: 0, // dragons, own wind, wotr
       tiles: 0,
+      counts: {},
       numerals: 0,
       terminals: 0,
       honours: 0,
@@ -336,6 +345,8 @@ class Personality {
       }
       tileCount[tileNumber]++;
       stats.tiles++;
+      if (!stats.counts[tileNumber]) stats.counts[tileNumber] = 0;
+      stats.counts[tileNumber]++;
     });
 
     tileCount.forEach((count,tileNumber) => {
