@@ -135,11 +135,12 @@ class Pattern {
         if(s1 === s2 && s1 === s3) this.markWin(results, t1, Constants.CHOW1);
         if(s4 === s2 && s4 === s3) this.markWin(results, t2, Constants.CHOW3);
       }
-      else if (single[1] < 27 && single[0]+2 === single[1]) {
+      else if (single[1] < 27 && single[1] === single[0]+2) {
+        let middle = single[0] + 1;
         let s1 = this.getSuit(single[0]);
-        let s2 = this.getSuit(single[0]+1);
-        let s3 = this.getSuit(single[2]);
-        if (s1===s3 && s1===s2) this.markWin(results, single[0]+1, Constants.CHOW2);
+        let s2 = this.getSuit(middle);
+        let s3 = this.getSuit(single[1]);
+        if (s1===s3 && s1===s2) this.markWin(results, middle, Constants.CHOW2);
       }
     }
 

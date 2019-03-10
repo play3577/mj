@@ -183,13 +183,22 @@ if (typeof process !== "undefined") { (function() {
         ],
         win: false,
         waiting: false
+      },
+      {
+        title: "waiting on a gapped chow",
+        hand: [4,5,6, 9,10,11, 12,14, 15,15],
+        locked: [
+          [20,21,22]
+        ],
+        win: false,
+        waiting: true,
+        need: [[13]]
       }
     ]
 
     tests.forEach((test,tid) => {
       let hand = test.hand;
       let locked = lock(test.locked);
-
 
       console.log(`--------------------------`);
       console.log(`test ${tid}: ${test.title}`);
