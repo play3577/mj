@@ -4,9 +4,9 @@
 
 2: This README.md has been kept sparse pending a set of full length development articles that walk through going from "having an idea" to "having finished writing a fully functional game".
 
-## Where can I play this game?
+### Can I play this game?
 
-Just head on over to the live site version: https://pomax.github.io/mj
+You sure can! Just head on over to the live site version: https://pomax.github.io/mj
 
 Note that mostly due to that's what we play in our house a lot, this implementation currently uses "Chinese Classical" rules for play and scoring. Additional rules will eventually be written (the next one is most likely standard Cantonese rules with faan scoring).
 
