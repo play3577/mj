@@ -16,10 +16,10 @@ class HumanPlayer extends BotPlayer {
    *
    * @param {*} resolve
    */
-  determineDiscard(resolve) {
+  determineDiscard(tilesRemaining, resolve) {
     // Let's ask our "bot" assistant for what
     // it would suggest we throw away:
-    super.determineDiscard(suggestion => {
+    super.determineDiscard(tilesRemaining, suggestion => {
       if (config.BOT_PLAY) return resolve(suggestion);
       this.ui.listenForDiscard(discard => {
 

@@ -11,8 +11,8 @@ class Player extends PlayerMaster {
     this.game = game;
   }
 
-  async getDiscard(resolve) {
-    return this.determineDiscard(resolve);
+  async getDiscard(tilesRemaining, resolve) {
+    return this.determineDiscard(tilesRemaining, resolve);
   }
 
   /**
@@ -21,7 +21,7 @@ class Player extends PlayerMaster {
    * that here. We'll leave that up to the specific
    * player types instead.
    */
-  determineDiscard(resolve) {
+  determineDiscard(tilesRemaining, resolve) {
     resolve(undefined);
   }
 
@@ -69,6 +69,7 @@ class Player extends PlayerMaster {
     set.locked = true;
 
     if (claimtype === CLAIM.WIN) {
+      console.log('win claim');
       this.markWinner();
       if (!set.winning) claimtype = claim.wintype; // prevent double counting!
       set.winning = true;

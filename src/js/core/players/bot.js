@@ -92,7 +92,7 @@ class BotPlayer extends Player {
    * Note: returning an falsey value leads to the game understanding that
    * as meaning this play has won.
    */
-  determineDiscard(resolve) {
+  determineDiscard(tilesRemaining, resolve) {
     // If we were awarded a winning claim, then by the
     // time we are asked to discard, we will already be
     // marked as having won:
@@ -112,13 +112,19 @@ class BotPlayer extends Player {
     let { winpaths } = tilesNeeded(this.getTileFaces(), this.locked);
 
     if(winpaths.length > 0) {
-      // We have indeed won! Mark this as a self-drawn win, because
-      // if it was a claimed win we would have exited this function
-      // already (due to `this.has_won`), and then let the game.js
-      // game loop discover we've won by not discarding anything.
-      this.selfdraw = true;
-      console.debug(`Self-drawn win for player ${this.id} on ${this.latest.dataset.tile}`);
-      return resolve(undefined);
+      // We may very well have won! ...except not if our play policy
+      // has requirements that this win is not allowed under.
+      if (this.personality.isValidWin(tilesRemaining)) {
+        // We have indeed won! Mark this as a self-drawn win, because
+        // if it was a claimed win we would have exited this function
+        // already (due to `this.has_won`), and then let the game.js
+        // game loop discover we've won by not discarding anything.
+        this.selfdraw = true;
+        console.debug(`Self-drawn win for player ${this.id} on ${this.latest.dataset.tile}`);
+        return resolve(undefined);
+      }
+      // If we get here, we have not won.
+      this.waiting = false;
     }
 
     // If we're waiting to win, then this was not (one of)
@@ -253,8 +259,15 @@ class BotPlayer extends Player {
       let value = 0;
       let availability = this.tracker.get(tile);
 
-      // values are based on "can we get more". If not, then
-      // however many tile we have is all we'll get.
+      // Step 1: are there any tiles that our play policy
+      // says need to go? If so, discard any of those.
+      if (this.personality.deadTile(tile)) {
+        return (immediateValue[tile] = 0);
+      }
+
+      // Step 2: our play policy has nothing to say here,
+      // so values are based on "can we get more". If not,
+      // then however many tile we have is all we'll get.
 
       if (tileCount[tile] >= 3) value = max(value, availability>0 ? 100 : 90);
       else if (tileCount[tile] === 2) value = max(value, availability>0 ? 90 : 50);
@@ -328,8 +341,6 @@ class BotPlayer extends Player {
     let tiles = this.getTileFaces();
     tiles.sort();
 
-    // console.debug(`${this.id} determining claim for ${tile} based on ${tiles}`);
-
     let {lookout, waiting, composed} = tilesNeeded(tiles, this.locked, canChow);
 
     // Are we waiting to win?
@@ -339,14 +350,7 @@ class BotPlayer extends Player {
       let winTiles = {};
       lookout.forEach((list,tileNumber) => {
         if (list) {
-          list = list.filter(v => {
-            // first filter: this needs to be a winning tile. Of course.
-            if (v.indexOf('32') === -1) return false;
-            // second filter: we _can_ win on this, but _should_ we win on this?
-            let wintype = parseInt(v.replace('32s',''));
-            if(!this.personality.determineWhetherToWin(tileNumber, wintype, tilesRemaining)) return false;
-            return true;
-          });
+          list = list.filter(v => v.indexOf('32') === 0);
           if (list.length) winTiles[tileNumber] = list;
         }
       });
@@ -359,9 +363,25 @@ class BotPlayer extends Player {
         return resolve({claimtype: CLAIM.IGNORE});
       }
 
-      // (one of) the tile(s) we need: claim a win.
+      // (one of) the tile(s) we need: claim a win, if we can.
       let wintype = ways.map(v => parseInt(v.substring(3))).sort((a,b)=>(b-a))[0];
-      // FIXME: TODO: add in a "quick" score check to, in case of multiple ways to win, which scores more.
+
+      let allowed = this.personality.determineWhetherToWin(tile, wintype, tilesRemaining);
+      if (allowed === false) return resolve({claimtype: CLAIM.IGNORE});
+      if (allowed === wintype) {
+        // When the result of determineWhetherToWin is a claim constant,
+        // then while we can't win on this tile due to policy violations
+        // (e.g trying win on pung of winds while we're not clean yet)
+        // this IS a valid regular claim as far as our play policy is
+        // concerned, so resolve it as such.
+        if (CLAIM.CHOW <= allowed && allowed < CLAIM.PUNG && !canChow) {
+          // just remember that if the claim was a chow, that might not
+          // actually be legal if we're not winning on this tile so make
+          // sure to check for that.
+          return resolve({ claimtype: CLAIM.IGNORE });
+        }
+        return resolve({claimtype: allowed });
+      }
       return resolve({claimtype: CLAIM.WIN, wintype });
     }
 

@@ -317,7 +317,7 @@ class Game {
     do {
       if (discard) discard.classList.remove('discard');
 
-      discard = this.discard = await new Promise(resolve => player.getDiscard(resolve));
+      discard = this.discard = await new Promise(resolve => player.getDiscard(wall.remaining, resolve));
 
       // Did anyone win?
       if (!discard) {
@@ -496,6 +496,7 @@ class Game {
         p = pid;
       }
     });
+    //console.log(claims);
 
     // artificial delay, if required for human play
     if (currentpid===0 && !config.BOT_PLAY && config.BOT_DELAY_BEFORE_DISCARD_ENDS) {
@@ -504,7 +505,9 @@ class Game {
       });
     }
 
-    return p === -1 ? undefined : { claimtype: claim, wintype: win, p };
+    let winningClaim = (p === -1) ? undefined : { claimtype: claim, wintype: win, p };
+    // console.log(winningClaim);
+    return winningClaim;
   }
 
   /**
@@ -516,7 +519,7 @@ class Game {
    */
   processClaim(player, claim) {
     let discard = this.discard;
-    console.debug(`${claim.p} wants ${discard.dataset.tile} for ${claim.claimtype}`);
+    //console.log(`${claim.p} wants ${discard.dataset.tile} for ${claim.claimtype}`);
     player.disable();
     setTimeout(() => this.play(claim), this.playDelay);
   }
