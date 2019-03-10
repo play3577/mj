@@ -178,6 +178,11 @@ class PlayerMaster {
     for (let tile=0, e=34, count; tile<e; tile++) {
       count = counts[tile];
       if (count===4) {
+        // Note: we do not check with our "personality" if we start
+        // with a kong, we just declare it. This means we might play
+        // suboptimal in a rare few edge cases, but it DOES mean we
+        // don't need to front-load a personality into the Player
+        // class, and can leave that aspect to bots, instead.
         let tiles = this.tiles.filter(t => t.dataset.tile==tile);
         this.lockClaim(tiles);
         return tiles;
