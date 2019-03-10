@@ -286,7 +286,7 @@ class BotPlayer extends Player {
     // "randomly" pick one of the lowest scoring tiles to discard
     let lowest = sorted[0];
     let candidates = sorted.filter(v => v.score===lowest.score);
-    let idx = (config.PRNG.nextFloat() * candidates.length)|0;
+    let idx = Math.floor(config.PRNG.nextFloat() * candidates.length);
     let candidate = candidates[idx].tile;
 
     resolve(this.getSingleTileFromHand(candidate));

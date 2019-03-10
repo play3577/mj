@@ -27,7 +27,7 @@ function Random(seed) {
 
 // custom addition because we need a way to know how to seed very exactly.
 Random.prototype.seed = function (v) {
-  if (v !== undefined) this._seed = v;
+  if (v) this._seed = v;
   return this._seed;
 }
 

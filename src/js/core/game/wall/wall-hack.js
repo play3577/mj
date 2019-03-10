@@ -19,6 +19,18 @@ const WallHack = {
       5 // p0 win
     ],
 
+    form_melded_kong_off_initial: [
+      0,3,6, 9,12,15, 18,21,24, 12,3,6, 9,      // p0
+      1,1,1, 2,2,2, 12,19,21, 4,4,4, 0,        // p1
+      7,7,7, 8,8,8, 10,10,10, 11,11,11, 0,     // p2
+      16,16,16, 17,17,17, 20,20,20, 6,6,6, 25, // p3
+      5, // p0 discard
+      5, // p1 discards 9, p0 pungs, discard 0 (p1 chow)
+      9, // p2 not a win, discards (p0 should not pung)
+      13, // p3 not a win, discard it
+      12, // p0 can now meld a kong
+    ],
+
     kong_in_initial_deal: [
       1,1,1,     2,2,2,     3,3,3,     4,4,4,4, // p0
       16,16,16,17,17,17,18,18,18,19,19,19,   5, // p1
