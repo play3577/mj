@@ -20,15 +20,16 @@ const WallHack = {
     ],
 
     form_melded_kong_off_initial: [
-      0,3,6, 9,12,15, 18,21,24, 12,3,6, 9,      // p0
+      0,3,6, 9,21,15, 18,21,24, 12,3,9, 13,    // p0
       1,1,1, 2,2,2, 12,19,21, 4,4,4, 0,        // p1
       7,7,7, 8,8,8, 10,10,10, 11,11,11, 0,     // p2
       16,16,16, 17,17,17, 20,20,20, 6,6,6, 25, // p3
       5, // p0 discard
-      5, // p1 discards 9, p0 pungs, discard 0 (p1 chow)
-      9, // p2 not a win, discards (p0 should not pung)
-      13, // p3 not a win, discard it
-      12, // p0 can now meld a kong
+      5, // p1 discards 21, p0 pungs, discard 24
+      9, // p1 not a win, discards
+      13, // p2 not a win, discards
+      12, // p3 not a win, discard
+      21, // p0 can now meld a kong
     ],
 
     kong_in_initial_deal: [
@@ -100,6 +101,16 @@ const WallHack = {
 
   set(wall, tiles) {
     tiles = tiles.slice();
+
+    // If we're wall hacking, we want to ensure that the
+    // PRNG is seeded with a known value. If there is a
+    // config object as element [0], use its seed value,
+    // use that. If not, seed it with the value 1.
+    if (typeof tiles[0] === "object") {
+      let conf = tiles.splice(0,1)[0];
+      config.PRNG.seed(conf.seed || 1);
+    } else config.PRNG.seed(1);
+
     let base = wall.getBase();
     tiles.forEach(tile => base.splice(base.indexOf(tile),1));
     wall.tiles = tiles.concat(wall.shuffle(base));
