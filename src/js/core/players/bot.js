@@ -415,6 +415,27 @@ class BotPlayer extends Player {
 
     return resolve({claimtype: CLAIM.IGNORE});
   }
+
+  /**
+   * See if this bot wants to rob the kong that was
+   * just played in order to win the current hand.
+   */
+  robKong(tiles, tilesRemaining, resolve) {
+    // Rob this kong?
+    let { lookout, waiting } = tilesNeeded(this.getTileFaces(), this.locked);
+    if (waiting) {
+      let tile = tiles[0].getTileFace();
+      let need = lookout[tile];
+      if (need) {
+        let reasons = need.filter(v => v.indexOf('32')!==0);
+        for (let reason of reasons) {
+          // policy-approved?
+          if (this.personality.determineWhetherToWin(tile, reason, tilesRemaining)) resolve(reason);
+        }
+      }
+    }
+    resolve();
+  }
 }
 
 if (typeof process !== "undefined") {

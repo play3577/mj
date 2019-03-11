@@ -18,8 +18,10 @@ class HumanPlayer extends BotPlayer {
   }
 
   /**
-   *
-   * @param {*} resolve
+   * Let the human player figure out what to discard
+   * through the UI. However, have the underlying bot
+   * perform their discard logic and offer the tile
+   * they come with as a play suggestion.
    */
   determineDiscard(tilesRemaining, resolve) {
     // Let's ask our "bot" assistant for what
@@ -51,18 +53,29 @@ class HumanPlayer extends BotPlayer {
   }
 
   /**
-   *
-   * @param {*} pid
-   * @param {*} discard
-   * @param {*} resolve
-   * @param {*} interrupt
-   * @param {*} claimTimer
+   * Let the human player figure out whether to make
+   * a claim through the UI. However, have the underlying
+   * bot perform their claim logic and offer the claim
+   * they come with as a play suggestion.
    */
   determineClaim(pid, discard, tilesRemaining, resolve, interrupt, claimTimer) {
     // And of course, the same applies here:
     super.determineClaim(pid, discard, tilesRemaining, suggestion => {
       if (config.BOT_PLAY) return resolve(suggestion);
       this.ui.listenForClaim(pid, discard, suggestion, resolve, interrupt, claimTimer);
+    });
+  }
+
+  /**
+   * Let the human player figure out whether to rob a
+   * kong, if it means they can win. However, have the
+   * underlyaing bot perform their analysis and offer
+   * their conclusion as a play suggestion.
+   */
+  robKong(tiles, tilesRemaining, resolve) {
+    super.robKong(tiles, tilesRemaining, suggestion => {
+      if (config.BOT_PLAY) return resolve(suggestion);
+      this.ui.spawnKongRobDialog(tiles, tilesRemaining, resolve);
     });
   }
 }

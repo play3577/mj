@@ -213,8 +213,15 @@ class PlayerMaster {
     if (this.ui) this.ui.playerDiscarded(player, tile, playcounter);
   }
 
-  seeKong(tiles, player) {
+  seeKong(tiles, player, tilesRemaining, resolve) {
     this.see(tiles.map(t => t.dataset.tile), player);
+    this.robKong(tiles, tilesRemaining, resolve);
+  }
+
+  // implemented by subclasses
+  robKong(tiles, tilesRemaining, resolve) {
+    console.log('playermaster.spawnKongRobDialog');
+    resolve();
   }
 
   seeClaim(tiles, player, claimedTile, claim) {

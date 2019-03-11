@@ -329,6 +329,15 @@ class ClientUI extends ClientUIMaster {
   }
 
   /**
+   * Do we want to rob a kong to win?
+   */
+  spawnKongRobDialog(tiles, tilesRemaining, resolve) {
+    // FIXME: TODO: implement this logic.
+    console.log('clientui.spawnKongRobDialog');
+    resolve();
+  }
+
+  /**
    * Called in `listenForClaim`, this function spawns a modal
    * that allows the user to claim a discard for the purposes
    * of declaring a win.

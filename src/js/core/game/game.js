@@ -242,9 +242,7 @@ class Game {
     let kong;
     do {
       kong = await player.checkKong();
-      if (kong) {
-        this.processKong(player, kong);
-      }
+      if (kong) await this.processKong(player, kong);
     } while (kong);
 
     done();
@@ -256,15 +254,24 @@ class Game {
    * may, of course, be a bonus tile, so keep going until
    * the player no longer reveals their just-dealt tile.
    */
-  processKong(player, kong, melded=false) {
+  async processKong(player, kong, melded=false) {
     console.debug(`${player.id} plays kong ${kong[0].dataset.tile} (melded: ${melded})`);
-    this.players.forEach(p => p.seeKong(kong, player));
+
+    let players = this.players;
+    let robbed = await Promise.all(
+      players.map(p => new Promise(resolve => p.seeKong(kong, player, this.wall.remaining, resolve)))
+    );
+
+    if (robbed.some(v => !!v)) {
+      console.log("kong was robbed!");
+      // TODO: finish this win path.
+    }
 
     // deal supplement tile(s) for as long as necessary
     let revealed = false;
     do {
       let tile = this.wall.get();
-      this.players.forEach(p => p.receivedTile(player));
+      players.forEach(p => p.receivedTile(player));
       revealed = player.append(tile);
       if (revealed) players.forEach(p => p.see(revealed, player));
     } while (revealed);
@@ -336,7 +343,7 @@ class Game {
         let kong = discard.kong;
         let melded = (kong.length === 1);
 
-        this.processKong(player, kong, melded);
+        await this.processKong(player, kong, melded);
 
         // Then set the discard to `false` so that we enter the
         // "waiting for discard from player" state again.
@@ -388,7 +395,7 @@ class Game {
         let kong = await player.checkKong(tile);
         if (kong) {
           console.debug(`${player.id} plays self-drawn kong ${kong[0].dataset.tile} during play`);
-          this.processKong(player, kong);
+          await this.processKong(player, kong);
         }
       }
     } while (revealed);
