@@ -259,11 +259,11 @@ class PlayerMaster {
   }
 
   getTileFaces(allTiles) {
-    return this.getTiles(allTiles).map(t => (t.dataset ? t.dataset.tile : t)|0);
+    return this.getTiles(allTiles).map(t => (t.dataset ? t.dataset.tile : t)|0).sort((a,b)=>(a-b));
   }
 
   getLockedTileFaces() {
-    return this.locked.map(set => `[${set.map(v=>v.dataset.tile|0)}]${set.winning?'!':''}`);
+    return this.locked.map(set => `[${set.map(v=>v.dataset.tile|0).sort((a,b)=>(a-b))}]${set.winning?'!':''}`);
   }
 
   sortTiles() {

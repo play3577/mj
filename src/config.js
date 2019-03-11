@@ -1,4 +1,7 @@
-if (typeof process !== "undefined") Random = require('./js/core/utils/prng.js');
+if (typeof process !== "undefined") {
+    Random = require('./js/core/utils/prng.js');
+    playlog = require('./js/core/utils/logger.js');
+}
 
 // This flag needs no explanation
 let DEBUG = false;
@@ -250,6 +253,8 @@ const config = {
     // any code that needs to randomise data.
     PRNG: new Random(SEED),
     DEBUG,
+    log: playlog.log,
+    flushLog: playlog.flush,
     NO_SOUND,
     SEED,
     PLAY_IMMEDIATELY,

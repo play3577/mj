@@ -45,6 +45,7 @@ class Game {
     this.players.forEach(p => p.gameWillStart());
     this.startHand();
     this.finish = whenDone;
+    config.log(`starting game.`);
   }
 
   /**
@@ -155,12 +156,23 @@ class Game {
     let pre = result.draw ? 'Res' : 'S';
     console.log(`\n%c${pre}tarting hand ${this.hand}.`,  `color: red; font-weight: bold; font-size: 120%; border-bottom: 1px solid black;`);
 
-    console.log(`this.hand=${this.hand}; config.PRNG.seed(${config.PRNG.seed()}); this.wind=${this.wind}; this.windOfTheRound=${this.windOfTheRound};`);
+    let logNotice = `this.hand=${this.hand}; this.draws=${this.draws}; config.PRNG.seed(${config.PRNG.seed()}); this.wind=${this.wind}; this.windOfTheRound=${this.windOfTheRound};`;
+    console.log(logNotice);
+    config.log(logNotice);
 
     this.wall.reset();
-    console.debug(`wall: ${this.wall.tiles}`);
+    logNotice = `wall: ${this.wall.tiles}`;
+    console.debug(logNotice);
+    config.log(logNotice);
+
+    config.log(`initial deal`);
     await this.dealTiles();
+    this.players.forEach(p => config.log(`tiles for ${p.id}: ${p.getTileFaces()}`));
+
+    config.log(`prepare play`);
     await this.preparePlay(config.FORCE_DRAW || this.draws > 0);
+    this.players.forEach(p => config.log(`tiles for ${p.id}: ${p.getTileFaces()} [${p.getLockedTileFaces()}]`));
+
     players.forEach(player => player.playWillStart());
     this.PLAY_START = Date.now();
     this.play();
@@ -184,6 +196,7 @@ class Game {
       for (let t=0, tile; t<bank.length; t++) {
         tile = bank[t];
         players.forEach(p => p.receivedTile(player));
+        config.log(`${player.id} <- ${tile}`);
         let revealed = player.append(tile);
         if (revealed) {
           // bonus tile are shown to all other players.
@@ -256,6 +269,8 @@ class Game {
    */
   async processKong(player, kong, melded=false) {
     console.debug(`${player.id} plays kong ${kong[0].dataset.tile} (melded: ${melded})`);
+    config.log(`${player.id} locks [${kong.map(t => t.dataset.tile)}]`);
+
 
     let players = this.players;
     let robbed = await Promise.all(
@@ -271,7 +286,7 @@ class Game {
     let revealed = false;
     do {
       let tile = this.wall.get();
-      players.forEach(p => p.receivedTile(player));
+      config.log(`${player.id} <-(supplement)- ${tile}`);
       revealed = player.append(tile);
       if (revealed) players.forEach(p => p.see(revealed, player));
     } while (revealed);
@@ -317,7 +332,9 @@ class Game {
     else {
       // If this is claim call, then the player receives
       // the current discard instead of drawing a tile:
+      config.log(`${player.id} <-(${claim.claimtype})- ${discard.dataset.tile}.`);
       let tiles = player.receiveDiscardForClaim(claim, discard);
+      config.log(`${player.id} locks [${tiles.map(v=>v.dataset.tile)}], [${player.getTileFaces()}] left in hand.`);
       players.forEach(p => p.seeClaim(tiles, player, discard, claim));
 
       // If the claim was for a kong, the player needs a supplement tile.
@@ -389,6 +406,7 @@ class Game {
     do {
       let tile = wall.get();
       this.players.forEach(p => p.receivedTile(player));
+      config.log(`${player.id} <- ${tile}`);
       revealed = player.append(tile);
       if (revealed) { this.players.forEach(p => p.see(revealed, player)); }
       else {
@@ -424,7 +442,9 @@ class Game {
     player.markWinner();
 
     let play_length = (Date.now() - this.PLAY_START);
-    console.log(`Player ${currentPlayerId} wins hand ${hand}! (hand took ${play_length}ms)`);
+    let message = `Player ${currentPlayerId} wins hand ${hand}! (hand took ${play_length}ms)`;
+    console.log(message);
+    config.log(message);
 
     // Let everyone know what everyone had. It's the nice thing to do.
     let disclosure = players.map(p => p.getDisclosure());
@@ -440,7 +460,11 @@ class Game {
     let eastid = 0;
     players.forEach(p => { if(p.wind === 0) eastid = p.id; });
     let adjustments = this.rules.settleScores(scores, player.id, eastid);
-    players.forEach(p => p.recordScores(adjustments));
+    players.forEach(p => {
+      config.log(`${p.id} score adjustment: ${adjustments[p.id]}`);
+      p.recordScores(adjustments);
+    });
+
 
     // Before we move on, record this step in the game,
     // and show the score line in a dismissable modal.
@@ -463,6 +487,7 @@ class Game {
   processDiscard(player) {
     let discard = this.discard;
     console.debug(`${player.id} discarded ${discard.dataset.tile}`);
+    config.log(`${player.id} -> ${discard.dataset.tile}`);
     player.remove(discard);
     discard.dataset.from = player.id;
     delete discard.dataset.hidden;

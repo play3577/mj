@@ -24,16 +24,27 @@ if (typeof process !== "undefined") {
     console.log();
     history.forEach((entry,hand) => {
       console.log(`hand ${hand+1}`);
+      config.log(`hand ${hand+1}`);
       entry.disclosure.forEach((data,pid) => {
         let concealed = data.concealed.sort().map(mapfn).join(',');
         let locked = data.locked.map(set => set.map(mapfn)).join(', ')
         let bonus = data.bonus.map(mapfn).join(',');
         let pattern = `${concealed.length ? `${concealed} ` : ``}${locked.length ? `[${locked}] ` : ``}${bonus.length ? `(${bonus})` : ``}`;
-        console.log(`  ${pid} (${['E','S','W','N'][data.wind]}): ${entry.adjustments[pid]} for ${pattern}`);
+        let message = `  ${pid} (${['E','S','W','N'][data.wind]}): ${entry.adjustments[pid]} for ${pattern}`;
+        console.log(message);
+        config.log(message);
       });
     });
 
     console.log(`final scores:`);
-    console.log(players.map(p => `  player ${p.id}: ${p._score} (${!p.personality.chicken ? `not `: ``}set to chicken)`).join('\n'));
+    config.log(`final scores:`);
+
+    players.forEach(p => {
+      let message = `  player ${p.id}: ${p._score} (${!p.personality.chicken ? `not `: ``}set to chicken)`;
+      console.log(message);
+      config.log(message);
+    });
+
+    config.flushLog();
   });
 }
