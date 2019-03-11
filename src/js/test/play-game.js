@@ -16,9 +16,24 @@ if (typeof process !== "undefined") {
   var gm = new GameManager([0,1,2,3].map(id => new BotPlayer(id)));
   var game = gm.newGame();
   game.startGame(() => {
+
     let players = game.players;
-    let scores = game.scoreHistory;
+    let history = game.scoreHistory;
+    const mapfn = t => config.TILE_GLYPHS[t.dataset ? t.dataset.tile : t];
+
+    console.log();
+    history.forEach((entry,hand) => {
+      console.log(`hand ${hand+1}`);
+      entry.disclosure.forEach((data,pid) => {
+        let concealed = data.concealed.sort().map(mapfn).join(',');
+        let locked = data.locked.map(set => set.map(mapfn)).join(', ')
+        let bonus = data.bonus.map(mapfn).join(',');
+        let pattern = `${concealed.length ? `${concealed} ` : ``}${locked.length ? `[${locked}] ` : ``}${bonus.length ? `(${bonus})` : ``}`;
+        console.log(`  ${pid} (${['E','S','W','N'][data.wind]}): ${entry.adjustments[pid]} for ${pattern}`);
+      });
+    });
+
     console.log(`final scores:`);
-    console.log(players.map(p => `${p.id}: ${p._score} (${!p.personality.chicken ? `not `: ``}chicken)`).join('\n'));
+    console.log(players.map(p => `  player ${p.id}: ${p._score} (${!p.personality.chicken ? `not `: ``}set to chicken)`).join('\n'));
   });
 }
