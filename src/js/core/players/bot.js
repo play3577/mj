@@ -267,9 +267,8 @@ class BotPlayer extends Player {
 
       // Step 1: are there any tiles that our play policy
       // says need to go? If so, discard any of those.
-      if (this.personality.deadTile(tile, tilesRemaining)) {
-        return (immediateValue[tile] = 0);
-      }
+      let deadScore = this.personality.deadTile(tile, tilesRemaining);
+      if (deadScore) return (immediateValue[tile] = deadScore);
 
       // Step 2: our play policy has nothing to say here,
       // so values are based on "can we get more". If not,
@@ -278,8 +277,20 @@ class BotPlayer extends Player {
       if (tileCount[tile] >= 3) value = max(value, availability>0 ? 100 : 90);
       else if (tileCount[tile] === 2) value = max(value, availability>0 ? 90 : 50);
       else if (tileCount[tile] === 1) {
-        if (tile < 27) value = max(value, this.determineDiscardValueForChow(value, tile, tileCount));
-        value = max(value, availability ? 40 : 0);
+        // numeral might lead to a chow?
+        if (tile < 27)
+          value = max(value, this.determineDiscardValueForChow(value, tile, tileCount));
+
+        // scoring honours are good
+        if (tile === 27 + this.wind || tile === 27 + this.windOfTheRound || tile > 30)
+          value = max(value, availability > 0 ? 45 : 0);
+
+        // double scoring wind is _really_ good
+        if (tile === 27 + this.wind && tile === 27 + this.windOfTheRound)
+          value = max(value, availability > 0 ? 60 : 0);
+
+        // we've run out of special cases
+        //value = max(value, availability ? 40 : 0);
       }
 
       // Record the (by definition) highest value for this tile.
@@ -308,14 +319,14 @@ class BotPlayer extends Player {
    */
   determineDiscardValueForChow(value, tile, tileCount) {
     let face = tile % 9;
-    let m2 = tileCount[tile - 2] > 0;
-    let m1 = tileCount[tile - 1] > 0;
-    let p1 = tileCount[tile + 1] > 0;
-    let p2 = tileCount[tile + 2] > 0;
-    let m2a = this.tracker.get(tile - 2) > 0;
-    let m1a = this.tracker.get(tile - 1) > 0;
-    let p1a = this.tracker.get(tile + 1) > 0;
-    let p2a = this.tracker.get(tile + 2) > 0;
+    let m2 = face > 1 && tileCount[tile - 2];
+    let m1 = face > 0 && tileCount[tile - 1];
+    let p1 = face < 8 && tileCount[tile + 1];
+    let p2 = face < 7 && tileCount[tile + 2];
+    let m2a = this.tracker.get(tile - 2);
+    let m1a = this.tracker.get(tile - 1);
+    let p1a = this.tracker.get(tile + 1);
+    let p2a = this.tracker.get(tile + 2);
 
     // X?? chow check
     if (face<7) {
@@ -336,6 +347,17 @@ class BotPlayer extends Player {
       if (m2 && m1) value = max(value, 90) // already in hand
       else if (m2 && m1a) value = max(value, 70) // possible (gap)
       else if (m2a && m1) value = max(value, 80) // possible
+    }
+
+    if (value===0) {
+      // if this tile is not involved in a chow, connected pair,
+      // or gapped pai, then its sequential score is some low
+      // value, inversely related to how close it is to its
+      // nearest in-suit neighbour. And if there are none, then
+      // its value stays zero.
+      for (let i=3; i<=8; i++) {
+        if (tileCount[tile-i] || tileCount[tile + i]) return 8 - i;
+      }
     }
 
     return value;

@@ -25,8 +25,11 @@ class Personality {
 
     // How many of our tiles need to be of one suit
     // before we decide to go for a clean hand?
-    this.cleanThreshold = 0.5;
+    this.cleanThreshold = 0.67;
     this.playClean = false;
+
+    // Should we lock into a chow hand?
+    this.playChowHand = false
 
     // For our panic threshold, we pick "4 turns"
     // (out of a possible 18 "turns" in a hand).
@@ -68,6 +71,12 @@ class Personality {
         this.playClean = stats.suits.indexOf(most);
         console.debug(`${this.player.id} will play clean (${this.playClean})`);
       }
+    }
+
+    // if we haven't locked anything yet, is this gearing up to be a chow hand?
+    if (!this.player.locked.length) {
+      this.playChowHand = (stats.honours <=3 &&  (stats.cpairs/2 + stats.chows) >= 2)
+      // note that this is a fluid check until we claim something, when it locks.
     }
 
     return stats;
@@ -159,7 +168,7 @@ class Personality {
       let canChicken =  this.allowScoringChicken && (stats.bigpungs > 0 || stats.locked.bigpungs > 0);
       let isBig = (tileNumber + 27 === this.player.wind) || (tileNumber + 27 === this.player.windOfTheRound) || (tileNumber > 30);
 
-      if (stats.locked.chows > 0 && !canChicken && !isBig) {
+      if ((this.playChowHand || stats.locked.chows) > 0 && !canChicken && !isBig) {
         console.debug(this.player.id,'not claiming pung/kong because we have a chow, and',tileNumber,'is not scoring','(',tilesRemaining,'left)');
         return false;
       }
@@ -256,7 +265,10 @@ class Personality {
     // is this in a suit we want to get rid of?
     if (this.playClean !== false && tile < 27) {
       let suit = this.suit(tile);
-      if (this.playClean !== suit) return true;
+      if (this.playClean !== suit) {
+        // return how many of this suit we're going to get rid of.
+        return this.player.tiles.map(t => this.suit(t.dataset.tile)).filter(s => s===suit).length;
+      }
     }
 
     // is this tile part of a concealed pung,
