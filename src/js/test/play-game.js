@@ -5,56 +5,68 @@ if (typeof process !== "undefined") {
   let filename = path.basename(__filename)
   if (invocation.indexOf(filename) === -1) return;
 
-  let defaultSeed = 1;
+  let seed = 1;
+  let runs = 1;
 
-  let seed = process.argv.slice(-1)[0];
-  if (parseInt(seed) != seed) { seed = false; }
-  let seedValue = seed || defaultSeed;
+  let s = process.argv.indexOf('-s');
+  if (s>0) seed = parseInt(process.argv[s+1]);
+
+  let r = process.argv.indexOf('-r');
+  if (r>0) runs = parseInt(process.argv[r+1]);
 
   // bootstrap the config for testing
   var config = require('../../config.js');
-  config.SEED = seedValue;
-  config.PRNG.seed(config.SEED);
   config.PLAY_INTERVAL = 0;
   config.HAND_INTERVAL = 0;
 
-  config.log(`Initial seedi: ${config.SEED}`);
+  console.log(`\nSCRIPT WILL RECORD ${runs} GAME${runs===1?``:`S`} STARTING AT SEED=${seed}`);
 
-  // Play a full game!
-  var GameManager = require('../core/game/game-manager.js');
-  var gm = new GameManager([0,1,2,3].map(id => new BotPlayer(id)));
-  var game = gm.newGame();
-  game.startGame((secondsTaken) => {
+  (async () => {
+    for (let i=seed; i<seed+runs; i++) {
+      await new Promise(resolve => {
+        config.SEED = i;
+        config.PRNG.seed(config.SEED);
+        config.log(`Initial seed: ${config.SEED}`);
 
-    let players = game.players;
-    let history = game.scoreHistory;
-    const mapfn = t => config.TILE_GLYPHS[t.dataset ? t.dataset.tile : t];
+        // Play a full game!
+        var GameManager = require('../core/game/game-manager.js');
+        var gm = new GameManager([0,1,2,3].map(id => new BotPlayer(id)));
+        var game = gm.newGame();
+        game.startGame((secondsTaken) => {
 
-    console.log();
-    history.forEach((entry,hand) => {
-      console.log(`hand ${hand+1}`);
-      config.log(`hand ${hand+1}`);
-      entry.disclosure.forEach((data,pid) => {
-        let concealed = data.concealed.sort().map(mapfn).join(',');
-        let locked = data.locked.map(set => set.map(mapfn)).join(', ')
-        let bonus = data.bonus.map(mapfn).join(',');
-        let pattern = `${concealed.length ? `${concealed} ` : ``}${locked.length ? `[${locked}] ` : ``}${bonus.length ? `(${bonus})` : ``}`;
-        let message = `  ${pid} (${['E','S','W','N'][data.wind]}): ${entry.adjustments[pid]} for ${pattern}`;
-        console.log(message);
-        config.log(message);
+          let players = game.players;
+          let history = game.scoreHistory;
+          const mapfn = t => config.TILE_GLYPHS[t.dataset ? t.dataset.tile : t];
+
+          console.log();
+          history.forEach((entry,hand) => {
+            console.log(`hand ${hand+1}`);
+            config.log(`hand ${hand+1}`);
+            entry.disclosure.forEach((data,pid) => {
+              let concealed = data.concealed.sort().map(mapfn).join(',');
+              let locked = data.locked.map(set => set.map(mapfn)).join(', ')
+              let bonus = data.bonus.map(mapfn).join(',');
+              let pattern = `${concealed.length ? `${concealed} ` : ``}${locked.length ? `[${locked}] ` : ``}${bonus.length ? `(${bonus})` : ``}`;
+              let message = `  ${pid} (${['E','S','W','N'][data.wind]}): ${entry.adjustments[pid]} for ${pattern}`;
+              console.log(message);
+              config.log(message);
+            });
+          });
+
+          console.log(`final scores:`);
+          config.log(`final scores:`);
+
+          players.forEach(p => {
+            let message = `  player ${p.id}: ${p._score} (${!p.personality.chicken ? `not `: ``}set to chicken)`;
+            console.log(message);
+            config.log(message);
+          });
+
+          config.log(`Game took ${secondsTaken}s`);
+          config.flushLog();
+          resolve();
+        });
       });
-    });
-
-    console.log(`final scores:`);
-    config.log(`final scores:`);
-
-    players.forEach(p => {
-      let message = `  player ${p.id}: ${p._score} (${!p.personality.chicken ? `not `: ``}set to chicken)`;
-      console.log(message);
-      config.log(message);
-    });
-
-    config.log(`Game took ${secondsTaken}s`);
-    config.flushLog();
-  });
+    }
+  })();
 }

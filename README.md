@@ -31,9 +31,12 @@ Open `index.html` in your browser. Debugging options are set via URL query param
 Most of the code is aware of whether it's running in the browser, or in node context. As such, the following things work:
 
 - `node src/js/test/hand-generator` generates all possible hand patterns (based on tile category, not tile face)
-- `node src/js/test/play-game` plays an entire game between four bots.
 - `node src/js/core/algorithm/tiles-needed.js` runs unit tests
 - `node src/js/core/scoring/chinese-classical.js` runs unit tests
+
+And for full gameplay debugging through play recordings, you can use:
+
+- `node src/js/test/play-game -s 123 -r 456`, which plays {r} games starting at seed {s}, defaulting to s=1 and r=1 if left unspecified.
 
 ### I have (a) question(s)!
 
