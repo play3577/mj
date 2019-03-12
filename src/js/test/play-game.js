@@ -5,17 +5,26 @@ if (typeof process !== "undefined") {
   let filename = path.basename(__filename)
   if (invocation.indexOf(filename) === -1) return;
 
+  let defaultSeed = 1;
+
+  let seed = process.argv.slice(-1)[0];
+  if (parseInt(seed) != seed) { seed = false; }
+  let seedValue = seed || defaultSeed;
+
   // bootstrap the config for testing
   var config = require('../../config.js');
+  config.SEED = seedValue;
+  config.PRNG.seed(config.SEED);
   config.PLAY_INTERVAL = 0;
   config.HAND_INTERVAL = 0;
-  config.PRNG.seed(1);
+
+  config.log(`Initial seedi: ${config.SEED}`);
 
   // Play a full game!
   var GameManager = require('../core/game/game-manager.js');
   var gm = new GameManager([0,1,2,3].map(id => new BotPlayer(id)));
   var game = gm.newGame();
-  game.startGame(() => {
+  game.startGame((secondsTaken) => {
 
     let players = game.players;
     let history = game.scoreHistory;
@@ -45,6 +54,7 @@ if (typeof process !== "undefined") {
       config.log(message);
     });
 
+    config.log(`Game took ${secondsTaken}s`);
     config.flushLog();
   });
 }

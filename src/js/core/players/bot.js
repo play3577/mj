@@ -287,7 +287,11 @@ class BotPlayer extends Player {
     });
 
     // We will find the lowest scoring tile, and discard that one
-    let sorted = immediateValue.map((score, tile) => ({ tile, score })).sort((a,b) => (a.score - b.score));
+    let sorted = immediateValue.map((score, tile) => ({ tile, score })).sort((a,b) => {
+      let diff = (a.score - b.score);
+      if (diff !== 0) return diff;
+      return (a.tile - b.tile);
+    });
 
     // "randomly" pick one of the lowest scoring tiles to discard
     let lowest = sorted[0];
@@ -338,7 +342,7 @@ class BotPlayer extends Player {
   }
 
   /**
-   * Automated claim policy, see `tilesNeeded` in `./mgen.js`
+   * Automated claim policy
    */
   async determineClaim(pid, discard, tilesRemaining, resolve, interrupt, claimTimer) {
     let claim = CLAIM.IGNORE, wintype;

@@ -4,15 +4,16 @@ const playlog = {
 };
 
 if (typeof process !== "undefined") {
-    var fs = require('fs');
+    const noop = ()=>{};
+    const fs = require('fs');
+    const config = require('../../../config');
 
-    let noop = ()=>{};
     let lines = [];
 
-    playlog.flush = () => {
+    playlog.flush = (andThen=noop) => {
         let data = lines.slice().join('\n');
         lines = [];
-        fs.writeFile(`play-log-${Date.now()}.log`, data, { flag: 'a', encoding: 'utf-8' }, noop);
+        fs.writeFile(`play-log-${config.SEED}.log`, data, { flag: 'w', encoding: 'utf-8' }, andThen);
     };
 
     playlog.log = (text) => {
@@ -20,6 +21,12 @@ if (typeof process !== "undefined") {
             lines.push(`${Date.now()}: ${line}`);
         });
     };
+
+    process.on('SIGINT', function() {
+        playlog.flush(() => {
+            process.exit();
+        });
+    });
 
     module.exports = playlog;
 }

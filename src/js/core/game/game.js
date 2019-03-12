@@ -117,7 +117,7 @@ class Game {
             console.log(`(game took ${s}s. ${this.totalPlays} plays: ${this.hand} hands, ${this.totalDraws} draws)`);
             players.forEach(p => p.endOfGame(finalScores));
             rotateWinds.reset();
-            return this.finish();
+            return this.finish(s);
           }
         }
       } else console.debug(`Winner player was East, winds will not rotate.`);
@@ -196,7 +196,6 @@ class Game {
       for (let t=0, tile; t<bank.length; t++) {
         tile = bank[t];
         players.forEach(p => p.receivedTile(player));
-        config.log(`${player.id} <- ${tile}`);
         let revealed = player.append(tile);
         if (revealed) {
           // bonus tile are shown to all other players.
@@ -304,7 +303,7 @@ class Game {
   async play(claim) {
     await this.continue("start of play()");
 
-    // Bootstrap the this step of play
+    // Bootstrap this step of play
     let hand = this.hand;
     let players = this.players;
     let wall = this.wall;
@@ -332,14 +331,15 @@ class Game {
     else {
       // If this is claim call, then the player receives
       // the current discard instead of drawing a tile:
-      config.log(`${player.id} <-(${claim.claimtype})- ${discard.dataset.tile}.`);
+      config.log(`${player.id} <-(${claim.claimtype})- ${discard.dataset.tile}`);
       let tiles = player.receiveDiscardForClaim(claim, discard);
-      config.log(`${player.id} locks [${tiles.map(v=>v.dataset.tile)}], [${player.getTileFaces()}] left in hand.`);
+      config.log(`${player.id} has ${player.getTileFaces()}, [${player.getLockedTileFaces()}]`);
       players.forEach(p => p.seeClaim(tiles, player, discard, claim));
 
       // If the claim was for a kong, the player needs a supplement tile.
       if (tiles.length === 4) await this.dealTile(player);
     }
+
 
     // ===========================
     // GAME LOOP: "Play one" phase
@@ -367,6 +367,7 @@ class Game {
         discard = false;
       }
     } while (!discard); // note: we will have exited `play()` in the event of a "no discard" win.
+
 
     // No winner - process the discard.
     this.processDiscard(player);
@@ -406,6 +407,7 @@ class Game {
     do {
       let tile = wall.get();
       this.players.forEach(p => p.receivedTile(player));
+      console.debug(`${player.id} receives ${tile}`);
       config.log(`${player.id} <- ${tile}`);
       revealed = player.append(tile);
       if (revealed) { this.players.forEach(p => p.see(revealed, player)); }
@@ -445,6 +447,10 @@ class Game {
     let message = `Player ${currentPlayerId} wins hand ${hand}! (hand took ${play_length}ms)`;
     console.log(message);
     config.log(message);
+
+    players.forEach(p => {
+      config.log(`${p.id} had ${p.getTileFaces()}, [${p.getLockedTileFaces()}], (${p.bonus})`);
+    });
 
     // Let everyone know what everyone had. It's the nice thing to do.
     let disclosure = players.map(p => p.getDisclosure());

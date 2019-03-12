@@ -1,6 +1,5 @@
 if (typeof process !== "undefined") {
     Random = require('./js/core/utils/prng.js');
-    playlog = require('./js/core/utils/logger.js');
 }
 
 // This flag needs no explanation
@@ -247,14 +246,16 @@ const SUIT_NAMES = {
     "5": "bonus"
 };
 
+const noop = ()=>{};
+
 // And then rest of the configuration.
 const config = {
     // The pseudo-random number generator used by
     // any code that needs to randomise data.
     PRNG: new Random(SEED),
     DEBUG,
-    log: playlog.log,
-    flushLog: playlog.flush,
+    log: noop,
+    flushLog: noop,
     NO_SOUND,
     SEED,
     PLAY_IMMEDIATELY,
@@ -303,14 +304,6 @@ const config = {
     TILE_GLYPHS,
     SUIT_NAMES,
 
-    // A score sorting function. This will probably
-    // be migrated to somewhere else soon.
-    LOW_TO_HIGH: (a,b) => {
-        a: a.score;
-        b: b.score;
-        return a - b;
-    },
-
     // A conversion function for turning computer
     // chow differences into claim types. This will
     // probably be migrated to somewhere else soon.
@@ -323,4 +316,9 @@ const config = {
 };
 
 // in node context?
-if(typeof process !== "undefined") module.exports = config;
+if (typeof process !== "undefined") {
+    module.exports = config;
+    playlog = require('./js/core/utils/logger.js');
+    config.log = playlog.log;
+    config.flushLog = playlog.flush;
+}
