@@ -13,7 +13,7 @@ class SettingsModal {
       <h3>Change the game settings</h3>
       <p>
         The follow settings change how the game works, but while
-        the first two options help with learning to play the game,
+        the first three options are related to playing the game,
         all the other options are primarily intended for debugging.
       </p>
     `;
