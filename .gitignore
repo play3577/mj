@@ -1,2 +1,6 @@
 play-log-*.log
 !logs
+docs/*.aux
+docs/*.log
+docs/*.synctex.gz
+docs/*.pdf
