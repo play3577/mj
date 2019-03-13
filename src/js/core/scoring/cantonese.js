@@ -10,13 +10,14 @@ class Cantonese extends Ruleset {
   constructor() {
     super(
       Ruleset.FAAN_LAAK,
-      2000, // start points
-      16, // limit
-      0,   // points for winning
+      2000,  // start points
+      16,    // limit
+      0,     // points for winning
       false, // losers settle their scores after paying the winner
       false, // east pays and receives double
       true,  // discarding player pays double
       false, // player winds rotate counter to the wind of the round
+      true,  // pass the deal if east wins
     );
   }
 
@@ -96,11 +97,6 @@ class Cantonese extends Ruleset {
 
     let state = this.getState(scorePattern, winset, selfdraw, selftile, windTile, windOfTheRoundTile, tilesLeft);
 
-    if (state.selfdraw) {
-      scoreObject.score += 1;
-      scoreObject.log.push(`1 faan for self-drawn win`);
-    }
-
     if (state.allchow && !state.majorPair) {
       scoreObject.score += 1;
       scoreObject.log.push(`1 faan for chow hand`);
@@ -154,10 +150,6 @@ class Cantonese extends Ruleset {
       } else {
         scoreObject.log.push(`1 faan for winning with the last discard`);
       }
-    }
-
-    if (state.allGreen) {
-      scoreObject.limit = `"All Green" (bamboos 2, 3, 4, 6, 8 and/or green dragons)`;
     }
   }
 

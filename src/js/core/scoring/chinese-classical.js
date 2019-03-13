@@ -17,6 +17,7 @@ class ChineseClassical extends Ruleset {
       true,  // east pays and receives double
       false, // discarding player pays double
       true,  // player winds rotate counter to the wind of the round
+      false, // do not pass the deal if east wins
     );
   }
 

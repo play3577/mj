@@ -15,7 +15,7 @@ class Ruleset {
   allFlowers(bonus) { return [34, 35, 36, 37].every(t => bonus.indexOf(t) > -1); }
   allSeasons(bonus) { return [38, 39, 40, 41].every(t => bonus.indexOf(t) > -1); }
 
-  constructor(scoretype, startscore, limit, points_for_winning, losers_settle_scores=config.LOSERS_SETTLE_SCORES, east_doubles_up=false, discard_pays_double=false, reverse_wind_direction=false) {
+  constructor(scoretype, startscore, limit, points_for_winning, losers_settle_scores=config.LOSERS_SETTLE_SCORES, east_doubles_up=false, discard_pays_double=false, reverse_wind_direction=false, pass_on_east_win=true) {
     this.scoretype = scoretype;
     this.player_start_score = startscore;
     this.limit = limit;
@@ -24,6 +24,7 @@ class Ruleset {
     this.east_doubles_up = east_doubles_up;
     this.discard_pays_double = discard_pays_double;
     this.reverse_wind_direction = reverse_wind_direction;
+    this.pass_on_east_win = pass_on_east_win;
     this.limits = new LimitHands();
   }
 

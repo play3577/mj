@@ -397,9 +397,11 @@
       <h1>About this particular implementation</h1>
 
       <p>
-        The game on this page is played using the Chinese Classical rule set,
-        and associated scoring. This means:
+        The game on this page can be played using two different rulesets:
+        Chinese Classical rules, and Cantonese rules.
       </p>
+
+      <h2>Chinese Classical (default)</h2>
 
       <ul>
         <li>scoring is based on points and doubles</li>
@@ -461,8 +463,8 @@
         <li>one suit (only number tiles, all the same suit): 3</li>
         <li>all pung hand: 1</li>
         <li>fully concealed (and self drawn) hand: 1</li>
-        <li>(self-drawn) win on the last tile from the wall</li>
-        <li>claimed win on the last discard</li>
+        <li>(self-drawn) win on the last tile from the wall: 1</li>
+        <li>claimed win on the last discard: 1</li>
       </ul>
 
       <p>
@@ -486,6 +488,76 @@
         (S,W,N,E), and the wind of the round rotates clockwise, starting at
         East, then South, then West, then North.
       </p>
+
+
+      <h2>Cantonese</h2>
+
+      <ul>
+        <li>scoring is based on points ("faan") and tiered limits ("laak"), which are mapped to a real score</li>
+        <li>the standard limit is the 1 laak tier (see table below)</li>
+        <li>players start with 2000 points</li>
+        <li>only the winner scores points</li>
+        <li>losers pay double on a self-drawn win, otherwise only the discarding player pays double</li>
+      </ul>
+
+      <p>
+        Points are awarded to any player for the following:
+      </p>
+
+      <ul>
+        <li>pung/kong of own wind: 1</li>
+        <li>pung/kong of wind of the round: 1</li>
+        <li>pung/kong of dragons: 1</li>
+        <li>having no flowers or seasons: 1</li>
+        <li>having your own flower: 1</li>
+        <li>having your own season: 1</li>
+        <li>having all flowers: 1 extra point</li>
+        <li>having all seasons: 1 extra point</li>
+      </ul>
+
+      <p>
+        The following points are awarded to the winner only:
+      </p>
+
+      <ul>
+        <li>self-drawn win: 1</li>
+        <li>chow hand (four chows and a non-scoring pair): 1</li>
+        <li>one suit and honour (numbered tiles all from the same suit) : 3</li>
+        <li>one suit (only number tiles, all the same suit): 6</li>
+        <li>all honours hand: 6</li>
+        <li>all pung hand: 3</li>
+        <li>fully concealed hand: 1<li>
+        <li>(self-drawn) win on the last tile from the wall: 1</li>
+        <li>claimed win on the last discard: 1</li>
+      </ul>
+
+      <p>
+        The following limit hands (scoring 1 laak) exist:
+      </p>
+
+      <ul>
+        <li>all terminals: pungs and pairs of only 1 and 9 tiles</li>
+        <li>three great scholars: pung/kong of each dragon</li>
+        <li>little four winds: pung/kong of three winds, pair of last wind</li>
+        <li>big four winds: pung/kong of all winds</li>
+        <li>thirteen orphans: a 1 and 9 of each suit, one of each wind and dragon, and a pairing tile</li>
+        <li>nine gates: 1,1,1, 2,3,4,5,6,7,8, 9,9,9, all of the same suit, all concealed, and a pairing tile</li>
+      </ul>
+
+      <p>
+        The total number of points translate to actual scores as:
+      </p>
+
+      <table>
+        <tr><th>"faan"</th><th>self-drawn</th><th>discarded</th></tr>
+        <tr><td>0</td><td>0</td><td>4</td></tr>
+        <tr><td>1</td><td>12</td><td>8</td></tr>
+        <tr><td>2</td><td>24</td><td>16</td></tr>
+        <tr><td>3</td><td>48</td><td>32</td></tr>
+        <tr><td>4-6 (1 laak)</td><td>96</td><td>64</td></tr>
+        <tr><td>7-9 (2 laak)</td><td>192</td><td>128</td></tr>
+        <tr><td>10+ (3 laak)</td><td>384</td><td>256</td></tr>
+      </table>
     </section>
 
     <section id="controls">

@@ -105,9 +105,9 @@ class Game {
     let players = this.players;
 
     if (result.winner) {
-      // only rotate the winds if the winner is not East
+      // rotate the winds, unless the winner is East and the ruleset says not to in that case.
       let winner = result.winner;
-      if (winner.wind !== 0) {
+      if (rules.pass_on_east_win || winner.wind !== 0) {
         this.wind++;
         if (this.wind === 4) {
           this.wind = 0;
