@@ -74,7 +74,6 @@ class Player extends PlayerMaster {
     set.locked = true;
 
     if (claimtype === CLAIM.WIN) {
-      console.log('win claim');
       this.markWinner();
       if (!set.winning) claimtype = claim.wintype; // prevent double counting!
       set.winning = true;

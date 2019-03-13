@@ -35,43 +35,71 @@ class PlayerMaster {
     if (this.ui) this.ui.reset(hand, wind, windOfTheRound, draws);
   }
 
+  /**
+   * Pause play as far as this player is concerned.
+   */
   pause(lock) {
     this.paused = lock;
     if (this.ui) this.ui.pause(lock);
   }
 
+  /**
+   * Resume play as far as this player is concerned.
+   */
   resume() {
     if (this.ui) this.ui.resume();
     this.paused = false;
   }
 
+  /**
+   * Bind the ruleset that this player should "follow"
+   * during the game they are currently in.
+   */
   setRules(rules) {
     this.rules = rules;
     this._score = this.rules.player_start_score;
     if (this.ui) this.ui.setRules(rules);
   }
 
+  /**
+   * Signal that the game will start
+   */
   gameWillStart() {
     if (this.ui) this.ui.gameWillStart();
   }
 
+  /**
+   * Signal that a specific hand will start
+   */
   handWillStart(redraw, resolve) {
     if (this.ui) this.ui.handWillStart(redraw, resolve);
     else resolve();
   }
 
-  // Called after all tiles have been dealt, and all players
-  // have declared any kongs they might have had in their hand.
+  /**
+   * Signal that actual play is about to start
+   * during a hand. This is called after all the
+   * initial tiles have been dealt, and all players
+   * have declared any kongs they might have had
+   * in their hand as a consequence.
+   */
   playWillStart() {
     if (this.ui) this.ui.playWillStart();
   }
 
+  /**
+   * Take note of how many tiles there are left
+   * for playing with during this hand.
+   */
   markTilesLeft(left, dead) {
     this.tilesLeft = left;
     this.tilesDead = dead;
     if (this.ui) this.ui.markTilesLeft(left, dead);
   }
 
+  /**
+   * Disclose this player's hand information.
+   */
   getDisclosure() {
     let hand = this.getTileFaces();
     return {
@@ -91,36 +119,66 @@ class PlayerMaster {
     };
   }
 
-  endOfHand(disclosure) {
-    if (this.ui) this.ui.endOfHand(disclosure);
+  /**
+   * Signal that the hand has ended. If the hand
+   * was a draw, there will no arguments passed.
+   * If the hand was won, the `fullDisclosures`
+   * object contains all player's disclosures.
+   */
+  endOfHand(fullDisclosure) {
+    if (this.ui) this.ui.endOfHand(fullDisclosure);
   }
 
+  /**
+   * Signal that the game has ended, with the final
+   * game scores provided in the `scores` object.
+   */
   endOfGame(scores) {
     if (this.ui) this.ui.endOfGame(scores);
   }
 
+  /**
+   * Work a score adjustment into this player's
+   * current score.
+   */
   recordScores(adjustments) {
     this._score += adjustments[this.id];
     if (this.ui) this.ui.recordScores(adjustments);
   }
 
+  /**
+   * Get this player's current game score.
+   */
   getScore() {
     return this._score;
   }
 
+  /**
+   * Signal that this is now the active player.
+   */
   activate(id) {
     if (this.ui) this.ui.activate(id);
   }
 
+  /**
+   * Signal that this is not an active player.
+   */
   disable() {
     if (this.ui) this.ui.disable();
   }
 
+  /**
+   * Internal function for marking self as waiting
+   * to win, using any tile noted in `winTiles`.
+   */
   markWaiting(winTiles={}) {
     this.waiting = winTiles;
     if (this.ui) this.ui.markWaiting(winTiles)
   }
 
+  /**
+   * Mark this player as winner of the current hand.
+   */
   markWinner() {
     if (!this.has_won) {
       this.has_won = true;
@@ -129,40 +187,55 @@ class PlayerMaster {
     }
   }
 
+  /**
+   * How many times has this player won?
+   */
   getWinCount() {
     return this.wincount;
   }
 
+  /**
+   * Add a tile to this player's hand.
+   */
   append(t, claimed, supplement) {
     let revealed = false;
-    if (typeof t !== 'object') {
-      if (t > 33) {
-        revealed = t;
-        this.bonus.push(t);
+    if (typeof tile !== 'object') {
+      if (tile > 33) {
+        revealed = tile;
+        this.bonus.push(tile);
       }
-      t = create(t);
+      tile = create(tile);
     }
-    this.latest = t;
-    if (!t.dataset.bonus) {
-      this.tiles.push(t);
+    this.latest = tile;
+    if (!tile.dataset.bonus) {
+      this.tiles.push(tile);
     }
     if (!claimed) {
-      this.tracker.seen(t.dataset.tile);
+      this.tracker.seen(tile.dataset.tile);
       this.lastClaim = false;
     }
     if (supplement) {
-      t.dataset.supplement = 'supplement';
+      tile.dataset.supplement = 'supplement';
     }
-    if (this.ui) this.ui.append(t);
+    if (this.ui) this.ui.append(tile);
     return revealed;
   }
 
+  /**
+   * Remove a tile from this player's hand
+   * (due to a discard, or locking tiles, etc).
+   */
   remove(tile) {
     let pos = this.tiles.indexOf(tile);
     this.tiles.splice(pos, 1);
     if (this.ui) this.ui.remove(tile);
   }
 
+  /**
+   * Player formed a kong by having a pung on
+   * the table, and drawing the fourth tile
+   * themselves.
+   */
   meldKong(tile) {
     this.remove(tile);
     let set = this.locked.find(set => (set[0].dataset.tile === tile.dataset.tile));
@@ -172,6 +245,10 @@ class PlayerMaster {
     if (this.ui) this.ui.meldKong(tile);
   }
 
+  /**
+   * Check whether this player has, and if so,
+   * wants to declare, a kong.
+   */
   async checkKong() {
     // players with a UI get to decide what to do on their own turn.
     if (this.ui) return false;
@@ -196,6 +273,12 @@ class PlayerMaster {
     return false;
   }
 
+  /**
+   * Take note of the fact that a player revealed
+   * one or more tiles, either due to discarding,
+   * revealing a bonus tile, or by claiming/melding
+   * a set.
+   */
   see(tiles, player) {
     if (player === this) return;
     if (!tiles.map) tiles = [tiles];
@@ -203,16 +286,28 @@ class PlayerMaster {
     if (this.ui) this.ui.see(tiles, player);
   }
 
+  /**
+   * Take note of the fact that a different player
+   * received a tile for whatever reason.
+   */
   receivedTile(player) {
     if (this.ui) this.ui.receivedTile(player);
   }
 
+  /**
+   * Take note of the fact that a different player
+   * discarded a specific tile.
+   */
   playerDiscarded(player, discard, playcounter) {
     let tile = discard.dataset.tile;
     if (this.id != player.id) this.tracker.seen(tile);
     if (this.ui) this.ui.playerDiscarded(player, tile, playcounter);
   }
 
+  /**
+   * Take note of the fact that a different player
+   * declared a kong.
+   */
   seeKong(tiles, player, tilesRemaining, resolve) {
     this.see(tiles.map(t => t.dataset.tile), player);
     this.robKong(tiles, tilesRemaining, resolve);
@@ -224,6 +319,10 @@ class PlayerMaster {
     resolve();
   }
 
+  /**
+   * Take note of the fact that a different player
+   * claimed a discard to form a set.
+   */
   seeClaim(tiles, player, claimedTile, claim) {
     if (player === this) return;
     if (!tiles.map) tiles = [tiles];
@@ -237,10 +336,12 @@ class PlayerMaster {
     if (this.ui) this.ui.seeClaim(tiles, player, claim);
   }
 
+  /**
+   * Signal that the current player is done.
+   */
   nextPlayer() {
     if (this.ui) this.ui.nextPlayer();
   }
-
 
   getAvailableTiles() {
     return this.tiles;
@@ -270,6 +371,10 @@ class PlayerMaster {
     if (this.ui) this.ui.sortTiles();
   }
 
+  /**
+   * Check whether a chow can be formed using `tile` from
+   * player with id `pid`, by looking at our hand tiles.
+   */
   async chowExists(pid, tile)  {
     // If this isn't a numerical tile, no chow can be formed.
     if (tile > 26)  return CLAIM.IGNORE;

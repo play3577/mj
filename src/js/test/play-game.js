@@ -40,7 +40,7 @@ if (typeof process !== "undefined") {
 
           console.log();
           history.forEach((entry,hand) => {
-            console.log(`hand ${hand+1}`);
+            //console.log(`hand ${hand+1}`);
             config.log(`hand ${hand+1}`);
             entry.disclosure.forEach((data,pid) => {
               let concealed = data.concealed.sort().map(mapfn).join(',');
@@ -48,7 +48,7 @@ if (typeof process !== "undefined") {
               let bonus = data.bonus.map(mapfn).join(',');
               let pattern = `${concealed.length ? `${concealed} ` : ``}${locked.length ? `[${locked}] ` : ``}${bonus.length ? `(${bonus})` : ``}`;
               let message = `  ${pid} (${['E','S','W','N'][data.wind]}): ${entry.adjustments[pid]} for ${pattern}`;
-              console.log(message);
+              //console.log(message);
               config.log(message);
             });
           });

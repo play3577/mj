@@ -128,6 +128,7 @@ class Game {
       this.hand++;
       this.draws = 0;
     } else {
+      config.log(`Hand was a draw.`);
       this.draws++;
       this.totalDraws++;
     }
@@ -154,9 +155,12 @@ class Game {
 
     // "Starting hand" / "Restarting hand"
     let pre = result.draw ? 'Res' : 'S';
-    console.log(`\n%c${pre}tarting hand ${this.hand}.`,  `color: red; font-weight: bold; font-size: 120%; border-bottom: 1px solid black;`);
+    let logNotice = `${pre}tarting hand ${this.hand}.`;
+    let style = `color: red; font-weight: bold; font-size: 120%; border-bottom: 1px solid black;`;
+    console.log(`\n${ (typeof process === "undefined") ? `%c` : `` }${logNotice}`, (typeof process === "undefined") ? style : ``);
+    config.log(`\n${logNotice}`);
 
-    let logNotice = `this.hand=${this.hand}; this.draws=${this.draws}; config.PRNG.seed(${config.PRNG.seed()}); this.wind=${this.wind}; this.windOfTheRound=${this.windOfTheRound};`;
+    logNotice = `this.hand=${this.hand}; this.draws=${this.draws}; config.PRNG.seed(${config.PRNG.seed()}); this.wind=${this.wind}; this.windOfTheRound=${this.windOfTheRound};`;
     console.log(logNotice);
     config.log(logNotice);
 
@@ -285,7 +289,7 @@ class Game {
     let revealed = false;
     do {
       let tile = this.wall.get();
-      config.log(`${player.id} <-(supplement)- ${tile}`);
+      config.log(`${player.id} <  ${tile} (supplement)`);
       revealed = player.append(tile);
       if (revealed) players.forEach(p => p.see(revealed, player));
     } while (revealed);
@@ -331,9 +335,9 @@ class Game {
     else {
       // If this is claim call, then the player receives
       // the current discard instead of drawing a tile:
-      config.log(`${player.id} <-(${claim.claimtype})- ${discard.dataset.tile}`);
+      config.log(`${player.id} <  ${discard.dataset.tile} (${claim.claimtype})`);
       let tiles = player.receiveDiscardForClaim(claim, discard);
-      config.log(`${player.id} has ${player.getTileFaces()}, [${player.getLockedTileFaces()}]`);
+      config.log(`${player.id} has [${player.getTileFaces()}], [${player.getLockedTileFaces()}]`);
       players.forEach(p => p.seeClaim(tiles, player, discard, claim));
 
       // If the claim was for a kong, the player needs a supplement tile.
@@ -408,7 +412,7 @@ class Game {
       let tile = wall.get();
       this.players.forEach(p => p.receivedTile(player));
       console.debug(`${player.id} receives ${tile}`);
-      config.log(`${player.id} <- ${tile}`);
+      config.log(`${player.id} <  ${tile}`);
       revealed = player.append(tile);
       if (revealed) { this.players.forEach(p => p.see(revealed, player)); }
       else {
@@ -449,16 +453,15 @@ class Game {
     config.log(message);
 
     players.forEach(p => {
-      config.log(`${p.id} had ${p.getTileFaces()}, [${p.getLockedTileFaces()}], (${p.bonus})`);
     });
 
     // Let everyone know what everyone had. It's the nice thing to do.
-    let disclosure = players.map(p => p.getDisclosure());
-    console.debug('disclosure array:', disclosure);
-    players.forEach(p => p.endOfHand(disclosure));
+    let fullDisclosure = players.map(p => p.getDisclosure());
+    console.debug('disclosure array:', fullDisclosure);
+    players.forEach(p => p.endOfHand(fullDisclosure));
 
     // And od course, calculate the scores.
-    let scores = disclosure.map((d,id) => this.rules.scoreTiles(d, id, windOfTheRound, this.wall.remaining));
+    let scores = fullDisclosure.map((d,id) => this.rules.scoreTiles(d, id, windOfTheRound, this.wall.remaining));
 
     // In order to make sure payment is calculated correctly,
     // check which player is currently playing east, and then
@@ -467,7 +470,7 @@ class Game {
     players.forEach(p => { if(p.wind === 0) eastid = p.id; });
     let adjustments = this.rules.settleScores(scores, player.id, eastid);
     players.forEach(p => {
-      config.log(`${p.id} score adjustment: ${adjustments[p.id]}`);
+      config.log(`${p.id}: ${adjustments[p.id]}, hand: ${p.getTileFaces()}, [${p.getLockedTileFaces()}], (${p.bonus})`);
       p.recordScores(adjustments);
     });
 
@@ -493,7 +496,7 @@ class Game {
   processDiscard(player) {
     let discard = this.discard;
     console.debug(`${player.id} discarded ${discard.dataset.tile}`);
-    config.log(`${player.id} -> ${discard.dataset.tile}`);
+    config.log(`${player.id}  > ${discard.dataset.tile}`);
     player.remove(discard);
     discard.dataset.from = player.id;
     delete discard.dataset.hidden;

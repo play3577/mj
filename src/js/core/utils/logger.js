@@ -9,6 +9,7 @@ if (typeof process !== "undefined") {
     const config = require('../../../config');
 
     let lines = [];
+    let prefix = () => ''; // `${Date.now()}: `;
 
     playlog.flush = (andThen=noop) => {
         let data = lines.slice().join('\n');
@@ -18,7 +19,7 @@ if (typeof process !== "undefined") {
 
     playlog.log = (text) => {
         text.split('\n').forEach(line => {
-            lines.push(`${Date.now()}: ${line}`);
+            lines.push(`${prefix()}${line}`);
         });
     };
 

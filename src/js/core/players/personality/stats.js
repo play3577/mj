@@ -15,13 +15,13 @@ function buildStatsContainer(player) {
   let suit = t => (t/9)|0;
 
   let stats = {
-    cpairs: 0, // {t,t+1} or {t,t+2}
-    pairs: 0,  // {t,t}
-    chows: 0,  // {t, t+1, t+2}
-    pungs: 0,  // {t, t, t}
+    cpairs: 0,   // connected pairs: {t,t+1} or {t,t+2}
+    pairs: 0,
+    chows: 0,
+    pungs: 0,
     bigpungs: 0, // dragons, own wind, wotr
-    tiles: 0,
-    counts: {},
+    tiles: 0,    // how many tiles total
+    counts: {},  // tile->howmany tracking object
     numerals: 0,
     terminals: 0,
     honours: 0,
@@ -32,6 +32,7 @@ function buildStatsContainer(player) {
     locked: { chows: 0, pungs: 0, bigpungs: 0, tiles: 0, numerals: 0, suits: [0, 0, 0] }
   };
 
+  // Analyse the locked sets and gather stats.
   locked.forEach(set => {
     let tileNumber = set[0];
     if (tileNumber === set[1]) {
@@ -67,6 +68,7 @@ function buildStatsContainer(player) {
     stats.locked.tiles += set.length;
   });
 
+  // Analyse our hand tiles and gather stats
   tiles.forEach(tileNumber => {
     if (tileNumber <= 26) {
       stats.numerals++;
@@ -84,6 +86,8 @@ function buildStatsContainer(player) {
     stats.counts[tileNumber]++;
   });
 
+  // Finally, there are some checks that are easier to do
+  // once we have the tile->howany stats available.
   tileCount.forEach((count,tileNumber) => {
     // because we care about chow potential, we have
     // to basically run a three-tile sliding window.

@@ -5,7 +5,12 @@
  */
 class LimitHands {
 
-  // check for thirteen orphans (1/9 of each suit, each wind and dragon once, and a pairing tile)
+  /**
+   * Check for thirteen orphans:
+   *
+   * The 1 and 9 of each suit, once; each wind
+   * and dragon, once; a pairing tile for any.
+   */
   hasThirteenOrphans(tiles) {
     let thirteen = [0,8,9,17,18,26,27,28,29,30,31,32,33];
     thirteen.forEach(t => {
@@ -15,7 +20,12 @@ class LimitHands {
     return (tiles.length === 1 && thirteen.indexOf(tiles[0])>-1);
   }
 
-  // check for nine gates (1,1,1, 2,3,4,5,6,7,8, 9,9,9, and a pairing tile, all same suit)
+  /**
+   * Check for nine gates:
+   *
+   * 1,1,1, 2,3,4,5,6,7,8, 9,9,9, and a
+   * pairing tile for any. All same suit.
+   */
   hasNineGates(tiles, lockedSize) {
     if (lockedSize > 2) return false;
     if (tiles.some(t => t>=27)) return false;
