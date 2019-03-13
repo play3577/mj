@@ -8,7 +8,7 @@
 
 You sure can! And you don't even need to sign up for anything, or check out any programming code, or do anything beyond just clicking through to the live website: https://pomax.github.io/mj
 
-Note that mostly due to that's what we play in our house a lot, this implementation currently uses "Chinese Classical" rules for play and scoring. Additional rules will eventually be written (the next one is most likely standard Cantonese rules with faan scoring).
+Note that mostly due to "that's what we play in our house a lot", this implementation currently comes with "Chinese Classical" and "Cantonese" rules for play and scoring. Additional rules may eventually be written up, but if you want to get ahead of the game and implement one so it can be added to the repo, those will be more than welcome.
 
 ### What it looks like
 
