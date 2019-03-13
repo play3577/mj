@@ -24,7 +24,7 @@ I can hear the web devs amongst you thinking "but... then isn't it horribly inef
 
 Open `index.html` in your browser. Debugging options are set via URL query parameter, however, the way to toggle these is via the settings menu.
 
-![A screenshot of the settings menu](https://user-images.githubusercontent.com/177243/53782965-9b358980-3ec4-11e9-8dd1-f81ed3aeba59.png)
+![A screenshot of the settings menu](https://user-images.githubusercontent.com/177243/54255517-a9635580-4515-11e9-8988-0520214e9a52.png)
 
 ### Node based testing
 
