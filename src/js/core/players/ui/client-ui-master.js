@@ -484,7 +484,7 @@ class ClientUIMaster {
 
     let discard = create(tile);
     discard.classList.add('discard');
-    discard.dataset.from = player.id;
+    discard.setFrom(player.id);
     this.discards.appendChild(discard);
 
     if (!config.BOT_PLAY && player.id !== this.id) {

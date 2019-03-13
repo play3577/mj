@@ -325,7 +325,7 @@ class Game {
     let wall = this.wall;
     if (claim) this.currentPlayerId = claim.p;
     let discard = this.discard;
-    let discardpid = discard ? (discard.dataset.from|0) : undefined;
+    let discardpid = discard ? discard.getFrom() : undefined;
     let currentPlayerId = this.currentPlayerId;
     this.playDelay = (hand===config.PAUSE_ON_HAND && this.counter===config.PAUSE_ON_PLAY) ? 60*60*1000 : config.PLAY_INTERVAL;
     let player = players[currentPlayerId];
@@ -516,7 +516,7 @@ class Game {
     console.debug(`${player.id} discarded ${discard.getTileFace()}`);
     config.log(`${player.id}  > ${discard.getTileFace()}`);
     player.remove(discard);
-    discard.dataset.from = player.id;
+    discard.setFrom(player.id);
     delete discard.dataset.hidden;
     this.players.forEach(p => p.playerDiscarded(player, discard, this.counter));
   }

@@ -12,12 +12,17 @@ const create = (tileNumber, hidden) => {
   let span = document.createElement('span');
   span.className = 'tile';
   span.dataset.tile = tileNumber;
+
   if (tileNumber < 34) {
     if (hidden) { span.dataset.hidden = 'hidden'; }
   } else {
     span.dataset.bonus = 'bonus';
     span.dataset.locked = 'locked';
   }
+
+  span.getFrom = () => (span.dataset.from|0);
+  span.setFrom = (pid) => (span.dataset.from = pid);
+
   span.getTileFace = () => (span.dataset.tile|0);
   span.getTileSuit = () => {
     let num = span.getTileFace();
