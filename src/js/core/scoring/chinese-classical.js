@@ -376,7 +376,7 @@ if (typeof process !== "undefined") {
       tests.forEach((test,id) => {
         if (id < 1) return;
 
-        console.log(test.concealed, test.locked.map(set => set.map(t => t.dataset.tile)), test.bonus);
+        console.log(test.concealed, test.locked.map(set => set.map(t => t.getTileFace())), test.bonus);
         let scores = rules.scoreTiles(test, test.id, test.wotr, test.tilesLeft);
         console.log(scores);
       });

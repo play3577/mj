@@ -267,7 +267,7 @@ class Personality {
       let suit = this.suit(tile);
       if (this.playClean !== suit) {
         // return how many of this suit we're going to get rid of.
-        return this.player.tiles.map(t => this.suit(t.dataset.tile)).filter(s => s===suit).length;
+        return this.player.tiles.map(t => this.suit(t.getTileFace())).filter(s => s===suit).length;
       }
     }
 

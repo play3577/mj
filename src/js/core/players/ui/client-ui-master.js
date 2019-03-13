@@ -643,8 +643,11 @@ class ClientUIMaster {
     let la = a.dataset.locknum;
     let lb = b.dataset.locknum;
 
-    a = a.dataset.tile|0;
-    b = b.dataset.tile|0;
+    if (!a.getTileFace) console.log({a});
+    if (!b.getTileFace) console.log({b});
+
+    a = a.getTileFace();
+    b = b.getTileFace();
 
     // 1: bonus tiles always go on the far left
     if (a>33 || b>33) {

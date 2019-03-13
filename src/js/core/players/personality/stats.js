@@ -8,8 +8,8 @@
  * try to get one suit hand.
  */
 function buildStatsContainer(player) {
-  let tiles = player.tiles.map(t => t.dataset.tile|0).sort();
-  let locked = player.locked.map(s => s.map(t => t.dataset.tile|0).sort());
+  let tiles = player.tiles.map(t => t.getTileFace()).sort();
+  let locked = player.locked.map(s => s.map(t => t.getTileFace()).sort());
   let tileCount = (new Array(42)).fill(0);
 
   let suit = t => (t/9)|0;

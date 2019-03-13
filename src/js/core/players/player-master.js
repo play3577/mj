@@ -115,7 +115,7 @@ class PlayerMaster {
       selfdraw: this.has_won ? this.selfdraw : false,
       selftile: (this.has_won && this.selfdraw) ? this.latest : false,
       // If this player has won, the last-claimed tile can matter.
-      final: this.has_won ? this.latest.dataset.tile : false
+      final: this.has_won ? this.latest.getTileFace() : false
     };
   }
 
@@ -211,7 +211,7 @@ class PlayerMaster {
       this.tiles.push(tile);
     }
     if (!claimed) {
-      this.tracker.seen(tile.dataset.tile);
+      this.tracker.seen(tile.getTileFace());
       this.lastClaim = false;
     }
     if (supplement) {
@@ -238,8 +238,8 @@ class PlayerMaster {
    */
   meldKong(tile) {
     this.remove(tile);
-    let set = this.locked.find(set => (set[0].dataset.tile === tile.dataset.tile));
-    let meld = set[0].cloneNode();
+    let set = this.locked.find(set => (set[0].getTileFace() === tile.getTileFace()));
+    let meld = set[0].copy();
     meld.dataset.melded = 'melded';
     set.push(meld);
     if (this.ui) this.ui.meldKong(tile);
@@ -265,7 +265,7 @@ class PlayerMaster {
         // suboptimal in a rare few edge cases, but it DOES mean we
         // don't need to front-load a personality into the Player
         // class, and can leave that aspect to bots, instead.
-        let tiles = this.tiles.filter(t => t.dataset.tile==tile);
+        let tiles = this.tiles.filter(t => t.getTileFace()==tile);
         this.lockClaim(tiles);
         return tiles;
       }
@@ -299,7 +299,7 @@ class PlayerMaster {
    * discarded a specific tile.
    */
   playerDiscarded(player, discard, playcounter) {
-    let tile = discard.dataset.tile;
+    let tile = discard.getTileFace();
     if (this.id != player.id) this.tracker.seen(tile);
     if (this.ui) this.ui.playerDiscarded(player, tile, playcounter);
   }
@@ -309,7 +309,7 @@ class PlayerMaster {
    * declared a kong.
    */
   seeKong(tiles, player, tilesRemaining, resolve) {
-    this.see(tiles.map(t => t.dataset.tile), player);
+    this.see(tiles.map(t => t.getTileFace()), player);
     this.robKong(tiles, tilesRemaining, resolve);
   }
 
@@ -331,7 +331,7 @@ class PlayerMaster {
       // We've already see the discard that got claimed
       if (tile === claimedTile) return;
       // But we haven't seen the other tiles yet.
-      this.tracker.seen(tile.dataset.tile);
+      this.tracker.seen(tile.getTileFace());
     });
     if (this.ui) this.ui.seeClaim(tiles, player, claim);
   }
@@ -348,11 +348,11 @@ class PlayerMaster {
   }
 
   getSingleTileFromHand(tile) {
-    return this.tiles.find(t => (t.dataset.tile == tile));
+    return this.tiles.find(t => (t.getTileFace() == tile));
   }
 
   getAllTilesInHand(tile) {
-    return this.tiles.filter(t => (t.dataset.tile == tile));
+    return this.tiles.filter(t => (t.getTileFace() == tile));
   }
 
   getTiles(allTiles) {
@@ -360,11 +360,11 @@ class PlayerMaster {
   }
 
   getTileFaces(allTiles) {
-    return this.getTiles(allTiles).map(t => (t.dataset ? t.dataset.tile : t)|0).sort((a,b)=>(a-b));
+    return this.getTiles(allTiles).map(t => (t.getTileFace ? t.getTileFace() : t)).sort((a,b)=>(a-b));
   }
 
   getLockedTileFaces() {
-    return this.locked.map(set => `[${set.map(v=>v.dataset.tile|0).sort((a,b)=>(a-b))}]${set.winning?'!':''}`);
+    return this.locked.map(set => `[${set.map(v=>v.getTileFace()).sort((a,b)=>(a-b))}]${set.winning?'!':''}`);
   }
 
   sortTiles() {

@@ -27,6 +27,19 @@ const create = (tileNumber, hidden) => {
     if (num < 30) return 3;
     return 4;
   };
+  span.copy = () => {
+    let copy = span.cloneNode();
+    copy.getTileFace = () => (copy.dataset.tile|0);
+    copy.getTileSuit = () => {
+      let num = copy.getTileFace();
+      if (num < 9) return 0;
+      if (num < 18) return 1;
+      if (num < 27) return 2;
+      if (num < 30) return 3;
+      return 4;
+    };
+    return copy;
+  }
   return span;
 }
 

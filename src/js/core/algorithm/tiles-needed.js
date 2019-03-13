@@ -9,15 +9,15 @@ if (typeof process !== "undefined") {
  */
 function summarise(set) {
   if (!set.map && !set.forEach) return set;
-  set = set.map(t => t.dataset ? (t.dataset.tile|0) : t).sort();
+  set = set.map(t => t.getTileFace ? t.getTileFace() : t).sort();
 
   // pairs
   let t = set[0];
-  t = t.dataset ? t.dataset.tile : t;
+  t = t.getTileFace ? t.getTileFace() : t;
   if (set.length===2) return `pair${t}`; // special notation for easy extraction
   // chows
   let u = set[1];
-  u = u.dataset ? u.dataset.tile : u;
+  u = u.getTileFace ? u.getTileFace() : u;
   if (t !== u) return `3c-${t}-!`;
   // pung and kong
   if (set.length===3) return `3p-${t}-!`;
@@ -96,7 +96,7 @@ if (typeof process !== "undefined") { (function() {
     // local:
     let create = t => ({ dataset: { tile: t } }),
         lock = l => l.map(s => s.map(t => create(t))),
-        list = l => l.map(s => s.map(t => t.dataset.tile));
+        list = l => l.map(s => s.map(t => t.getTileFace()));
 
     // global:
     lineNumber = 0;

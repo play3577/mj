@@ -107,7 +107,7 @@ class Game {
     if (result.winner) {
       // rotate the winds, unless the winner is East and the ruleset says not to in that case.
       let winner = result.winner;
-      if (rules.pass_on_east_win || winner.wind !== 0) {
+      if (this.rules.pass_on_east_win || winner.wind !== 0) {
         this.wind++;
         if (this.wind === 4) {
           this.wind = 0;
@@ -283,8 +283,8 @@ class Game {
    * the player no longer reveals their just-dealt tile.
    */
   async processKong(player, kong, melded=false) {
-    console.debug(`${player.id} plays kong ${kong[0].dataset.tile} (melded: ${melded})`);
-    config.log(`${player.id} locks [${kong.map(t => t.dataset.tile)}]`);
+    console.debug(`${player.id} plays kong ${kong[0].getTileFace()} (melded: ${melded})`);
+    config.log(`${player.id} locks [${kong.map(t => t.getTileFace())}]`);
 
 
     let players = this.players;
@@ -350,7 +350,7 @@ class Game {
     else {
       // If this is claim call, then the player receives
       // the current discard instead of drawing a tile:
-      config.log(`${player.id} <  ${discard.dataset.tile} (${claim.claimtype})`);
+      config.log(`${player.id} <  ${discard.getTileFace()} (${claim.claimtype})`);
       let tiles = player.receiveDiscardForClaim(claim, discard);
       config.log(`${player.id} has [${player.getTileFaces()}], [${player.getLockedTileFaces()}]`);
       players.forEach(p => p.seeClaim(tiles, player, discard, claim));
@@ -433,7 +433,7 @@ class Game {
       else {
         let kong = await player.checkKong(tile);
         if (kong) {
-          console.debug(`${player.id} plays self-drawn kong ${kong[0].dataset.tile} during play`);
+          console.debug(`${player.id} plays self-drawn kong ${kong[0].getTileFace()} during play`);
           await this.processKong(player, kong);
         }
       }
@@ -513,8 +513,8 @@ class Game {
    */
   processDiscard(player) {
     let discard = this.discard;
-    console.debug(`${player.id} discarded ${discard.dataset.tile}`);
-    config.log(`${player.id}  > ${discard.dataset.tile}`);
+    console.debug(`${player.id} discarded ${discard.getTileFace()}`);
+    config.log(`${player.id}  > ${discard.getTileFace()}`);
     player.remove(discard);
     discard.dataset.from = player.id;
     delete discard.dataset.hidden;
@@ -585,7 +585,7 @@ class Game {
    */
   processClaim(player, claim) {
     let discard = this.discard;
-    //console.log(`${claim.p} wants ${discard.dataset.tile} for ${claim.claimtype}`);
+    //console.log(`${claim.p} wants ${discard.getTileFace()} for ${claim.claimtype}`);
     player.disable();
     setTimeout(() => this.play(claim), this.playDelay);
   }

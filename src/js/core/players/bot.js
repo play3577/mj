@@ -43,7 +43,7 @@ class BotPlayer extends Player {
         this.getTileFaces().forEach(t => { t = create(t); bank.appendChild(t); });
         this.locked.forEach((s,sid) => {
           s.forEach(t => {
-            t = t.cloneNode();
+            t = t.copy();
             t.dataset.locked = 'locked';
             t.dataset.locknum = 1 + sid;
             bank.appendChild(t);
@@ -126,7 +126,7 @@ class BotPlayer extends Player {
         // already (due to `this.has_won`), and then let the game.js
         // game loop discover we've won by not discarding anything.
         this.selfdraw = true;
-        console.debug(`Self-drawn win for player ${this.id} on ${this.latest.dataset.tile}`);
+        console.debug(`Self-drawn win for player ${this.id} on ${this.latest.getTileFace()}`);
         return resolve(undefined);
       }
       // If we get here, we have not won.
