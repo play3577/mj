@@ -54,10 +54,10 @@ li + li {
     margin-top: 1em
 }
 
-table {
+section table {
     margin-left: 2em;
 }
-table td {
+section table td {
     border: 1px solid black;
 }
 
