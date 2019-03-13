@@ -42,7 +42,7 @@ if (typeof process !== "undefined") {
           history.forEach((entry,hand) => {
             //console.log(`hand ${hand+1}`);
             config.log(`hand ${hand+1}`);
-            entry.disclosure.forEach((data,pid) => {
+            entry.fullDisclosure.forEach((data,pid) => {
               let concealed = data.concealed.sort().map(mapfn).join(',');
               let locked = data.locked.map(set => set.map(mapfn)).join(', ')
               let bonus = data.bonus.map(mapfn).join(',');

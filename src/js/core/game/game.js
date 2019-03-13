@@ -17,7 +17,7 @@ class Game {
   constructor(players) {
     this.players = players;
     players.forEach(p => p.setActiveGame(this));
-    this.rules = Ruleset.getRuleset("Chinese Classical");
+    this.rules = Ruleset.getRuleset(config.RULES);
     this.players.forEach(p => p.setRules(this.rules));
     this.wall = new Wall(players);
     this.scoreHistory = [];
@@ -43,9 +43,14 @@ class Game {
     this.totalDraws = 0;
     this.totalPlays = 0;
     this.players.forEach(p => p.gameWillStart());
-    this.startHand();
     this.finish = whenDone;
+
+    this.fixValues = () => {
+      // drop in term fixes (hand/draw/seed/wind/wotr) here.
+    }
+
     config.log(`starting game.`);
+    this.startHand();
   }
 
   /**
@@ -149,9 +154,8 @@ class Game {
     });
 
     // used for play debugging:
-    if (config.PAUSE_ON_HAND && this.hand === config.PAUSE_ON_HAND) {
-      config.HAND_INTERVAL = 60 * 60 * 1000;
-    }
+    if (config.PAUSE_ON_HAND && this.hand === config.PAUSE_ON_HAND) config.HAND_INTERVAL = 60 * 60 * 1000;
+    if (this.fixValues) { this.fixValues(); this.fixValues=()=>{}; }
 
     // "Starting hand" / "Restarting hand"
     let pre = result.draw ? 'Res' : 'S';
@@ -171,11 +175,19 @@ class Game {
 
     config.log(`initial deal`);
     await this.dealTiles();
-    this.players.forEach(p => config.log(`tiles for ${p.id}: ${p.getTileFaces()}`));
+    this.players.forEach(p => {
+      let message = `tiles for ${p.id}: ${p.getTileFaces()}`;
+      console.debug(message);
+      config.log(message);
+    });
 
     config.log(`prepare play`);
     await this.preparePlay(config.FORCE_DRAW || this.draws > 0);
-    this.players.forEach(p => config.log(`tiles for ${p.id}: ${p.getTileFaces()} [${p.getLockedTileFaces()}]`));
+    this.players.forEach(p => {
+      let message = `tiles for ${p.id}: ${p.getTileFaces()} [${p.getLockedTileFaces()}]`;
+      console.debug(message);
+      config.log(message);
+    });
 
     players.forEach(player => player.playWillStart());
     this.PLAY_START = Date.now();
@@ -313,6 +325,7 @@ class Game {
     let wall = this.wall;
     if (claim) this.currentPlayerId = claim.p;
     let discard = this.discard;
+    let discardpid = discard ? (discard.dataset.from|0) : undefined;
     let currentPlayerId = this.currentPlayerId;
     this.playDelay = (hand===config.PAUSE_ON_HAND && this.counter===config.PAUSE_ON_PLAY) ? 60*60*1000 : config.PLAY_INTERVAL;
     let player = players[currentPlayerId];
@@ -329,6 +342,8 @@ class Game {
     if (!claim) {
       // If this is a plain call, then the player receives
       // a tile from the shuffled pile of tiles:
+      discard = false;
+      discardpid = false;
       await this.dealTile(player);
     }
 
@@ -356,7 +371,7 @@ class Game {
 
       // Did anyone win?
       if (!discard) {
-        return this.processWin(player);
+        return this.processWin(player, discardpid);
       }
 
       // no winner, but did this player declare/meld a kong?
@@ -439,7 +454,7 @@ class Game {
    * was the last hand to be played and it resolved
    * in a way that would normally rotate the winds).
    */
-  async processWin(player) {
+  async processWin(player, discardpid) {
     let hand = this.hand;
     let players = this.players;
     let currentPlayerId = this.currentPlayerId;
@@ -468,7 +483,7 @@ class Game {
     // ask the current ruleset to settle the score differences.
     let eastid = 0;
     players.forEach(p => { if(p.wind === 0) eastid = p.id; });
-    let adjustments = this.rules.settleScores(scores, player.id, eastid);
+    let adjustments = this.rules.settleScores(scores, player.id, eastid, discardpid);
     players.forEach(p => {
       config.log(`${p.id}: ${adjustments[p.id]}, hand: ${p.getTileFaces()}, [${p.getLockedTileFaces()}], (${p.bonus})`);
       p.recordScores(adjustments);
@@ -477,12 +492,15 @@ class Game {
 
     // Before we move on, record this step in the game,
     // and show the score line in a dismissable modal.
-    this.scoreHistory.push({ disclosure, scores, adjustments });
+    this.scoreHistory.push({ fullDisclosure, scores, adjustments });
     scores[player.id].winner = true;
-    modal.setScores(hand, scores, adjustments, () => {
-      // The code will start a new hand when the modal gets dismissed.
-      this.startHand({ winner: player });
-    });
+
+    if (config.HAND_INTERVAL > 0) {
+      // Start a new hand after the scoring modal gets dismissed.
+      modal.setScores(hand, this.rules, scores, adjustments, () => {
+        this.startHand({ winner: player });
+      });
+    } else this.startHand({ winner: player });
   }
 
   /**

@@ -9,12 +9,14 @@ class ChineseClassical extends Ruleset {
 
   constructor() {
     super(
-      2000, // start points
-      1000, // limit
-      10,   // points for winning
-      true, // losers settle their scores after paying the winner
-      true, // east pays and receives double
-      true, // player winds rotate counter to the wind of the round
+      Ruleset.POINTS_DOUBLES,
+      2000,  // start points
+      1000,  // limit
+      10,    // points for winning
+      true,  // losers settle their scores after paying the winner
+      true,  // east pays and receives double
+      false, // discarding player pays double
+      true,  // player winds rotate counter to the wind of the round
     );
   }
 
@@ -181,7 +183,6 @@ class ChineseClassical extends Ruleset {
    */
   checkWinnerHandPatterns(scorePattern, winset, selfdraw, selftile, windTile, windOfTheRoundTile, tilesLeft, scoreObject) {
     let suits = config.SUIT_NAMES;
-
     let state = this.getState(scorePattern, winset, selfdraw, selftile, windTile, windOfTheRoundTile, tilesLeft);
 
     if (state.selfdraw) {

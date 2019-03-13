@@ -197,7 +197,7 @@ class PlayerMaster {
   /**
    * Add a tile to this player's hand.
    */
-  append(t, claimed, supplement) {
+  append(tile, claimed, supplement) {
     let revealed = false;
     if (typeof tile !== 'object') {
       if (tile > 33) {

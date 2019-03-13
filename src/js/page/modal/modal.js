@@ -113,9 +113,9 @@ class Modal {
   /**
    * Show the end-of-hand score breakdown.
    */
-  setScores(hand, scores, adjustments, resolve) {
+  setScores(hand, rules, scores, adjustments, resolve) {
     this.reveal()
-    this.scores.show(hand, scores, adjustments, resolve);
+    this.scores.show(hand, rules, scores, adjustments, resolve);
   };
 
   /**

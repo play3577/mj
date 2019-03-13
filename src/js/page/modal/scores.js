@@ -3,8 +3,6 @@ class ScoreModal {
     this.modal = modal;
   }
 
-
-
   /**
    * Show the entire game's score progression
    */
@@ -37,11 +35,10 @@ class ScoreModal {
       hand = hand + 1;
       let row = document.createElement('tr');
       let content = [0,1,2,3].map(id => {
-        // console.log(record.disclosure[id]);
-        let winner = record.disclosure[id].winner;
+        let winner = record.fullDisclosure[id].winner;
         let value = record.adjustments[id];
         let score = (base[id] = base[id] + value);
-        let wind = record.disclosure[id].wind;
+        let wind = record.fullDisclosure[id].wind;
         let title = [winner?'winner':false, wind===0?'east':false].filter(v=>v).join(', ');
         return `
           <td title="${title}">
@@ -56,9 +53,9 @@ class ScoreModal {
       `;
       row.querySelector('button').addEventListener('click', () => {
         // load a specific hand ending into the UI
-        gameui.loadHandPostGame(record.disclosure);
+        gameui.loadHandPostGame(record.fullDisclosure);
         // and show the score breakdown for that hand
-        this.show(hand, record.scores, record.adjustments);
+        this.show(hand, rules, record.scores, record.adjustments);
       });
       tbody.appendChild(row);
     });
@@ -71,9 +68,13 @@ class ScoreModal {
   /**
    * Show the end-of-hand score breakdown.
    */
-  show(hand, scores, adjustments, resolve) {
+  show(hand, rules, scores, adjustments, resolve) {
     let panel = this.modal.makePanel(`scores`);
     panel.innerHTML = `<h3>Scores for hand ${hand}</h3>`;
+
+    let faanSystem = (rules.scoretype === Ruleset.FAAN_LAAK);
+    let winner = 0;
+    scores.some((e,id) => { winner = id; return e.winner; });
 
     let builder = document.createElement('div');
     builder.innerHTML = `
@@ -93,12 +94,13 @@ class ScoreModal {
         <td>${scores[3].winner ? '*' : ''}</td>
       </tr>
       <tr>
-        <td>basic</td>
+        <td>${faanSystem ? `points` : `basic`}</td>
         <td>${scores[0].score}</td>
         <td>${scores[1].score}</td>
         <td>${scores[2].score}</td>
         <td>${scores[3].score}</td>
       </tr>
+      ${faanSystem ? `` : `
       <tr>
         <td>doubles</td>
         <td>${scores[0].doubles}</td>
@@ -106,6 +108,7 @@ class ScoreModal {
         <td>${scores[2].doubles}</td>
         <td>${scores[3].doubles}</td>
       </tr>
+      `}
       <tr>
         <td>total</td>
         <td>${scores[0].total}</td>
@@ -122,10 +125,10 @@ class ScoreModal {
       </tr>
       <tr class="details">
         <td>&nbsp;</td>
-        <td><button>details</button></td>
-        <td><button>details</button></td>
-        <td><button>details</button></td>
-        <td><button>details</button></td>
+        <td>${ !faanSystem || (faanSystem && winner===0) ? `<button>details</button>` : ``}</td>
+        <td>${ !faanSystem || (faanSystem && winner===1) ? `<button>details</button>` : ``}</td>
+        <td>${ !faanSystem || (faanSystem && winner===2) ? `<button>details</button>` : ``}</td>
+        <td>${ !faanSystem || (faanSystem && winner===3) ? `<button>details</button>` : ``}</td>
       </tr>
     </table>
     `;
@@ -135,7 +138,7 @@ class ScoreModal {
       .slice(1)
       .map((e,pid) => {
         e.addEventListener('click', evt => {
-          this.showScoreDetails(pid, scores[pid].log);
+          this.showScoreDetails(pid, scores[pid].log, faanSystem);
         });
       });
     panel.appendChild(table);
@@ -147,7 +150,7 @@ class ScoreModal {
   /**
    * Show a detailed score log for a particular player.
    */
-  showScoreDetails(pid, log) {
+  showScoreDetails(pid, log, faanSystem) {
     let panel = this.modal.makePanel(`score-breakdown`);
     panel.innerHTML = `<h3>Score breakdown for player ${pid}</h3>`;
 
@@ -158,8 +161,10 @@ class ScoreModal {
         let mark = ` for `;
         if (line.indexOf(mark) > -1) {
           let parts = line.split(mark);
-          return `<tr><td>${parts[0].replace(/doubles?/, `dbl`)}</td><td>${parts[1]}</td></tr>`;
+          let pts = parts[0].replace(/doubles?/, `dbl`).replace(/faan/,'');
+          return `<tr><td>${pts}</td><td>${parts[1]}</td></tr>`;
         } else {
+          if (faanSystem)  return ``;
           return `<tr><td colspan="2">${line}</td></tr>`;
         }
       })

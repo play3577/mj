@@ -18,6 +18,7 @@ if (typeof process !== "undefined") {
     };
 
     playlog.log = (text) => {
+        if (typeof text !== "string") text = text.toString()
         text.split('\n').forEach(line => {
             lines.push(`${prefix()}${line}`);
         });

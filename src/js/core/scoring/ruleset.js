@@ -15,14 +15,62 @@ class Ruleset {
   allFlowers(bonus) { return [34, 35, 36, 37].every(t => bonus.indexOf(t) > -1); }
   allSeasons(bonus) { return [38, 39, 40, 41].every(t => bonus.indexOf(t) > -1); }
 
-  constructor(startscore, limit, points_for_winning, losers_settle_scores=config.LOSERS_SETTLE_SCORES, east_doubles_up=false, reverse_wind_direction=false) {
+  constructor(scoretype, startscore, limit, points_for_winning, losers_settle_scores=config.LOSERS_SETTLE_SCORES, east_doubles_up=false, discard_pays_double=false, reverse_wind_direction=false) {
+    this.scoretype = scoretype;
     this.player_start_score = startscore;
     this.limit = limit;
     this.points_for_winning = points_for_winning;
     this.losers_settle_scores = losers_settle_scores;
     this.east_doubles_up = east_doubles_up;
+    this.discard_pays_double = discard_pays_double;
     this.reverse_wind_direction = reverse_wind_direction;
     this.limits = new LimitHands();
+  }
+
+  /**
+   * calculate the actual number of points awarded under point/double rules.
+   */
+  getPointsDoubleLimit() {
+    return this.limit;
+  }
+
+  /**
+   * calculate the actual number of points awarded under point/double rules.
+   */
+  getFaanLaakLimit(selfdraw) {
+    return this.convertFaan(0, selfdraw, true);
+  }
+
+  /**
+   * perform standard Faan conversion
+   */
+  convertFaan(points, selfdraw, limit) {
+    if (limit) points = 6; //
+    if (points === 0) return selfdraw ? 0 : 4;
+    if (points === 1) return selfdraw ? 12 : 8;
+    if (points === 2) return selfdraw ? 24 : 16;
+    if (points === 3) return selfdraw ? 48 : 32;
+    // tiered limits, or "laak" scores:
+    if (points >= 4 && points <= 6) return selfdraw ? 96 : 64;   // 1 "laak"
+    if (points >= 7 && points <= 9) return selfdraw ? 192 : 128; // 2 "laak"
+    if (points >= 10) return selfdraw ? 384 : 256;               // 3 "laak"
+  }
+
+  /**
+   * perform points/doubles conversion
+   */
+  convertPoints(points, doubles) {
+    return points * (2 ** doubles);
+  }
+
+  /**
+   * Limits may require faan/laak computation
+   */
+  getLimitPoints(selfdraw) {
+    if (this.scoretype === Ruleset.POINTS_DOUBLES) return this.getPointsDoubleLimit();
+    if (this.scoretype === Ruleset.FAAN_LAAK) return this.getFaanLaakLimit(selfdraw);
+    console.error('unknown scoring type');
+    return 0;
   }
 
   /**
@@ -36,11 +84,24 @@ class Ruleset {
   }
 
   /**
+   * Generate a limit hand object
+   */
+  generateLimitObject(limit, selfdraw) {
+    return {
+      limit: limit,
+      log: [`Limit hand: ${limit}`],
+      score: 0,
+      doubles: 0,
+      total: this.getLimitPoints(selfdraw)
+    };
+  }
+
+  /**
    * Turn basic tilescores into score adjustments, by running
    * the "how much does the winner get" and "how much do the
    * losers end up paying" calculations.
    */
-  settleScores(scores, winningplayer, eastplayer) {
+  settleScores(scores, winningplayer, eastplayer, discardpid) {
     let adjustments = [0, 0, 0, 0];
     let eastwin = winningplayer === eastplayer ? 2 : 1;
 
@@ -55,9 +116,10 @@ class Ruleset {
         let east = 1;
         if (this.east_doubles_up) east = (i === eastplayer) ? 2 : 1;
         let difference = wscore * Math.max(eastwin, east);
+        if (this.discard_pays_double && i===discardpid) difference *= 2;
         adjustments[winningplayer] += difference;
         console.debug(`${winningplayer} gets ${difference} from ${i}`);
-        adjustments[i] -= wscore * Math.max(eastwin, east);
+        adjustments[i] -= difference;
         console.debug(`${i} pays ${difference} to ${winningplayer}`);
       }
 
@@ -150,10 +212,18 @@ class Ruleset {
       result.total = this.limit;
       result.log.push(`Limit hand: ${result.limit}`);
     } else {
-      result.total = result.score * 2 ** result.doubles;
-      if (result.total > this.limit) {
-        result.log.push(`Score limited from ${result.total} to ${this.limit}`);
-        result.total = this.limit;
+      result.total = 0
+
+      if (this.scoretype === Ruleset.POINTS_DOUBLES) {
+        result.total = this.convertPoints(result.score, result.doubles);
+        if (result.total > this.limit) {
+          result.log.push(`Score limited from ${result.total} to ${this.limit}`);
+          result.total = this.limit;
+        }
+      }
+
+      if (this.scoretype === Ruleset.FAAN_LAAK) {
+        result.total = this.convertFaan(result.score, selfdraw);
       }
     }
 
@@ -322,7 +392,6 @@ class Ruleset {
     let tileInformation = tilesNeeded(tiles, locked);
     let openCompositions = tileInformation.composed;
 
-
     // Then, flatten the locked sets from tile elements
     // to simple numerical arrays, but with the set
     // properties (locked/concealed) preserved:
@@ -341,16 +410,21 @@ class Ruleset {
     if (winner) {
       // first check for non-standard-pattern limit hands
       let limit = this.checkForLimit(allTiles, locked.reduce((t,s) => t + s.length, 0));
-      if (limit) return { limit:limit, log: [`Limit hand: ${limit}`], score: this.limit, doubles: 0, total: this.limit };
+      if (limit) return this.generateLimitObject(limit, selfdraw);
 
       // no limit: proceed to score hand based on normal win paths.
       openCompositions = tileInformation.winpaths;
-    }
+    } else {
+      // Do we even bother figuring out what the not-winner has?
+      if (!this.losers_settle_scores) {
+        return { score: 0, doubles: 0, log: [], total: 0 };
+      }
 
-    // If there is nothing to be formed with the tiles in hand,
-    // then we need to create an empty path, so that we at
-    // least still compute score based on just the locked tiles.
-    else if(openCompositions.length === 0) openCompositions.push([]);
+      // If there is nothing to be formed with the tiles in hand,
+      // then we need to create an empty path, so that we at
+      // least still compute score based on just the locked tiles.
+      if(openCompositions.length === 0) openCompositions.push([]);
+    }
 
     // Run through each possible interpetation of in-hand
     // tiles, and see how much they would score, based on
@@ -390,6 +464,9 @@ class Ruleset {
   }
 }
 
+Ruleset.FAAN_LAAK = Symbol();
+Ruleset.POINTS_DOUBLES = Symbol();
+
 /**
  * Set up ruleset registration/fetching by name. Note that
  * we add spaces in between camelcasing to make things
@@ -405,6 +482,8 @@ class Ruleset {
   };
 
   Ruleset.getRuleset = name => rulesets[name];
+
+  Ruleset.getRulesetNames = () => Object.keys(rulesets);
 })();
 
 
@@ -412,6 +491,7 @@ class Ruleset {
 if (typeof process !== "undefined") {
   module.exports = Ruleset;
 
-  // make sure CC rules are loaded.
-  require('./chinese-classical');
+  // make sure all the actual rules are loaded.
+  require('./chinese-classical.js');
+  require('./cantonese.js');
 }

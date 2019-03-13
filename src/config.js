@@ -13,6 +13,9 @@ let NO_SOUND = false;
 // games to find out where things go wrong.
 let SEED = 0;
 
+// The ruleset to play with.
+let RULES = `Chinese Classical`;
+
 // This determines whether you get asked to
 // choose normal vs. automated play when you
 // load the page.
@@ -81,6 +84,7 @@ if (typeof window !== "undefined") {
 
     NO_SOUND = (params.get(`nosound`)==='true') ? true : NO_SOUND;
     SEED = params.get(`seed`) ? parseInt(params.get(`seed`)) : SEED;
+    RULES = params.get(`rules`) ? params.get(`rules`) : RULES;
     PLAY_IMMEDIATELY = (params.get(`autoplay`)==='true') ? true : PLAY_IMMEDIATELY;
     PAUSE_ON_BLUR = (params.get(`pause_on_blur`)==='false') ? false: PAUSE_ON_BLUR;
     FORCE_DRAW = (params.get(`force_draw`)==='true') ? true : FORCE_DRAW;
@@ -103,17 +107,7 @@ if (WALL_HACK || PLAY_IMMEDIATELY) {
 // The simple config is for settings I
 // personally change a lot during development.
 const simple = {
-    // For debugging purposes, we can tell
-    // the game to effectively pause play
-    // at the end of the following "hand".
-    // A value of 0 means "don't pause".
-    PAUSE_ON_HAND: 0,
 
-    // For debugging purposes, we can tell
-    // the game to pause play after a specific
-    // tile getting dealt during a hand.
-    // A value of 0 means "don't pause".
-    PAUSE_ON_PLAY: 0,
 };
 
 // Constants used during play, for determining
@@ -258,6 +252,7 @@ const config = {
     flushLog: noop,
     NO_SOUND,
     SEED,
+    RULES,
     PLAY_IMMEDIATELY,
     PAUSE_ON_BLUR,
     FORCE_DRAW,
@@ -269,8 +264,38 @@ const config = {
     CLAIM_INTERVAL,
     PLAY_INTERVAL,
     HAND_INTERVAL,
-    PAUSE_ON_HAND: simple.PAUSE_ON_HAND,
-    PAUSE_ON_PLAY: simple.PAUSE_ON_PLAY,
+
+    // For debugging purposes, if we're messing
+    // with which hand/draw it is, we need to
+    // probably also peg the PRNG seed.
+    START_OVERRIDE_SEED: 0,
+
+    // For debugging purposes, we can tell
+    // the game to effectively start on a
+    // hand other than hand 1.
+    START_ON_HAND: 0,
+
+    // For debugging purposes, we can tell
+    // the game to effectively pause play
+    // at the end of the following "hand".
+    // A value of 0 means "don't pause".
+    PAUSE_ON_HAND: 0,
+
+    // For debugging purposes, we prespecify
+    // the number of draws.
+    START_ON_DRAWS: 0,
+
+    // For debugging purposes, we can tell
+    // the game to effectively pause play
+    // at the end of the following "draw".
+    // A value of 0 means "don't pause".
+    PAUSE_ON_DRAW: 0,
+
+    // For debugging purposes, we can tell
+    // the game to pause play after a specific
+    // tile getting dealt during a hand.
+    // A value of 0 means "don't pause".
+    PAUSE_ON_PLAY: 0,
 
     // This setting determines which type of play
     // is initiated if PLAY_IMMEDIATELY is true

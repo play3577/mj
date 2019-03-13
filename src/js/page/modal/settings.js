@@ -34,6 +34,7 @@ class SettingsModal {
 
     // add all config options here
     const values = {
+      rules: RULES.toString(),
       force_open_bot_play: FORCE_OPEN_BOT_PLAY.toString(),
       show_bot_claim_suggestion: SHOW_BOT_CLAIM_SUGGESTION.toString(),
       bot_chicken_threshold: BOT_CHICKEN_THRESHOLD.toString(),
@@ -50,6 +51,7 @@ class SettingsModal {
     };
 
     const options = {
+      'Rules': { key: 'rules', options: [...Ruleset.getRulesetNames()] },
       'Always show everyone\'s tiles': { key: 'force_open_bot_play', options: ['true','false'] },
       'Highlight discards if they can be claimed': { key: 'show_bot_claim_suggestion', options: ['true','false'] },
       '-': {},
@@ -63,7 +65,7 @@ class SettingsModal {
       'Delay (in ms) between player turns': { key: 'play' },
       'Delay (in ms) before starting next hand': { key: 'hand' },
       'Delay (in ms) for bots reacting to things': { key: 'bot_delay' },
-      'Set up a specific wall': { key: 'wall_hack', options: ['', ...Object.keys(WallHack.hacks)] },
+      'Set up a specific wall': { key: 'wall_hack', options: ['', ...Object.keys(WallHack.hacks)], value: values.wall_hack },
     };
 
 
@@ -121,4 +123,3 @@ class SettingsModal {
 if (typeof process !== "undefined") {
   module.exports = SettingsModal;
 }
-
