@@ -44,12 +44,11 @@ class BotPlayer extends Player {
         this.locked.forEach((s,sid) => {
           s.forEach(t => {
             t = t.copy();
-            t.dataset.locked = 'locked';
-            t.dataset.locknum = 1 + sid;
+            t.lock(1 + sid);
             bank.appendChild(t);
           });
         })
-        this.bonus.forEach(t => { t = create(t); t.dataset.locked = 'locked'; bank.appendChild(t); });
+        this.bonus.forEach(t => { t = create(t); t.lock(); bank.appendChild(t); });
         if (this.waiting) bank.classList.add('waiting'); else bank.classList.remove('waiting');
         window.PLAYER_BANKS.sortTiles(bank);
       }

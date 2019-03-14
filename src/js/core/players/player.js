@@ -84,8 +84,8 @@ class Player extends PlayerMaster {
 
     this.append(discard, true);
 
-    discard.dataset.locked = 'locked';
-    if(this.has_won) discard.dataset.winning='winning';
+    discard.lock();
+    if(this.has_won) discard.winning();
 
     // lock related tiles if this was a pung/kong
     if (claimtype === CLAIM.PAIR || claimtype === CLAIM.PUNG || claimtype === CLAIM.KONG) {
@@ -100,8 +100,8 @@ class Player extends PlayerMaster {
       Array.from(tiles).forEach(t => {
         if (t.getTileFace() == tile) {
           t.reveal();
-          t.dataset.locked = 'locked';
-          if(this.has_won) t.dataset.winning='winning';
+          t.lock();
+          if(this.has_won) t.winning();
           set.push(t);
         }
       });
@@ -127,8 +127,8 @@ class Player extends PlayerMaster {
 
     [t1, t2].forEach(t => {
       t.reveal();
-      t.dataset.locked = 'locked';
-      if(this.has_won) t.dataset.winning='winning';
+      t.lock();
+      if(this.has_won) t.winning();
       set.push(t);
     });
 
@@ -147,14 +147,14 @@ class Player extends PlayerMaster {
       this.remove(tile);
       tile.classList.remove('latest');
       tile.removeAttribute('title');
-      tile.dataset.locked = 'locked';
-      if(kong) tile.dataset.concealed = 'concealed';
+      tile.lock();
+      if(kong) tile.conceal();
     });
 
     // a claimed kong implies this player
     // had a concealed pung in their hand.
     if (kong && !concealed) {
-      delete tiles[0].dataset.concealed;
+      delete tiles[0].conceal();
     }
 
     this.locked.push(tiles);

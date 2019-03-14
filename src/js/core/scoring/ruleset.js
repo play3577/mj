@@ -382,7 +382,7 @@ class Ruleset {
     // and into the sets themselves, instead.
     locked = locked.map(set => {
       if (set.length === 4) {
-        let ccount = set.reduce((tally,t) => tally + (t.dataset.concealed ? 1 : 0), 0);
+        let ccount = set.reduce((tally,t) => tally + (t.isConcealed() ? 1 : 0), 0);
         if (ccount >= 3) set.concealed = `${ccount}`;
       }
       return set;
@@ -397,7 +397,7 @@ class Ruleset {
     // to simple numerical arrays, but with the set
     // properties (locked/concealed) preserved:
     locked = locked.map(set => {
-      let winning = !!set[0].dataset.winning;
+      let winning = !!set[0].isWinningTile();
       let newset = set.map(t => t.getTileFace()); // FIXME: this should be a create(t)'d tile!
       newset.locked = 'locked';
       if (set.concealed) newset.concealed = set.concealed;

@@ -207,7 +207,7 @@ class PlayerMaster {
       tile = create(tile);
     }
     this.latest = tile;
-    if (!tile.dataset.bonus) {
+    if (!tile.isBonus()) {
       this.tiles.push(tile);
     }
     if (!claimed) {
@@ -215,7 +215,7 @@ class PlayerMaster {
       this.lastClaim = false;
     }
     if (supplement) {
-      tile.dataset.supplement = 'supplement';
+      tile.supplement();
     }
     if (this.ui) this.ui.append(tile);
     return revealed;
@@ -240,7 +240,7 @@ class PlayerMaster {
     this.remove(tile);
     let set = this.locked.find(set => (set[0].getTileFace() === tile.getTileFace()));
     let meld = set[0].copy();
-    meld.dataset.melded = 'melded';
+    meld.meld();
     set.push(meld);
     if (this.ui) this.ui.meldKong(tile);
   }

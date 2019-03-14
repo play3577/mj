@@ -288,8 +288,7 @@ class ClientUIMaster {
 
       res.bonus.forEach(t => {
         t = create(t);
-        t.dataset.locked = 'locked';
-        t.dataset.bonus = 'bonus';
+        t.bonus();
         bank.appendChild(t);
       });
 
@@ -298,9 +297,8 @@ class ClientUIMaster {
       res.locked.forEach(s => {
         s.forEach(t => {
           let n = create(t.getTileFace());
-          n.dataset.locked = 'locked';
-          n.dataset.locknum = locknum;
-          if (t.dataset.winning) n.dataset.winning = 'winning';
+          n.lock(locknum);
+          if (t.isWinningTile()) n.winning();
           bank.appendChild(n);
         });
         locknum += s.length;
@@ -423,7 +421,7 @@ class ClientUIMaster {
       old.classList.remove('latest');
       old.removeAttribute('title');
     }
-    if (!t.dataset.locked) {
+    if (!t.isLocked()) {
       t.classList.add('latest');
       t.setAttribute('title', 'latest tile');
     }
@@ -448,7 +446,7 @@ class ClientUIMaster {
     this.removeLastDiscard();
     let locknum = 1 + this.getLockedTiles().length;
     tiles.forEach(tile => {
-      tile.dataset.locknum = locknum;
+      tile.lock(locknum);
       this.append(tile);
     });
     this.sortTiles();
@@ -461,8 +459,7 @@ class ClientUIMaster {
   meldKong(tile) {
     // find another tile like this, but locked, which can only be a pung.
     let other = this.el.querySelector(`.tile[data-locked][data-tile='${tile.getTileFace()}']`);
-    tile.dataset.locknum = other.dataset.locknum;
-    tile.dataset.locked = 'locked';
+    tile.lock(other.getLockNumber());
     this.el.appendChild(tile);
     this.sortTiles();
   }
@@ -515,8 +512,7 @@ class ClientUIMaster {
 
       let e = create(face);
       if (tile.isHidden && tile.isHidden()) e.hide();
-      e.dataset.locked = 'locked';
-      e.dataset.locknum = locknum;
+      e.lock(locknum);
       bank.appendChild(e);
     });
 
@@ -640,11 +636,8 @@ class ClientUIMaster {
    * 4: concealed tiles
    */
   tilebank_sort_function(a,b) {
-    let la = a.dataset.locknum;
-    let lb = b.dataset.locknum;
-
-    if (!a.getTileFace) console.log({a});
-    if (!b.getTileFace) console.log({b});
+    let la = a.getLockNumber();
+    let lb = b.getLockNumber();
 
     a = a.getTileFace();
     b = b.getTileFace();
