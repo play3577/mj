@@ -13,15 +13,19 @@ const create = (tileNumber, hidden) => {
   span.className = 'tile';
   span.dataset.tile = tileNumber;
 
+  span.getFrom = () => (span.dataset.from|0);
+  span.setFrom = (pid) => (span.dataset.from = pid);
+
+  span.hide = () => (span.dataset.hidden = 'hidden');
+  span.isHidden = () => (!!span.dataset.hidden);
+  span.reveal = () => { delete span.dataset.hidden; };
+
   if (tileNumber < 34) {
-    if (hidden) { span.dataset.hidden = 'hidden'; }
+    if (hidden) { span.hide(); }
   } else {
     span.dataset.bonus = 'bonus';
     span.dataset.locked = 'locked';
   }
-
-  span.getFrom = () => (span.dataset.from|0);
-  span.setFrom = (pid) => (span.dataset.from = pid);
 
   span.getTileFace = () => (span.dataset.tile|0);
   span.getTileSuit = () => {

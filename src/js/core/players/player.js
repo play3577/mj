@@ -99,7 +99,7 @@ class Player extends PlayerMaster {
 
       Array.from(tiles).forEach(t => {
         if (t.getTileFace() == tile) {
-          delete t.dataset.hidden;
+          t.reveal();
           t.dataset.locked = 'locked';
           if(this.has_won) t.dataset.winning='winning';
           set.push(t);
@@ -126,7 +126,7 @@ class Player extends PlayerMaster {
     }
 
     [t1, t2].forEach(t => {
-      delete t.dataset.hidden;
+      t.reveal();
       t.dataset.locked = 'locked';
       if(this.has_won) t.dataset.winning='winning';
       set.push(t);

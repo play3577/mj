@@ -514,7 +514,7 @@ class ClientUIMaster {
       }
 
       let e = create(face);
-      if (tile.dataset && tile.dataset.hidden) e.dataset.hidden = 'hidden';
+      if (tile.isHidden && tile.isHidden()) e.hide();
       e.dataset.locked = 'locked';
       e.dataset.locknum = locknum;
       bank.appendChild(e);

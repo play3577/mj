@@ -517,7 +517,7 @@ class Game {
     config.log(`${player.id}  > ${discard.getTileFace()}`);
     player.remove(discard);
     discard.setFrom(player.id);
-    delete discard.dataset.hidden;
+    discard.reveal();
     this.players.forEach(p => p.playerDiscarded(player, discard, this.counter));
   }
 
