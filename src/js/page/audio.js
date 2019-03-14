@@ -1,5 +1,5 @@
 if (typeof process !== "undefined") {
-  document = require('../core/utils/dom-shim.js');
+  document = require('../core/utils/dom-shim.js').document;
 }
 
 const filenames = {

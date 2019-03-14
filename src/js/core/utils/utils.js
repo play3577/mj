@@ -1,5 +1,63 @@
 if (typeof process !== "undefined") {
-  document = require('./dom-shim.js');
+  let shim = require('./dom-shim.js');
+  document = shim.document;
+  ClassList = shim.Classlist;
+}
+
+class DatasetObject {
+  constructor() {
+    this.classList = new ClassList();
+    this.attributes = {};
+    this.dataset = {};
+  }
+
+  setAttribute(a,v) { this.attributes[a] = v; }
+  removeAttribute(a) { delete this.attributes[a]; }
+
+  getFrom() { return this.dataset.from; }
+  setFrom(pid) { this.dataset.from = pid; }
+
+  hide() { this.dataset.hidden = 'hidden'; }
+  isHidden() { return !!this.dataset.hidden; }
+  reveal() { delete this.dataset.hidden; }
+
+  conceal() { this.dataset.concealed = 'concealed'; }
+  isConcealed() { return !!this.dataset.concealed; }
+
+  winning() { this.dataset.winning = 'winning'; }
+  isWinningTile() { return !!this.dataset.winning; }
+
+  lock(locknum) {
+    this.dataset.locked = 'locked';
+    if (locknum) this.dataset.locknum = locknum;
+  }
+  meld() { this.dataset.melded = 'melded'; }
+  isLocked() { return !!this.dataset.locked; }
+  getLockNumber() { return this.dataset.locknum; }
+  unlock() { delete  this.dataset.locked; }
+
+  bonus() { this.dataset.bonus = 'bonus'; this.lock() };
+  isBonus() { return !!this.dataset.bonus; }
+  supplement() { this.dataset.supplement = 'supplement'; }
+
+  setTileFace(tile) { this.dataset.tile = tile; }
+  getTileFace() { return this.dataset.tile; }
+  getTileSuit() {
+      let num = this.getTileFace();
+      if (num < 9) return 0;
+      if (num < 18) return 1;
+      if (num < 27) return 2;
+      if (num < 30) return 3;
+      return 4;
+  }
+
+  copy()  {
+    let dso = new DatasetObject();
+    dso.classList = this.classList.copy();
+    dso.dataset = JSON.parse(JSON.stringify(this.dataset));
+    dso.attributes = JSON.parse(JSON.stringify(this.attributes));
+    return dso;
+  }
 }
 
 /**
@@ -34,6 +92,7 @@ const enrich = span => {
   span.isBonus = () => (!!span.dataset.bonus);
   span.supplement = () => (span.dataset.supplement = 'supplement');
 
+  span.setTileFace = tile => (span.dataset.tile = tile);
   span.getTileFace = () => (span.dataset.tile|0);
   span.getTileSuit = () => {
     let num = span.getTileFace();
@@ -56,9 +115,16 @@ const enrich = span => {
  * function to the span itself.
  */
 const create = (tileNumber, hidden) => {
-  let span = enrich(document.createElement('span'));
-  span.className = 'tile';
-  span.dataset.tile = tileNumber;
+  let span;
+
+  if (typeof process !== "undefined") {
+    span = new DatasetObject();
+  } else {
+    span = enrich(document.createElement('span'));
+    span.className = 'tile';
+  }
+
+  span.setTileFace(tileNumber);
 
   if (tileNumber < 34) {
     if (hidden) { span.hide(); }

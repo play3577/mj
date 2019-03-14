@@ -15,6 +15,11 @@ class Classlist {
   remove(v) { let pos = this.classes.indexOf(v); if (pos>-1) this.classes.splice(pos,1); }
   toggle(v) { if (this.contains(v)) this.remove(v); else this.add(v); }
   contains(v) { return this.classes.indexOf(v)>-1; }
+  copy() {
+    let cl = new Classlist();
+    cl.classes = this.classes.slice();
+    return cl;
+  }
 }
 
 // fake HTML element
@@ -85,5 +90,8 @@ class Document {
 }
 
 if (typeof process !== "undefined") {
-  module.exports = new Document();
+  module.exports = {
+    document: new Document(),
+    Classlist
+  };
 }

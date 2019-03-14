@@ -1,5 +1,5 @@
 if (typeof process !== "undefined") {
-  document = require('../../utils/dom-shim.js');
+  document = require('../../utils/dom-shim.js').document;
 }
 
 /**
