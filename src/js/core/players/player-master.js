@@ -254,29 +254,9 @@ class PlayerMaster {
 
   /**
    * Check whether this player has, and if so,
-   * wants to declare, a kong.
+   * wants to declare, a kong. Implement by bot.
    */
   async checkKong() {
-    // players with a UI get to decide what to do on their own turn.
-    if (this.ui) return false;
-
-    // does this player have a kong in hand that needs to be declared?
-    let tiles = this.getTileFaces();
-    let counts = new Array(34).fill(0);
-    tiles.forEach(t => counts[t]++);
-    for (let tile=0, e=34, count; tile<e; tile++) {
-      count = counts[tile];
-      if (count===4) {
-        // Note: we do not check with our "personality" if we start
-        // with a kong, we just declare it. This means we might play
-        // suboptimal in a rare few edge cases, but it DOES mean we
-        // don't need to front-load a personality into the Player
-        // class, and can leave that aspect to bots, instead.
-        let tiles = this.tiles.filter(t => t.getTileFace()==tile);
-        this.lockClaim(tiles);
-        return tiles;
-      }
-    }
     return false;
   }
 

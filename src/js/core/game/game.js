@@ -47,7 +47,7 @@ class Game {
 
     this.fixValues = () => {
       // drop in term fixes (hand/draw/seed/wind/wotr) here.
-      //this.hand=3; this.draws=0; config.PRNG.seed(1797999078); this.wind=0; this.windOfTheRound=0;
+//      this.hand=23; this.draws=1; config.PRNG.seed(301917549); this.wind=2; this.windOfTheRound=3;
     }
 
     config.log(`starting game.`);
@@ -335,6 +335,7 @@ class Game {
     // increase the play counter for debugging purposes:
     this.counter++;
     console.debug(`%chand ${hand}, play ${this.counter}`, `color: red; font-weight: bold;`);
+    console.debug(`current seed: ${config.PRNG.seed()}`);
 
     // ===========================
     // GAME LOOP: "Draw one" phase
