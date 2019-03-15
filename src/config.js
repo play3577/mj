@@ -2,6 +2,9 @@ if (typeof process !== "undefined") {
     Random = require('./js/core/utils/prng.js');
 }
 
+const noop = ()=>{};
+const __console_debug = console.debug;
+
 // This flag needs no explanation
 let DEBUG = false;
 
@@ -34,10 +37,14 @@ let FORCE_DRAW = false;
 // normally would have no way to access it.
 let FORCE_OPEN_BOT_PLAY = false;
 
-// Highlight discarded tiles if the bot
-// superclass to the human player recommends
-// claiming it for something.
-let SHOW_BOT_CLAIM_SUGGESTION = true;
+// Highlight discarded tiles if the human
+// player can claim them for something.
+let SHOW_CLAIM_SUGGESTION = true;
+
+// Work play suggestions as determined by
+// the bot that underpins the human player
+// into the game UI.
+let SHOW_BOT_SUGGESTION = true;
 
 // How likely are bots to go for chicken
 // hands, rather than for hands worth points?
@@ -80,8 +87,6 @@ if (typeof window !== "undefined") {
     let params = new URLSearchParams(window.location.search);
 
     DEBUG = (params.get(`debug`)==='true') ? true : DEBUG;
-    if (!DEBUG) console.debug = () => {};
-
     NO_SOUND = (params.get(`nosound`)==='true') ? true : NO_SOUND;
     SEED = params.get(`seed`) ? parseInt(params.get(`seed`)) : SEED;
     RULES = params.get(`rules`) ? params.get(`rules`) : RULES;
@@ -89,7 +94,8 @@ if (typeof window !== "undefined") {
     PAUSE_ON_BLUR = (params.get(`pause_on_blur`)==='false') ? false: PAUSE_ON_BLUR;
     FORCE_DRAW = (params.get(`force_draw`)==='true') ? true : FORCE_DRAW;
     FORCE_OPEN_BOT_PLAY = (params.get(`force_open_bot_play`)==='true') ? true : FORCE_OPEN_BOT_PLAY;
-    SHOW_BOT_CLAIM_SUGGESTION = (params.get(`show_bot_claim_suggestion`)==='true') ? true : SHOW_BOT_CLAIM_SUGGESTION;
+    SHOW_CLAIM_SUGGESTION = (params.get(`show_claim_suggestion`)==='true') ? true : SHOW_CLAIM_SUGGESTION;
+    SHOW_BOT_SUGGESTION = (params.get(`show_bot_suggestion`)==='true') ? true : SHOW_BOT_SUGGESTION;
     BOT_CHICKEN_THRESHOLD = params.get(`bot_chicken_threshold`) ? parseFloat(params.get(`bot_chicken_threshold`)) : BOT_CHICKEN_THRESHOLD;
     CLAIM_INTERVAL = params.get(`claim`) ? parseInt(params.get(`claim`)) : CLAIM_INTERVAL;
     PLAY_INTERVAL = params.get(`play`) ? parseInt(params.get(`play`)) : PLAY_INTERVAL;
@@ -240,10 +246,18 @@ const SUIT_NAMES = {
     "5": "bonus"
 };
 
-const noop = ()=>{};
-
 // And then rest of the configuration.
 const config = {
+    set: opt => {
+        Object.keys(opt).forEach(key => {
+            let value = opt[key];
+            if (typeof config[key] !== "undefined") {
+                config[key] = value;
+                if (key === `DEBUG`) console.debug = value ? __console_debug : noop;
+            }
+        })
+    },
+
     // The pseudo-random number generator used by
     // any code that needs to randomise data.
     PRNG: new Random(SEED),
@@ -257,7 +271,8 @@ const config = {
     PAUSE_ON_BLUR,
     FORCE_DRAW,
     FORCE_OPEN_BOT_PLAY,
-    SHOW_BOT_CLAIM_SUGGESTION,
+    SHOW_CLAIM_SUGGESTION,
+    SHOW_BOT_SUGGESTION,
     BOT_CHICKEN_THRESHOLD,
     WALL_HACK,
 
@@ -339,6 +354,9 @@ const config = {
         return diff;
     }
 };
+
+// bind console.debug correctly.
+config.set({ DEBUG });
 
 // in node context?
 if (typeof process !== "undefined") {

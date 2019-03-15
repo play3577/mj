@@ -97,13 +97,13 @@ class Pattern {
    * winning combination (e.g. 4 sets and a pair is a winning path, but
    * seven singles and two pairs definitely isn't!)
    */
-  recurse(chain, to_remove, results, single, pair, set) {
+  recurse(seen, chain, to_remove, results, single, pair, set) {
     let downstream = this.copy();
     downstream.remove(to_remove);
 
     // Do we have tiles left that need analysis?
     if (downstream.keys.length > 0) {
-      return downstream.runExpand(chain, results, single, pair, set);
+      return downstream.runExpand(seen, chain, results, single, pair, set);
     }
 
     // We do not. What's the conclusion for this chain?
@@ -154,7 +154,7 @@ class Pattern {
    * list of tiles. Specifically, which count combination of singles,
    * pairs, and sets can we make with these tiles?
    */
-  runExpand(paths=[], results=[], single=[], pair=[], set=[]) {
+  runExpand(seen=[], paths=[], results=[], single=[], pair=[], set=[]) {
     //console.debug(`called with:`, pair, set, `- local tiles:`, this.tiles);
 
     if (!this.keys.length) {
@@ -169,10 +169,14 @@ class Pattern {
 
     // Otherwise, let's get determine-y:
 
+    seen = seen.slice();
     let tile = (this.keys[0]|0); // remember: object keys are strings, we need to (int) them,
+    seen.push(tile);
+
     let count = this.tiles[tile];
     let head = [];
     let toRemove = [];
+
 
     //console.debug(`evaluating tile`,tile);
 
@@ -182,7 +186,7 @@ class Pattern {
       head=[`4k-${tile}`];
       paths.push(head);
       toRemove = [tile, tile, tile, tile];
-      this.recurse(head, toRemove, results, single, pair, set.concat(head));
+      this.recurse(seen, head, toRemove, results, single, pair, set.concat(head));
     }
 
     // If we're (implied or only) holding a pung, also recurse with the set count increased by one.
@@ -191,7 +195,7 @@ class Pattern {
       paths.push(head);
       toRemove = [tile, tile, tile];
       this.markNeeded(results, tile, Constants.KONG);
-      this.recurse(head, toRemove, results, single, pair, set.concat(head));
+      this.recurse(seen, head, toRemove, results, single, pair, set.concat(head));
     }
 
     // If we're (implied or only) holding a pair, also recurse with the pair count increased by one.
@@ -200,14 +204,14 @@ class Pattern {
       paths.push(head);
       toRemove = [tile, tile];
       this.markNeeded(results, tile, Constants.PUNG);
-      this.recurse(head, toRemove, results, single, pair.concat([tile]), set);
+      this.recurse(seen, head, toRemove, results, single, pair.concat([tile]), set);
     }
 
     // And of course, the final recursion is for treating the tile as "just a single".
     if (count===1) {
       // Without marking anything as "needed" yet. We can't
       // claim a pair unless we're going to win on it.
-      this.recurse(paths, [tile], results, single.concat([tile]), pair, set);
+      this.recurse(seen, paths, [tile], results, single.concat([tile]), pair, set);
     }
 
     // Now, if we're dealing with honour tiles, this is all we need to do.
@@ -215,28 +219,34 @@ class Pattern {
 
     // but if we're dealing with a suited number tile, we also need to check for chows.
     let {t1, t2} = this.getChowInformation(tile);
-
     if (t1 || t2) {
+      let suit = this.getSuit(tile);
       if (t1 && t2) {
         // we are holding a chow!
         head=[`3c-${tile}`];
         paths.push(head);
         toRemove = [tile, tile+1, tile+2];
-        this.recurse(head, toRemove, results, single, pair, set.concat(head));
+        // We might also be one tile away from having a chow(1), if -1 is in the same suit.
+        if (seen.indexOf(tile-1) === -1) {
+          if (this.matchSuit(tile-1,suit)) this.markNeeded(results, tile-1, Constants.CHOW1);
+        }
+        this.recurse(seen, head, toRemove, results, single, pair, set.concat(head));
       }
       else if (t1) {
-        let suit = this.getSuit(tile);
         // We might be one tile away from having a chow(3), if +2 is in the same suit.
         if (this.matchSuit(tile+2,suit)) this.markNeeded(results, tile+2, Constants.CHOW3);
         // We might also be one tile away from having a chow(1), if -1 is in the same suit.
-        if (this.matchSuit(tile-1,suit)) this.markNeeded(results, tile-1, Constants.CHOW1);
-        this.recurse(paths, [tile, tile+1], results, single, pair, set);
+        if (seen.indexOf(tile-1) === -1) {
+          // We might also be one tile away from having a chow(1), if -1 is in the same suit.
+          if (this.matchSuit(tile-1,suit)) this.markNeeded(results, tile-1, Constants.CHOW1);
+        }
+        this.recurse(seen, paths, [tile, tile+1], results, single, pair, set);
       }
       else {
         // One tile away from having a chow, and because it's the
         // middle tile, we know that it's the correct suit already.
         this.markNeeded(results, tile+1, Constants.CHOW2);
-        this.recurse(paths, [tile, tile+2], results, single, pair, set);
+        this.recurse(seen, paths, [tile, tile+2], results, single, pair, set);
       }
     }
 
@@ -246,7 +256,14 @@ class Pattern {
   // Convenience function, so calling code doesn't need to know about
   // empty array instantiations for path/results/single
   expand(pair=[], set=[]) {
-    return this.copy().runExpand([], [], [], pair, set);
+    return this.copy().runExpand(
+      [], // seen
+      [], // paths
+      [], // results
+      [], // singles
+      pair,
+      set
+    );
   }
 }
 

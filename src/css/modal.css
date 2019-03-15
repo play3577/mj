@@ -137,6 +137,16 @@
   border-bottom: none;
 }
 
+.modal .panel.final-scores table tr td:last-child,
+.modal .panel.final-scores table tr td:first-child,
+.modal .panel.final-scores table tr:nth-child(2) td {
+  background: white;
+}
+
+.modal .panel.final-scores table tr td:last-child,
+.modal .panel.final-scores table tr td:first-child {
+  text-align: center;
+}
 
 .modal .panel.scores table tr:nth-last-child(2) td {
   border-top: 1px solid black;

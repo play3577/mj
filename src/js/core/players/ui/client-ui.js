@@ -30,8 +30,12 @@ class ClientUI extends ClientUIMaster {
 
     if (suggestion) {
       suggestedTile = this.getSingleTileFromHand(suggestion.getTileFace());
-      suggestedTile.classList.add('suggestion');
-      suggestedTile.setAttribute('title','Bot-recommended discard.');
+      if (suggestedTile) {
+        suggestedTile.classList.add('suggestion');
+        suggestedTile.setAttribute('title','Bot-recommended discard.');
+      } else {
+        console.log(`The bot got confused and wanted you to throw out something that's not in your hand...!`);
+      }
     }
 
     // If we have no tiles left to discard, that's
@@ -224,8 +228,20 @@ class ClientUI extends ClientUIMaster {
       interrupt();
     }
 
-    if (config.SHOW_BOT_CLAIM_SUGGESTION && suggestion && suggestion.claimtype) {
-      discards.lastChild.classList.add('highlight');
+    // show general claim suggestions
+    if (config.SHOW_CLAIM_SUGGESTION) {
+      let face = tile.getTileFace();
+      let { lookout } = tilesNeeded(this.getTileFaces(), this.locked);
+      let type = lookout[face];
+      if (type) {
+        if (type >= CLAIM.CHOW && type < CLAIM.PUNG && !this.player.canChow(pid)) {
+          // we can't claim a chow from this player.
+        } else discards.lastChild.classList.add('highlight');
+      }}
+
+    // show the bot's play suggestions
+    if (config.SHOW_BOT_SUGGESTION && suggestion && suggestion.claimtype) {
+      discards.lastChild.classList.add('suggestion');
     }
 
     // We need a flag that bypasses `ignore()` if we click

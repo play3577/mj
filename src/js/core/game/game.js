@@ -47,6 +47,7 @@ class Game {
 
     this.fixValues = () => {
       // drop in term fixes (hand/draw/seed/wind/wotr) here.
+      //this.hand=3; this.draws=0; config.PRNG.seed(1797999078); this.wind=0; this.windOfTheRound=0;
     }
 
     config.log(`starting game.`);

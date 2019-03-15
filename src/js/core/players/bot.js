@@ -366,17 +366,16 @@ class BotPlayer extends Player {
    * Automated claim policy
    */
   async determineClaim(pid, discard, tilesRemaining, resolve, interrupt, claimTimer) {
-    let claim = CLAIM.IGNORE, wintype;
+    let ignore = {claimtype: CLAIM.IGNORE};
     let tile = discard.getTileFace();
-    let canChow = ((pid+1)%4 == this.id);
+    let canChow = this.canChow(pid);
     let tiles = this.getTileFaces();
     tiles.sort();
 
-    let {lookout, waiting, composed} = tilesNeeded(tiles, this.locked, canChow);
+    let {lookout, waiting} = tilesNeeded(tiles, this.locked, canChow);
 
-    // Are we waiting to win?
+    // Do these tiles constitute a "waiting to win" pattern?
     if (waiting) {
-      console.debug(this.id, "we're waiting to win!", lookout);
 
       let winTiles = {};
       lookout.forEach((list,tileNumber) => {
@@ -387,58 +386,65 @@ class BotPlayer extends Player {
       });
       this.markWaiting(winTiles);
 
+      console.debug(this.id, 'waiting to win', winTiles, this. getTileFaces(), this.getLockedTileFaces(), 'tile',tile,'in list?', winTiles[tile]);
+
       // If this is not (one of) the tile(s) we need, ignore it, unless we can form a kong.
-      let ways = winTiles[tile];
-      if (!ways || !ways.length) {
+      let ways = winTiles[tile] || [];
+
+      if (!ways.length) {
         if (lookout[tile] && lookout[tile].indexOf('16') !== -1) {
           // but, *should* we kong?
           let allowed = this.personality.want(tile, CLAIM.KONG, tilesRemaining);
           console.log(`${this.id} wants to claim a kong ${tile} - allowed by policy? ${allowed}`);
           if (allowed) return resolve({claimtype: CLAIM.KONG });
         }
-        return resolve({claimtype: CLAIM.IGNORE});
+        resolve(ignore);
       }
 
-      // (one of) the tile(s) we need: claim a win, if we can.
-      let wintype = ways.map(v => parseInt(v.substring(3))).sort((a,b)=>(b-a))[0];
-
-      let allowed = this.personality.determineWhetherToWin(tile, wintype, tilesRemaining);
-      if (allowed === false) return resolve({claimtype: CLAIM.IGNORE});
-      if (allowed === wintype) {
-        // When the result of determineWhetherToWin is a claim constant,
-        // then while we can't win on this tile due to policy violations
-        // (e.g trying win on pung of winds while we're not clean yet)
-        // this IS a valid regular claim as far as our play policy is
-        // concerned, so resolve it as such.
-        if (CLAIM.CHOW <= allowed && allowed < CLAIM.PUNG && !canChow) {
-          // just remember that if the claim was a chow, that might not
-          // actually be legal if we're not winning on this tile so make
-          // sure to check for that.
-          return resolve({ claimtype: CLAIM.IGNORE });
+      else {
+        // (one of) the tile(s) we need: claim a win, if we can.
+        let wintype = ways.map(v => parseInt(v.substring(3))).sort((a,b)=>(b-a))[0];
+        let allowed = this.personality.determineWhetherToWin(tile, wintype, tilesRemaining);
+        if (allowed === false) return resolve(ignore);
+        if (allowed === wintype) {
+          // When the result of determineWhetherToWin is a claim constant,
+          // then we can't win on this tile due to policy violations (e.g.
+          // trying win on pung of winds while we're not clean yet), but
+          // this IS a valid regular claim as far as our play policy is
+          // concerned, so resolve it as such.
+          if (CLAIM.CHOW <= allowed && allowed < CLAIM.PUNG && !canChow) {
+            // just remember that if the claim was a chow, that might not
+            // actually be legal if we're not winning on this tile so make
+            // sure to check for that.
+            return resolve(ignore);
+          }
+          return resolve({claimtype: allowed });
         }
-        return resolve({claimtype: allowed });
+        return resolve({claimtype: CLAIM.WIN, wintype });
       }
-      return resolve({claimtype: CLAIM.WIN, wintype });
     }
 
 
     // If we get here, we're NOT waiting to win: perform normal claim check.
     if (lookout[tile]) {
-      lookout[tile].map(print => unhash(print,tile)).forEach(set => {
+      let claims = lookout[tile].map(print => unhash(print,tile)).map(set => {
         let type = set.type;
         console.debug(`lookout for ${tile} = type: ${type}, canChow: ${canChow}`);
         if (type === Constants.CHOW1 || type === Constants.CHOW2 || type === Constants.CHOW3) {
           if (!canChow) return;
         }
-        if(!this.personality.want(tile, type, tilesRemaining)) return;
-        if (type === CLAIM.WIN) wintype = set.subtype ? set.subtype : 'normal';
-        if (type > claim) claim = type;
+        if(!this.personality.want(tile, type, tilesRemaining)) return false;
+        if (type === CLAIM.WIN) wintype = set.subtype ? set.subtype : 'normal'; // FIXME: TODO: is this check still necessary, given "waiting" above?
+        return { claimtype: type };
       });
 
-      return resolve({claimtype: claim, wintype});
+      // filter, order highest-to-lowest, and then return the first element if there is one.
+      claims = claims.filter(v => v).sort((a,b) => (b.claimtype - a.claimtype));
+      if (!claims.length) return resolve(ignore);
+      return resolve(claims[0]);
     }
 
-    return resolve({claimtype: CLAIM.IGNORE});
+    return resolve(ignore);
   }
 
   /**

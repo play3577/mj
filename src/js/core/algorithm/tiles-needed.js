@@ -94,7 +94,7 @@ if (typeof process !== "undefined") { (function() {
     Constants = conf.Constants;
 
     // local:
-    let create = t => ({ dataset: { tile: t } }),
+    let create = t => ({ dataset: { tile: t }, getTileFace: () => t }),
         lock = l => l.map(s => s.map(t => create(t))),
         list = l => l.map(s => s.map(t => t.getTileFace()));
 
@@ -193,6 +193,14 @@ if (typeof process !== "undefined") { (function() {
         win: false,
         waiting: true,
         need: [[13]]
+      },
+      {
+        title: "can chow on a characters one (9)",
+        hand: [2,6,7,8,10,11,11,12,13,14,17,17,32],
+        locked: [],
+        win: false,
+        waiting: false,
+        want: [[9]]
       }
     ]
 
@@ -214,7 +222,7 @@ if (typeof process !== "undefined") { (function() {
         }
       }
 
-      else if (test.waiting === false) {
+      if (test.waiting === false) {
         if (result.waiting === false) {
           console.log(`test ${tid} passed: non-waiting hand was detected as such.`);
         } else {
@@ -222,15 +230,23 @@ if (typeof process !== "undefined") { (function() {
         }
       }
 
-      else if (test.need) {
-        if (test.need.every(tile => result.lookout[tile].some(type => type.indexOf('32')===0))) {
+      if (test.need) {
+        if (test.need.every(tile => result.lookout[tile] && result.lookout[tile].some(type => type.indexOf('32')===0))) {
           console.log(`test ${tid} passed: all possible win tiles were flagged as lookout.`);
         } else {
-          console.log(`test ${tid} failed: not all tiles required to win are marked as required.`);
+          console.log(`test ${tid} failed: not all tiles required to win are marked as lookout.`);
+          console.log(result.lookout.map((e,i) => ({ id:i, type: e})));
         }
       }
 
-      else console.log(result);
+      if (test.want) {
+        if (test.want.every(tile => !!result.lookout[tile])) {
+          console.log(`test ${tid} passed: all wanted tiles were flagged as lookout.`);
+        } else {
+          console.log(`test ${tid} failed: not all wanted tiles are marked as lookout.`);
+          console.log(result.lookout.map((e,i) => ({ id:i, type: e})));
+        }
+      }
     });
   }
 })()}

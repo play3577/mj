@@ -36,7 +36,8 @@ class SettingsModal {
     const values = {
       rules: RULES.toString(),
       force_open_bot_play: FORCE_OPEN_BOT_PLAY.toString(),
-      show_bot_claim_suggestion: SHOW_BOT_CLAIM_SUGGESTION.toString(),
+      show_claim_suggestion: SHOW_CLAIM_SUGGESTION.toString(),
+      show_bot_suggestion: SHOW_BOT_SUGGESTION.toString(),
       bot_chicken_threshold: BOT_CHICKEN_THRESHOLD.toString(),
       debug: DEBUG.toString(),
       seed: SEED.toString(),
@@ -53,7 +54,8 @@ class SettingsModal {
     const options = {
       'Rules': { key: 'rules', options: [...Ruleset.getRulesetNames()] },
       'Always show everyone\'s tiles': { key: 'force_open_bot_play', options: ['true','false'] },
-      'Highlight discards if they can be claimed': { key: 'show_bot_claim_suggestion', options: ['true','false'] },
+      'Highlight claimable discards': { key: 'show_claim_suggestion', options: ['true','false'] },
+      'Show bot play suggestions': { key: 'show_bot_suggestion', options: ['true','false'] },
       '-': {},
       'Turn on debug logging' : { key: 'debug', options: ['true','false'] },
       'Set random number seed': { key: 'seed' },

@@ -232,6 +232,13 @@ class PlayerMaster {
   }
 
   /**
+   * Can we chow off of the indicated player?
+   */
+  canChow(playerid) {
+    return ((playerid+1)%4 == this.id);
+  }
+
+  /**
    * Player formed a kong by having a pung on
    * the table, and drawing the fourth tile
    * themselves.
