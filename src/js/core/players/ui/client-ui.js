@@ -131,10 +131,9 @@ class ClientUI extends ClientUIMaster {
       currentTile.classList.add('highlight');
 
       return evt => {
-        // do NOT act on keyrepeat!
-        if (evt.repeat) return;
-
         let code = evt.keyCode;
+        if (VK_SIGNAL[code] && evt.repeat) return; // ignore all "action" key repeats
+
         let willBeHandled = (VK_LEFT[code] || VK_RIGHT[code] || VK_UP[code] || VK_DOWN[code] || VK_SIGNAL[code] || VK_START[code] || VK_END[code]);
         if (!willBeHandled) return;
         evt.preventDefault();
