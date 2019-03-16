@@ -18,17 +18,17 @@ class ClientUI extends ClientUIMaster {
    * Called by `determineDiscard` in human.js, this function
    * lets the user pick a tile to discard through the GUI.
    */
-  listenForDiscard(resolve, suggestion, lastClaim) {
+  listenForDiscard(resolve, suggestion, lastClaim, winbypass) {
     let listenForInput = true;
     let tiles = this.getAvailableTiles();
     let latestTile = this.player.latest;
     let currentTile = latestTile;
     let curid = currentTile ? Array.from(tiles).indexOf(currentTile) : 0;
     if (curid===0) currentTile = tiles[0];
-
+    let { winner } = this.player.tilesNeeded();
     let suggestedTile = false;
 
-    if (suggestion) {
+    if (config.SHOW_BOT_SUGGESTION && suggestion) {
       suggestedTile = this.getSingleTileFromHand(suggestion.getTileFace());
       if (suggestedTile) {
         suggestedTile.classList.add('suggestion');
@@ -53,14 +53,14 @@ class ClientUI extends ClientUIMaster {
     // If the bot knows we have a winning hand,
     // let the user decide whether to declare a
     // win or whether to keep playing.
-    if (suggestion === undefined) {
+    if (winner && !winbypass) {
       let cancel = () => resolve(undefined);
       return modal.choiceInput("Declare win?", [
         { label: 'You better believe it!', value: 'win' },
         { label: 'No, I think I can do better...', value: '' },
       ], result => {
         if (result) resolve(undefined);
-        else this.listenForDiscard(resolve, false);
+        else this.listenForDiscard(resolve, false, false, true);
       }, cancel);
     }
 

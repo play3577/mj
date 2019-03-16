@@ -80,7 +80,8 @@ class Personality {
 
     // if we haven't locked anything yet, is this gearing up to be a chow hand?
     if (!this.player.locked.length) {
-      this.playChowHand = (stats.honours <=3 &&  (stats.cpairs/2 + stats.chows) >= 2)
+      let chowScore = stats.cpairs/2 + stats.chows;
+      this.playChowHand = (stats.honours <=3 &&  chowScore >= 2 && stats.pungs < stats.chows);
       // note that this is a fluid check until we claim something, when it locks.
     }
 
