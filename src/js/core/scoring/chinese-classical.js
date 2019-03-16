@@ -183,17 +183,18 @@ class ChineseClassical extends Ruleset {
    * get by winning the hand. Calculate those here:
    */
   checkWinnerHandPatterns(scorePattern, winset, selfdraw, selftile, windTile, windOfTheRoundTile, tilesLeft, scoreObject) {
+    let names = config.TILE_NAMES;
     let suits = config.SUIT_NAMES;
     let state = this.getState(scorePattern, winset, selfdraw, selftile, windTile, windOfTheRoundTile, tilesLeft);
 
     if (state.selfdraw) {
       scoreObject.score += 2;
-      scoreObject.log.push(`2 for self-drawn win`);
+      scoreObject.log.push(`2 for self-drawn win (${names[selftile]})`);
     }
 
     if (state.outonPair) {
       scoreObject.score += 2;
-      scoreObject.log.push(`2 for winning on a pair`);
+      scoreObject.log.push(`2 for winning on a pair (${names[state.pairTile]})`);
     }
 
     if (state.outonPair && state.majorPair) {

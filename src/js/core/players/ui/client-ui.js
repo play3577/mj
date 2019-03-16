@@ -59,7 +59,10 @@ class ClientUI extends ClientUIMaster {
         { label: 'You better believe it!', value: 'win' },
         { label: 'No, I think I can do better...', value: '' },
       ], result => {
-        if (result) resolve(undefined);
+        if (result) {
+          this.player.selfdraw = true;
+          resolve(undefined);
+        }
         else this.listenForDiscard(resolve, false, false, true);
       }, cancel);
     }
@@ -233,7 +236,7 @@ class ClientUI extends ClientUIMaster {
     // show general claim suggestions
     if (config.SHOW_CLAIM_SUGGESTION) {
       let face = tile.getTileFace();
-      let { lookout } = this.player.tilesNeeded();
+      let { lookout } = this.player.tilesNeeded(mayChow);
       let types = lookout[face];
       if (types) {
         for(let type of types) {

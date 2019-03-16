@@ -191,7 +191,7 @@ class Ruleset {
   /**
    * ...docs go here...
    */
-  getTileScore(scorePattern,windTile,windOfTheRoundTile,bonus,winset,winner=false,selfdraw=false,selftile=false,tilesLeft) {
+  getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset, winner=false, selfdraw=false, selftile=false, tilesLeft) {
     let names = config.TILE_NAMES;
     let result = this.aggregateScorePattern(scorePattern, windTile, windOfTheRoundTile);
     result.wind = windTile;
@@ -245,6 +245,7 @@ class Ruleset {
       allterminals: true,
       punghand: true,
       outonPair: true,
+      pairTile: -1,
       majorPair: false,
       dragonPair: false,
       windPair: false,
@@ -296,9 +297,11 @@ class Ruleset {
       if (set.length === 2) {
         if (winset) {
           state.outonPair = (winset.length===2 && winset[0]===set[0]);
+          state.pairTile = winset[0];
         }
         else if (!winset && selfdraw && set[0] === selftile) {
           state.outonPair = true;
+          state.pairTile = selftile;
         }
         else {
           state.outonPair = false;
