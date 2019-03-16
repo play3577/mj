@@ -35,10 +35,13 @@ class OptionsDialog {
 
       let btn = document.createElement("button");
       btn.textContent = data.label;
+
       btn.addEventListener("click", e => {
+        e.stopPropagation();
         if (!data.back) this.modal.close([{ object:this.modal.gameBoard, evntName:'focus', handler: panel.gainFocus }]);
         resolve(data.value);
       });
+
       btn.addEventListener("keydown", e => {
         e.stopPropagation();
         let code = e.keyCode;
@@ -51,6 +54,7 @@ class OptionsDialog {
         if (VK_END[code]) bid = btns.length - 1;
         btns[bid].focus();
       });
+
       panel.appendChild(btn);
     });
 
