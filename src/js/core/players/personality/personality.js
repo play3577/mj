@@ -25,7 +25,8 @@ class Personality {
 
     // How many of our tiles need to be of one suit
     // before we decide to go for a clean hand?
-    this.cleanThreshold = 0.67;
+    this.cleanThreshold_low = 0.6;
+    this.cleanThreshold_high = 0.7;
     this.playClean = false;
 
     // Should we lock into a chow hand?
@@ -64,14 +65,18 @@ class Personality {
     let stats = buildStatsContainer(this.player);
 
     // should we play clean?
-    if (this.playClean === false) {
-      let most = max(...stats.suits);
-      let total = stats.numerals;
-      if (most/total > this.cleanThreshold) {
-        this.playClean = stats.suits.indexOf(most);
-        console.debug(`${this.player.id} will play clean (${this.playClean})`);
-      }
+    let most = max(...stats.suits);
+    let total = stats.numerals;
+    if (this.playClean === false && most/total > this.cleanThreshold_high) {
+      this.playClean = stats.suits.indexOf(most);
+      console.debug(`${this.player.id} will play clean (${this.playClean})`);
     }
+    // if we're already playing clean, should we _stop_ playing clean?
+    if (this.playClean !== false && most/total < this.cleanThreshold_low) {
+      this.playClean = false;
+      console.debug(`${this.player.id} will stop trying to play clean (${this.playClean})`);
+    }
+
 
     // if we haven't locked anything yet, is this gearing up to be a chow hand?
     if (!this.player.locked.length) {

@@ -183,7 +183,7 @@ class ClientUI extends ClientUIMaster {
     else if (this.player.locked.some(set => set.every(t => t.getTileFace()==face))) canKong = true;
 
     // can we win?
-    let { winpaths } = tilesNeeded(this.player.getTileFaces(), this.player.locked);
+    let { winpaths } = this.player.tilesNeeded();
     let canWin = winpaths.length > 0;
 
     if (!canWin) {
@@ -221,7 +221,7 @@ class ClientUI extends ClientUIMaster {
     // TODO: split this monster up, it's too much code in a single function.
     let discards = this.discards;
     let tile = discards.lastChild;
-    let mayChow = (((pid + 1)%4) == this.id);
+    let mayChow = this.player.mayChow(pid);
 
     let registerUIInput = () => {
       if (this.countdownTimer) this.countdownTimer.cancel();
@@ -231,13 +231,16 @@ class ClientUI extends ClientUIMaster {
     // show general claim suggestions
     if (config.SHOW_CLAIM_SUGGESTION) {
       let face = tile.getTileFace();
-      let { lookout } = tilesNeeded(this.getTileFaces(), this.locked);
-      let type = lookout[face];
-      if (type) {
-        if (type >= CLAIM.CHOW && type < CLAIM.PUNG && !this.player.canChow(pid)) {
-          // we can't claim a chow from this player.
-        } else discards.lastChild.classList.add('highlight');
-      }}
+      let { lookout } = this.player.tilesNeeded();
+      let types = lookout[face];
+      if (types) {
+        for(let type of types) {
+          if (CLAIM.CHOW <= type && type < CLAIM.PUNG && !mayChow) continue
+          discards.lastChild.classList.add('highlight');
+          break;
+        }
+      }
+    }
 
     // show the bot's play suggestions
     if (config.SHOW_BOT_SUGGESTION && suggestion && suggestion.claimtype) {
@@ -266,6 +269,7 @@ class ClientUI extends ClientUIMaster {
 
       // let's spawn a little modal to see what the user actually wanted to do here.
       let cancel = () => resolve({ claimtype: CLAIM.IGNORE});
+
       modal.choiceInput("What kind of claim are you making?", [
         { label: "Ignore", value: CLAIM.IGNORE },
         (mayChow && this.canChow(discard, CLAIM.CHOW1)) ? { label: "Chow (▮▯▯)", value: CLAIM.CHOW1 } : false,
@@ -360,7 +364,7 @@ class ClientUI extends ClientUIMaster {
    */
   spawnWinDialog(discard, resolve, cancel) {
     // determine how this player could actually win on this tile.
-    let { lookout } = tilesNeeded(this.player.getTileFaces(), this.player.locked);
+    let { lookout } = this.player.tilesNeeded();
 
     let winOptions = { pair: false, chow: false, pung: false };
     let claimList = lookout[discard.getTileFace()];

@@ -234,8 +234,8 @@ class PlayerMaster {
   /**
    * Can we chow off of the indicated player?
    */
-  canChow(playerid) {
-    return ((playerid+1)%4 == this.id);
+  mayChow(pid) {
+    return ((pid+1)%4 == this.id);
   }
 
   /**
@@ -279,6 +279,15 @@ class PlayerMaster {
    */
   receivedTile(player) {
     if (this.ui) this.ui.receivedTile(player);
+  }
+
+  /**
+   * Get the play information in terms of what this player
+   * might be looking for, whether they're ready to win,
+   * etc. based on Pattern expansion.
+   */
+  tilesNeeded(mayChow) {
+    return tilesNeeded(this.getTileFaces(), this.locked, mayChow);
   }
 
   /**

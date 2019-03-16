@@ -114,7 +114,7 @@ class BotPlayer extends Player {
 
     // If we have concealed tiles still, did the tile we just received
     // actually make us win?
-    let { winpaths } = tilesNeeded(this.getTileFaces(), this.locked);
+    let { winpaths } = this.tilesNeeded();
 
     if(winpaths.length > 0) {
       // We may very well have won! ...except not if our play policy
@@ -368,11 +368,11 @@ class BotPlayer extends Player {
   async determineClaim(pid, discard, tilesRemaining, resolve, interrupt, claimTimer) {
     let ignore = {claimtype: CLAIM.IGNORE};
     let tile = discard.getTileFace();
-    let canChow = this.canChow(pid);
+    let mayChow = this.mayChow(pid);
     let tiles = this.getTileFaces();
     tiles.sort();
 
-    let {lookout, waiting} = tilesNeeded(tiles, this.locked, canChow);
+    let {lookout, waiting} = this.tilesNeeded(mayChow);
 
     // Do these tiles constitute a "waiting to win" pattern?
     if (waiting) {
@@ -412,7 +412,7 @@ class BotPlayer extends Player {
           // trying win on pung of winds while we're not clean yet), but
           // this IS a valid regular claim as far as our play policy is
           // concerned, so resolve it as such.
-          if (CLAIM.CHOW <= allowed && allowed < CLAIM.PUNG && !canChow) {
+          if (CLAIM.CHOW <= allowed && allowed < CLAIM.PUNG && !mayChow) {
             // just remember that if the claim was a chow, that might not
             // actually be legal if we're not winning on this tile so make
             // sure to check for that.
@@ -429,9 +429,9 @@ class BotPlayer extends Player {
     if (lookout[tile]) {
       let claims = lookout[tile].map(print => unhash(print,tile)).map(set => {
         let type = set.type;
-        console.debug(`lookout for ${tile} = type: ${type}, canChow: ${canChow}`);
+        console.debug(`lookout for ${tile} = type: ${type}, mayChow: ${mayChow}`);
         if (type === Constants.CHOW1 || type === Constants.CHOW2 || type === Constants.CHOW3) {
-          if (!canChow) return;
+          if (!mayChow) return;
         }
         if(!this.personality.want(tile, type, tilesRemaining)) return false;
         if (type === CLAIM.WIN) wintype = set.subtype ? set.subtype : 'normal'; // FIXME: TODO: is this check still necessary, given "waiting" above?
@@ -477,7 +477,7 @@ class BotPlayer extends Player {
    */
   robKong(tiles, tilesRemaining, resolve) {
     // Rob this kong?
-    let { lookout, waiting } = tilesNeeded(this.getTileFaces(), this.locked);
+    let { lookout, waiting } = this.tilesNeeded();
     if (waiting) {
       let tile = tiles[0].getTileFace();
       let need = lookout[tile];
