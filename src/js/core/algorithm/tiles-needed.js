@@ -31,9 +31,9 @@ function summarise(set) {
  * if they already have a winning hand, how many interpretations
  * of the tiles involved there might be.
  */
-function tilesNeeded(tiles, locked=[], canChow=false) {
+function tilesNeeded(tiles, locked=[]) {
   // console.debug('tilesNeeded:', tiles, locked);
-  let p = new Pattern(tiles, canChow);
+  let p = new Pattern(tiles);
 
   // Transform the "locked tiles" listing to
   // a form that the rest of the code understands.
@@ -201,6 +201,14 @@ if (typeof process !== "undefined") { (function() {
         win: false,
         waiting: false,
         want: [[9]]
+      },
+      {
+        title: "holding 5,6,7,8 so any of {4,6,7,9} will do",
+        hand: [0,3,6, 9,14,15, 22,23,24,25, 3,9, 13],
+        locked: [],
+        win: false,
+        waiting: false,
+        want: [[21], [23], [24], [26]]
       }
     ]
 
@@ -241,9 +249,9 @@ if (typeof process !== "undefined") { (function() {
 
       if (test.want) {
         if (test.want.every(tile => !!result.lookout[tile])) {
-          console.log(`test ${tid} passed: all wanted tiles were flagged as lookout.`);
+          console.log(`test ${tid} passed: all wanted tiles noted were flagged as lookout.`);
         } else {
-          console.log(`test ${tid} failed: not all wanted tiles are marked as lookout.`);
+          console.log(`test ${tid} failed: not all noted wanted tiles are marked as lookout.`);
           console.log(result.lookout.map((e,i) => ({ id:i, type: e})));
         }
       }

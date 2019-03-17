@@ -372,7 +372,7 @@ class BotPlayer extends Player {
     let tiles = this.getTileFaces();
     tiles.sort();
 
-    let {lookout, waiting} = this.tilesNeeded(mayChow);
+    let {lookout, waiting} = this.tilesNeeded();
 
     // Do these tiles constitute a "waiting to win" pattern?
     if (waiting) {
@@ -395,7 +395,7 @@ class BotPlayer extends Player {
         if (lookout[tile] && lookout[tile].indexOf('16') !== -1) {
           // but, *should* we kong?
           let allowed = this.personality.want(tile, CLAIM.KONG, tilesRemaining);
-          console.log(`${this.id} wants to claim a kong ${tile} - allowed by policy? ${allowed}`);
+          console.debug(`${this.id} wants to claim a kong ${tile} - allowed by policy? ${allowed}`);
           if (allowed) return resolve({claimtype: CLAIM.KONG });
         }
         resolve(ignore);

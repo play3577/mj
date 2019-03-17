@@ -286,8 +286,8 @@ class PlayerMaster {
    * might be looking for, whether they're ready to win,
    * etc. based on Pattern expansion.
    */
-  tilesNeeded(mayChow) {
-    return tilesNeeded(this.getTileFaces(), this.locked, mayChow);
+  tilesNeeded() {
+    return tilesNeeded(this.getTileFaces(), this.locked);
   }
 
   /**

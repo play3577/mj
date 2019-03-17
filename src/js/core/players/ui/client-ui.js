@@ -236,7 +236,7 @@ class ClientUI extends ClientUIMaster {
     // show general claim suggestions
     if (config.SHOW_CLAIM_SUGGESTION) {
       let face = tile.getTileFace();
-      let { lookout } = this.player.tilesNeeded(mayChow);
+      let { lookout } = this.player.tilesNeeded();
       let types = lookout[face];
       if (types) {
         for(let type of types) {

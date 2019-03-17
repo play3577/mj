@@ -12,7 +12,7 @@ if (typeof process !== "undefined") {
  * turn incomplete sets into sets.
  */
 class Pattern {
-  constructor(tiles=[], canChow=false) {
+  constructor(tiles=[]) {
     this.keys = [];
     this.tiles = {};
     tiles.slice().sort((a,b)=>a-b).forEach(v => {
@@ -22,7 +22,6 @@ class Pattern {
       this.tiles[v]++;
       this.keys.push(v);
     });
-    this.canChow = canChow;
   }
 
   /**
@@ -68,11 +67,13 @@ class Pattern {
    */
   getChowInformation(tile) {
     let suit = (tile / 9)|0;
-    let t1 = this.tiles[tile+1];
+    let t1 = this.tiles[tile + 1];
     if (t1 !== undefined && !this.matchSuit(tile + 1, suit)) t1 = undefined;
-    let t2 = this.tiles[tile+2];
+    let t2 = this.tiles[tile + 2];
     if (t2 !== undefined && !this.matchSuit(tile + 2, suit)) t2 = undefined;
-    return { t1, t2, suit};
+    let t3 = this.tiles[tile + 3];
+    if (t3 !== undefined && !this.matchSuit(tile + 2, suit)) t3 = undefined;
+    return { t1, t2, t3, suit };
   }
 
   /**
@@ -155,7 +156,7 @@ class Pattern {
    * pairs, and sets can we make with these tiles?
    */
   runExpand(seen=[], paths=[], results=[], single=[], pair=[], set=[]) {
-    //console.debug(`called with:`, pair, set, `- local tiles:`, this.tiles);
+    //console.log(`called with:`, seen, '- aggregated', pair, set, `- local tiles:`, this.tiles);
 
     if (!this.keys.length) {
       // It's possible the very first call is already for a complete,
@@ -176,7 +177,6 @@ class Pattern {
     let count = this.tiles[tile];
     let head = [];
     let toRemove = [];
-
 
     //console.debug(`evaluating tile`,tile);
 
@@ -208,17 +208,14 @@ class Pattern {
     }
 
     // And of course, the final recursion is for treating the tile as "just a single".
-    if (count===1) {
-      // Without marking anything as "needed" yet. We can't
-      // claim a pair unless we're going to win on it.
-      this.recurse(seen, paths, [tile], results, single.concat([tile]), pair, set);
-    }
+    this.recurse(seen, paths, [tile], results, single.concat([tile]), pair, set);
 
     // Now, if we're dealing with honour tiles, this is all we need to do.
     if (tile > 26) return { results, paths };
 
     // but if we're dealing with a suited number tile, we also need to check for chows.
-    let {t1, t2} = this.getChowInformation(tile);
+    let {t1, t2, t3} = this.getChowInformation(tile);
+
     if (t1 || t2) {
       let suit = this.getSuit(tile);
       if (t1 && t2) {
@@ -226,8 +223,14 @@ class Pattern {
         head=[`3c-${tile}`];
         paths.push(head);
         toRemove = [tile, tile+1, tile+2];
-        // We might also be one tile away from having a chow(1), if -1 is in the same suit.
+        if (t3) {
+          // Make sure that in {5,6,7,8}, the code knows that
+          // 6 and 7 are both potentially useful tiles.
+          this.markNeeded(results, tile+1, Constants.CHOW1);
+          this.markNeeded(results, tile+2, Constants.CHOW3);
+        }    
         if (seen.indexOf(tile-1) === -1) {
+          // We might also be one tile away from having a chow(1), if -1 is in the same suit.
           if (this.matchSuit(tile-1,suit)) this.markNeeded(results, tile-1, Constants.CHOW1);
         }
         this.recurse(seen, head, toRemove, results, single, pair, set.concat(head));
