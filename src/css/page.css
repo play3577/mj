@@ -76,3 +76,7 @@ footer {
 #this-game ul li, #controls ul li {
     margin: 0;
 }
+
+.fund {
+    float: right;
+}
