@@ -8,6 +8,7 @@
   width: var(--w);
   height: var(--h);
   background-color: var(--green);
+  outline: none;
 }
 
 .board .players {
