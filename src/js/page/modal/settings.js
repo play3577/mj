@@ -118,7 +118,7 @@ class SettingsModal {
     let reset = table.querySelector('#reset');
     reset.addEventListener('click', evt => (window.location.search=''));
 
-    this.modal.addFooter(panel, "Return to the previous menu instead");
+    this.modal.addFooter(panel, "Discard changes");
   }
 }
 

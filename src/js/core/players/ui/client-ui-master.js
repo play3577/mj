@@ -77,7 +77,7 @@ class ClientUIMaster {
    * Remove a tile from the tile tracker panel.
    */
   reduceTracker(tileNumber) {
-    if (tileNumber>33) return; // don't track bouns tiles explicitly
+    if (tileNumber > 33) return; // don't track bonus tiles explicitly
     let tile = this.knowledge.querySelector(`.tile[data-tile="${tileNumber}"]`);
     tile.remove();
   }

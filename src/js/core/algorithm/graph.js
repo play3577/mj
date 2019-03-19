@@ -3,19 +3,19 @@
  */
 class Link {
   constructor(type="unknown", node1, node2) {
+    this.type = type;
     this.node1 = node1;
     this.node2 = node2;
-    this.type = type;
   }
 }
 
 // Actual link types
-class SingleLink  extends Link { constructor(...args) { super("single", ...args);  }}
-class PairLink  extends Link { constructor(...args) { super("pair", ...args);  }}
-class CPairLink extends Link { constructor(...args) { super("cpair", ...args); }}
-class ChowLink  extends Link { constructor(...args) { super("chow", ...args);  }}
-class PungLink  extends Link { constructor(...args) { super("pung", ...args);  }}
-class KongLink  extends Link { constructor(...args) { super("kong", ...args);  }}
+class SingleLink extends Link { constructor(...args) { super("single", ...args);  }}
+class PairLink   extends Link { constructor(...args) { super("pair", ...args);   }}
+class CPairLink  extends Link { constructor(...args) { super("cpair", ...args);  }}
+class ChowLink   extends Link { constructor(...args) { super("chow", ...args);   }}
+class PungLink   extends Link { constructor(...args) { super("pung", ...args);   }}
+class KongLink   extends Link { constructor(...args) { super("kong", ...args);   }}
 
 // a static types property for finding "the actual link type" class by name
 Link.types = {
@@ -50,10 +50,26 @@ class Node {
     return found ? found.node2 : false;
   }
 
-  next(type) {
+  next(type="single") {
     let link = this._links.filter(link => link.type===type)[0];
     if (link) return link.node2;
     return false;
+  }
+
+  expand(path=[], paths=[]) {
+    if (this._links.length === 0) {
+      return paths.push(path);
+    }
+
+    path = path.slice();
+    path.push(this);
+    this._links.forEach(link => {
+      let node = link.node2;
+      if (link.type !== "single") {
+        // hmm
+      }
+      node.expand(path, paths);
+    });
   }
 
   valueOf() {
@@ -100,8 +116,13 @@ class Tree {
       this.nodes.push(node);
     });
 
-    // initial link
+    // perform linking
     this.link();
+    this.linkPairs();
+    this.linkSets();
+    this.linkKongs();
+
+    // TODO: compact the linking
   }
 
   link() {
@@ -112,8 +133,6 @@ class Tree {
       else root.link(next);
       root = next;
     }
-
-    this.linkPairs();
   }
 
   linkPairs() {
@@ -126,8 +145,6 @@ class Tree {
         root = next;
       }
     }
-
-    this.linkSets();
   }
 
   linkSets() {
@@ -142,8 +159,6 @@ class Tree {
         root = next;
       }
     }
-
-    this.linkKongs();
   }
 
   linkKongs() {
@@ -158,6 +173,10 @@ class Tree {
     }
   }
 
+  expand() {
+    return this.root.expand();
+  }
+
   valueOf() {
     return this;
   }
@@ -170,4 +189,7 @@ class Tree {
 if (typeof process !== "undefined") {
   let t = new Tree([0,3,3, 9,14,15, 22,23,24,25, 3,9, 13,3], [[7,7,7,7], [32,32,32]]);
   console.log(t.toString());
+
+  let paths = t.expand();
+  console.log(paths);
 }
