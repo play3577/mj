@@ -17,7 +17,7 @@
         game.startGame(() => {
             document.body.classList.add('finished');
             let gameui = game.players.find(p => p.ui).ui;
-
+            config.flushLog();
             return modal.showFinalScores(gameui, game.rules, game.scoreHistory, () => {
               document.body.classList.remove('finished');
               rotateWinds.reset();

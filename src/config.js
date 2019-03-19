@@ -1,5 +1,6 @@
 if (typeof process !== "undefined") {
     Random = require('./js/core/utils/prng.js');
+    playlog = require('./js/core/utils/logger.js');
 }
 
 const noop = ()=>{};
@@ -82,6 +83,10 @@ let BOT_DELAY_BEFORE_DISCARD_ENDS = 300;
 // get to debug a very specific situation.
 let WALL_HACK = '';
 
+// Write the game log to disk, or to a new
+// tab as a text file.
+let WRITE_GAME_LOG = false;
+
 // runtime overrides?
 if (typeof window !== "undefined") {
     let params = new URLSearchParams(window.location.search);
@@ -102,6 +107,7 @@ if (typeof window !== "undefined") {
     HAND_INTERVAL = params.get(`hand`) ? parseInt(params.get(`hand`)) : HAND_INTERVAL;
     BOT_DELAY_BEFORE_DISCARD_ENDS = params.get(`bot_delay`) ? parseInt(params.get(`bot_delay`)) : BOT_DELAY_BEFORE_DISCARD_ENDS;
     WALL_HACK = params.get(`wall_hack`) ? params.get(`wall_hack`) : WALL_HACK;
+    WRITE_GAME_LOG = (params.get(`write_game_log`)==='true') ? true : WRITE_GAME_LOG;
 }
 
 console.log(`using bot threshold ${BOT_CHICKEN_THRESHOLD}`);
@@ -262,8 +268,8 @@ const config = {
     // any code that needs to randomise data.
     PRNG: new Random(SEED),
     DEBUG,
-    log: noop,
-    flushLog: noop,
+    log: playlog.log,
+    flushLog: playlog.flush,
     NO_SOUND,
     SEED,
     RULES,
@@ -275,6 +281,7 @@ const config = {
     SHOW_BOT_SUGGESTION,
     BOT_CHICKEN_THRESHOLD,
     WALL_HACK,
+    WRITE_GAME_LOG,
 
     CLAIM_INTERVAL,
     PLAY_INTERVAL,
@@ -361,7 +368,4 @@ config.set({ DEBUG });
 // in node context?
 if (typeof process !== "undefined") {
     module.exports = config;
-    playlog = require('./js/core/utils/logger.js');
-    config.log = playlog.log;
-    config.flushLog = playlog.flush;
 }

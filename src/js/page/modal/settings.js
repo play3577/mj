@@ -48,7 +48,8 @@ class SettingsModal {
       play: PLAY_INTERVAL.toString(),
       hand: HAND_INTERVAL.toString(),
       bot_delay: BOT_DELAY_BEFORE_DISCARD_ENDS.toString(),
-      wall_hack:  WALL_HACK
+      wall_hack:  WALL_HACK.toString(),
+      write_game_log: WRITE_GAME_LOG.toString(),
     };
 
     const options = {
@@ -68,6 +69,7 @@ class SettingsModal {
       'Delay (in ms) before starting next hand': { key: 'hand' },
       'Delay (in ms) for bots reacting to things': { key: 'bot_delay' },
       'Set up a specific wall': { key: 'wall_hack', options: ['', ...Object.keys(WallHack.hacks)], value: values.wall_hack },
+      'Generate game log after play': { key: 'write_game_log', options: ['true','false'] },
     };
 
 

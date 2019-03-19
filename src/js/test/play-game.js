@@ -5,6 +5,12 @@ if (typeof process !== "undefined") {
   let filename = path.basename(__filename)
   if (invocation.indexOf(filename) === -1) return;
 
+  // bootstrap the config for testing
+  var config = require('../../config.js');
+  config.PLAY_INTERVAL = 0;
+  config.HAND_INTERVAL = 0;
+  config.WRITE_GAME_LOG = true;
+
   let seed = 1;
   let runs = 1;
 
@@ -14,10 +20,8 @@ if (typeof process !== "undefined") {
   let r = process.argv.indexOf('-r');
   if (r>0) runs = parseInt(process.argv[r+1]);
 
-  // bootstrap the config for testing
-  var config = require('../../config.js');
-  config.PLAY_INTERVAL = 0;
-  config.HAND_INTERVAL = 0;
+  let nw = process.argv.indexOf('-nw');
+  if (nw>0) config.WRITE_GAME_LOG = false;
 
   console.log(`\nSCRIPT WILL RECORD ${runs} GAME${runs===1?``:`S`} STARTING AT SEED=${seed}`);
 
