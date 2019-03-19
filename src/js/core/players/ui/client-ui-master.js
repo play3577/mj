@@ -15,7 +15,6 @@ class ClientUIMaster {
     this.tracker = tracker;
     this.tracker.setUI(this);
     this.id = player.id;
-    this.timeouts = [];
     this.discards = document.querySelector(".discards");
     this.playerbanks = document.querySelectorAll(".player");
     this.knowledge = document.querySelector(".knowledge");
@@ -51,6 +50,7 @@ class ClientUIMaster {
     this.discards.appendChild(this.bar);
 
     if (this.countdownTimer) this.countdownTimer.cancel();
+    this.countdownTimer = false;
   }
 
   /**
@@ -96,7 +96,7 @@ class ClientUIMaster {
    */
   pause(lock) {
     this.paused = lock;
-    if (this.countdownTimer) this.countdownTimer.pause();
+    if (this.countdownTimer) { this.countdownTimer.pause(); }
     // don't mark as paused if the modal dialogs are open
     if (modal.isHidden()) {
       this.discards.classList.add("paused");
@@ -108,7 +108,7 @@ class ClientUIMaster {
    */
   resume() {
     this.discards.classList.remove("paused");
-    if (this.countdownTimer) this.countdownTimer.resume();
+    if (this.countdownTimer) { this.countdownTimer.resume(); }
     this.paused = false;
   }
 

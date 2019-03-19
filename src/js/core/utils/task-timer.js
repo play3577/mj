@@ -29,10 +29,12 @@ class TaskTimer {
     this.created = Date.now();
     this.overrideKickedIn = false;
     this.timeoutInterval = timeoutInterval;
+
     this.timeoutFunction = () => {
       TaskTimer.__forget__(this);
       timeoutFunction();
     };
+
     if (signalHandler && signalCount > 0) {
       this.signalHandler = signalHandler;
       this.totalSignalCount = signalCount + 1;
@@ -40,6 +42,7 @@ class TaskTimer {
       this.signalCount = this.totalSignalCount;
       this.sendSignal();
     }
+
     setTimeout(() => startWaiting(this), 0);
     this.startTimeout();
     TaskTimer.__record__(this);

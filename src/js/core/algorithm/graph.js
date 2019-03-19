@@ -1,4 +1,21 @@
 /**
+ * A link between two nodes
+ */
+class Link {
+  constructor(type="single", node1, node2) {
+    this.node1 = node1;
+    this.node2 = node2;
+    this.type = type;
+  }
+}
+
+class PairLink  extends Link { constructor(...args) { super("pair", ...args);  }}
+class CPairLink extends Link { constructor(...args) { super("cpair", ...args); }}
+class ChowLink  extends Link { constructor(...args) { super("chow", ...args);  }}
+class PungLink  extends Link { constructor(...args) { super("pung", ...args);  }}
+class KongLink  extends Link { constructor(...args) { super("lpmg", ...args);  }}
+
+/**
  * A bidirectional node.
  */
 class Node {
@@ -60,7 +77,7 @@ class Tree {
         parent = node;
       });
     }
-    
+
     else {
       let root = locked.splice(0,1)[0];
       parent = this.root = new SetNode(root);

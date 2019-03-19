@@ -14,6 +14,16 @@ class ClientUI extends ClientUIMaster {
     super(player, tracker);
   }
 
+  pause(lock) {
+    super.pause(lock);
+    if(this.claimTimer) this.claimTimer.pause();
+  }
+
+  resume() {
+    super.resume();
+    if(this.claimTimer) this.claimTimer.resume();
+  }
+
   /**
    * Called by `determineDiscard` in human.js, this function
    * lets the user pick a tile to discard through the GUI.
@@ -228,6 +238,8 @@ class ClientUI extends ClientUIMaster {
     let tile = discards.lastChild;
     let mayChow = this.player.mayChow(pid);
 
+    this.claimTimer = claimTimer;
+
     let registerUIInput = () => {
       if (this.countdownTimer) this.countdownTimer.cancel();
       interrupt();
@@ -251,19 +263,6 @@ class ClientUI extends ClientUIMaster {
     if (config.SHOW_BOT_SUGGESTION && suggestion && suggestion.claimtype) {
       discards.lastChild.classList.add('suggestion');
     }
-
-    // We need a flag that bypasses `ignore()` if we click
-    // on the part of the page that normally triggers ignore
-    // as part of a document focus action.
-    let regainedFocus = false;
-
-    // if the document is blurred,  we need to suspend the claim timer!
-    let brb = () => claimTimer.pause();
-
-    // if focus is regained, resume the claim timer, and make sure that
-    // focus event cannot trigger ignore() if it was a click, and that
-    // clicked happened on the discards element
-    let frb = (evt) => { regainedFocus = true; claimTimer.resume() };
 
     // Set up the dialog spawning for when the user elects to stake a claim.
     let triggerClaimDialog = evt => {
@@ -294,24 +293,29 @@ class ClientUI extends ClientUIMaster {
 
     // Let the game know we're not interested in the current discard.
     let ignore = () => {
-      if (regainedFocus) return (regainedFocus = false);
       registerUIInput();
       tile.classList.remove('selectable');
       removeAllListeners();
       resolve(CLAIM.IGNORE);
     };
 
-    // This adds a safety region around the discarded tile, for fat fingers.
+
+    // an unpause protection, so that a mousedown/touchstart that
+    // resumes a paused state does not then also allow the click
+    // from the same event interaction to go through
+    let paused = false;
+    let checkPaused = evt => {
+      if (this.paused) paused = true;
+    };
+
+    // This adds a safety region around the discarded tile, for
+    // fat fingers, as well as unpause protection (not registering
+    // as real "click" if we just resumed from a paused state).
     let safeIgnore = evt => {
+      if (paused) return (paused = false);
       let bbox = discards.lastChild.getBoundingClientRect();
-      let midpoint = {
-        x: (bbox.left + bbox.right)/2,
-        y: (bbox.top + bbox.bottom)/2,
-      };
-      let vector = {
-        x: midpoint.x - evt.clientX,
-        y: midpoint.y - evt.clientY
-      };
+      let midpoint = { x: (bbox.left + bbox.right)/2, y: (bbox.top + bbox.bottom)/2 };
+      let vector = { x: midpoint.x - evt.clientX, y: midpoint.y - evt.clientY };
       let distance = Math.sqrt(vector.x ** 2 + vector.y ** 2);
       if (distance > 40) return ignore();
       return triggerClaimDialog();
@@ -322,17 +326,14 @@ class ClientUI extends ClientUIMaster {
     tile.addEventListener("click", triggerClaimDialog);
     discards.addEventListener("click", safeIgnore);
 
-    // and make sure to set up that focus-regain-bypass
-    document.addEventListener("focus", frb, true);
-    document.addEventListener("blur", brb);
+    discards.addEventListener("mousedown", checkPaused);
+    discards.addEventListener("touchstart", checkPaused);
 
     // rely on this function getting hoisted because we
     // need to call it in code above this function.
     function removeAllListeners() {
       tile.removeEventListener("click", triggerClaimDialog);
       discards.removeEventListener("click", safeIgnore);
-      document.removeEventListener("focus", frb, true);
-      document.removeEventListener("blur", brb);
     }
 
     // keyboard interaction

@@ -57,6 +57,7 @@
   background: #DDD;
   font-size: 100%;
   border-width: 3px;
+  height: 2em;
 }
 
 .modal .panel button:active,
