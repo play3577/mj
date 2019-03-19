@@ -17,7 +17,7 @@ const rotateWinds = (function generateRotateWindsFunction() {
    * the rotation of the player winds, and shifting the wind of
    * the round when appropriate.
    */
-  function rotateWinds(wind=false, wotr=false, hand='', draws='') {
+  function rotateWinds(rules, wind=false, wotr=false, hand='', draws='') {
     // we mark which round, hand, and replay this is:
     handcount.innerHTML = `round ${1+wotr}<br>hand ${hand}`;
     if (draws) { handcount.innerHTML += `<br>rtr ${draws}`; }
@@ -25,8 +25,8 @@ const rotateWinds = (function generateRotateWindsFunction() {
     // the end of the game is indicated by there being no hand number.
     if (!hand) return (indicator.classList.add('done'));
 
-    // determine what the hand wind id would be, and if it's the
-    // same as last round's, we don't update anything, because
+    // determine what the hand wind would be, and if it's the
+    // same as last round's we don't update anything, because
     // nothing has changed.
     let h = (wotr*4 + wind);
     if (h===previous) return;
@@ -38,12 +38,25 @@ const rotateWinds = (function generateRotateWindsFunction() {
 
     indicator.style.setProperty('--slide', offset + 'em');
 
-    winds.forEach(e => {
-           if (e.classList.contains('tc')) { e.classList.remove('tc'); e.classList.add('rc'); }
-      else if (e.classList.contains('rc')) { e.classList.remove('rc'); e.classList.add('bc'); }
-      else if (e.classList.contains('bc')) { e.classList.remove('bc'); e.classList.add('lc'); }
-      else if (e.classList.contains('lc')) { e.classList.remove('lc'); e.classList.add('tc'); }
-    });
+    // rotate counter clockwise if the rules say we should.
+    if (rules.reverse_wind_direction) {
+      winds.forEach(e => {
+             if (e.classList.contains('tc')) { e.classList.remove('tc'); e.classList.add('lc'); }
+        else if (e.classList.contains('rc')) { e.classList.remove('rc'); e.classList.add('tc'); }
+        else if (e.classList.contains('bc')) { e.classList.remove('bc'); e.classList.add('rc'); }
+        else if (e.classList.contains('lc')) { e.classList.remove('lc'); e.classList.add('bc'); }
+      });
+    }
+
+    // otherwise, rotate the winds clockwise.
+    else {
+      winds.forEach(e => {
+            if (e.classList.contains('tc')) { e.classList.remove('tc'); e.classList.add('rc'); }
+        else if (e.classList.contains('rc')) { e.classList.remove('rc'); e.classList.add('bc'); }
+        else if (e.classList.contains('bc')) { e.classList.remove('bc'); e.classList.add('lc'); }
+        else if (e.classList.contains('lc')) { e.classList.remove('lc'); e.classList.add('tc'); }
+      });
+    }
   }
 
   rotateWinds.reset = function() {

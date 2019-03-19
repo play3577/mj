@@ -109,8 +109,10 @@ class Game {
       // rotate the winds, unless the winner is East and the ruleset says not to in that case.
       let winner = result.winner;
       if (this.rules.pass_on_east_win || winner.wind !== 0) {
-        this.wind++;
-        if (this.wind === 4) {
+        let windWas = this.wind;
+        this.wind = (this.wind + (this.rules.reverse_wind_direction ? 3 : 1)) % 4;
+
+        if (windWas === (this.rules.reverse_wind_direction ? 1 : 3)) {
           this.wind = 0;
           this.windOfTheRound++;
           if (this.windOfTheRound === 4) {
@@ -140,7 +142,7 @@ class Game {
     }
 
     console.debug("Rotated winds:", this.wind, this.windOfTheRound);
-    rotateWinds(this.wind, this.windOfTheRound, this.hand, this.draws);
+    rotateWinds(this.rules, this.wind, this.windOfTheRound, this.hand, this.draws);
 
     this.players.forEach((player,p) => {
       let playerwind = (this.wind + p) % 4;

@@ -16,7 +16,7 @@ class Cantonese extends Ruleset {
       false, // losers settle their scores after paying the winner
       false, // east pays and receives double
       true,  // discarding player pays double
-      false, // player winds rotate counter to the wind of the round
+      true,  // player winds rotate counter to the wind of the round
       true,  // pass the deal if east wins
     );
   }
