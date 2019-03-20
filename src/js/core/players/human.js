@@ -11,8 +11,8 @@ if (typeof process !== "undefined") {
  * "for free", and that's great!
  */
 class HumanPlayer extends BotPlayer {
-  constructor(id) {
-    super(id);
+  constructor(id, chicken=false) {
+    super(id, chicken);
     // humans need a UI to play mahjong.
     this.ui = new ClientUI(this, this.tracker);
   }
@@ -72,10 +72,10 @@ class HumanPlayer extends BotPlayer {
    * underlyaing bot perform their analysis and offer
    * their conclusion as a play suggestion.
    */
-  robKong(tiles, tilesRemaining, resolve) {
-    super.robKong(tiles, tilesRemaining, suggestion => {
+  robKong(pid, tiles, tilesRemaining, resolve) {
+    super.robKong(pid, tiles, tilesRemaining, suggestion => {
       if (config.BOT_PLAY) return resolve(suggestion);
-      this.ui.spawnKongRobDialog(tiles, tilesRemaining, resolve);
+      this.ui.spawnKongRobDialog(pid, tiles, tilesRemaining, suggestion, resolve);
     });
   }
 }

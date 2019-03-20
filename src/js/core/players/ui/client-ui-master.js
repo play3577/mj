@@ -544,6 +544,16 @@ class ClientUIMaster {
   }
 
   /**
+   * Take note of a player having to give up a kong
+   * because someone just robbed it to win.
+   */
+  playerGaveUpKongTile(pid, tilenumber) {
+    let bank = this.playerbanks[pid];
+    let tile = bank.querySelector(`.tile[data-locked][data-tile="${tilenumber}"]`);
+    tile.remove();
+  }
+
+  /**
    * Render a UI element that notified the user that some
    * other player claimed the discard for some purpose.
    */

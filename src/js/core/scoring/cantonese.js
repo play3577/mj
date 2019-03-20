@@ -92,10 +92,15 @@ class Cantonese extends Ruleset {
    * There are special points that you can only get
    * by winning the hand. Calculate those here:
    */
-  checkWinnerHandPatterns(scorePattern, winset, selfdraw, selftile, windTile, windOfTheRoundTile, tilesLeft, scoreObject) {
+  checkWinnerHandPatterns(scorePattern, winset, selfdraw, selftile, robbed, windTile, windOfTheRoundTile, tilesLeft, scoreObject) {
     let suits = config.SUIT_NAMES;
 
-    let state = this.getState(scorePattern, winset, selfdraw, selftile, windTile, windOfTheRoundTile, tilesLeft);
+    let state = this.getState(scorePattern, winset, selfdraw, selftile, robbed, windTile, windOfTheRoundTile, tilesLeft);
+
+    if (state.robbed) {
+      scoreObject.score += 1;
+      scoreObject.log.push(`1 faan for robbing a kong`);
+    }
 
     if (state.allchow && !state.majorPair) {
       scoreObject.score += 1;

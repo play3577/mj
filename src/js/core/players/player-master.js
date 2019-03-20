@@ -1,6 +1,7 @@
 if (typeof process !== "undefined") {
   document = require('../utils/dom-shim.js');
   TileTracker = require('./tracking/tile-tracker.js');
+  tilesNeeded = require('./../algorithm/tiles-needed.js');
 }
 
 // =========================================
@@ -29,6 +30,7 @@ class PlayerMaster {
     this.waiting = false;
     this.has_won = false;
     this.selfdraw = false;
+    this.robbed = false;
     this.tracker.reset();
     this.el.innerHTML = '';
     this.el.classList.remove('winner');
@@ -114,6 +116,7 @@ class PlayerMaster {
       // If this player has won, did they self-draw their winning tile?
       selfdraw: this.has_won ? this.selfdraw : false,
       selftile: (this.has_won && this.selfdraw) ? this.latest : false,
+      robbed: this.robbed,
       // If this player has won, the last-claimed tile can matter.
       final: this.has_won ? this.latest.getTileFace() : false
     };
@@ -304,15 +307,43 @@ class PlayerMaster {
    * Take note of the fact that a different player
    * declared a kong.
    */
-  seeKong(tiles, player, tilesRemaining, resolve) {
+  async seeKong(tiles, player, tilesRemaining, resolve) {
     this.see(tiles.map(t => t.getTileFace()), player);
-    this.robKong(tiles, tilesRemaining, resolve);
+    this.robKong(player.id, tiles, tilesRemaining, resolve);
   }
 
-  // implemented by subclasses
-  robKong(tiles, tilesRemaining, resolve) {
-    console.log('playermaster.spawnKongRobDialog');
+  /**
+   * Implemented by subclasses: this function tries
+   * to rob a kong. If it can't, call `resolve()`,
+   * but if it can, form a `claim` and then call
+   * `resolve(claim)` with the appropriate wintype
+   * set, as well as `from`, `tile`, and `by`:
+   *
+   * `from`: the player id of the person we're robbing.
+   * `tile`: the tile number we're robbing.
+   * `by`: our player id.
+   *
+   */
+  async robKong(pid, tiles, tilesRemaining, resolve) {
     resolve();
+  }
+
+  /**
+   * Give up a kong tile, if someone robbed it to win.
+   */
+  giveUpKongTile(tile) {
+    let set = this.locked.find(set => set.length===4 && set[0].getTileFace() === tile);
+    let discard = set.splice(0,1)[0];
+    discard.unconceal();
+    return discard;
+  }
+
+  /**
+   * Take note of a player having to give up a kong
+   * because someone just robbed it to win.
+   */
+  playerGaveUpKongTile(pid, tilenumber) {
+    if (this.ui) this.ui.playerGaveUpKongTile(pid, tilenumber);
   }
 
   /**
@@ -324,7 +355,7 @@ class PlayerMaster {
     if (!tiles.map) tiles = [tiles];
 
     tiles.forEach((tile, pos) => {
-      // We've already see the discard that got claimed
+      // We've already seen the discard that got claimed
       if (tile === claimedTile) return;
       // But we haven't seen the other tiles yet.
       this.tracker.seen(tile.getTileFace());

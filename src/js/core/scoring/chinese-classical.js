@@ -182,14 +182,19 @@ class ChineseClassical extends Ruleset {
    * There are special points and doubles that you can only
    * get by winning the hand. Calculate those here:
    */
-  checkWinnerHandPatterns(scorePattern, winset, selfdraw, selftile, windTile, windOfTheRoundTile, tilesLeft, scoreObject) {
+  checkWinnerHandPatterns(scorePattern, winset, selfdraw, selftile, robbed, windTile, windOfTheRoundTile, tilesLeft, scoreObject) {
     let names = config.TILE_NAMES;
     let suits = config.SUIT_NAMES;
-    let state = this.getState(scorePattern, winset, selfdraw, selftile, windTile, windOfTheRoundTile, tilesLeft);
+    let state = this.getState(scorePattern, winset, selfdraw, selftile, robbed, windTile, windOfTheRoundTile, tilesLeft);
 
     if (state.selfdraw) {
       scoreObject.score += 2;
       scoreObject.log.push(`2 for self-drawn win (${names[selftile]})`);
+    }
+
+    if (state.robbed) {
+      scoreObject.doubles += 1;
+      scoreObject.log.push(`1 double for robbing a kong`);
     }
 
     if (state.outonPair) {

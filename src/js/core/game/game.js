@@ -273,7 +273,10 @@ class Game {
     let kong;
     do {
       kong = await player.checkKong();
-      if (kong) await this.processKong(player, kong);
+      if (kong) {
+        await this.processKong(player, kong);
+        // TODO: someone not-East COULD technically win at this point!
+      }
     } while (kong);
 
     done();
@@ -289,15 +292,16 @@ class Game {
     console.debug(`${player.id} plays kong ${kong[0].getTileFace()} (melded: ${melded})`);
     config.log(`${player.id} locks [${kong.map(t => t.getTileFace())}]`);
 
-
     let players = this.players;
     let robbed = await Promise.all(
       players.map(p => new Promise(resolve => p.seeKong(kong, player, this.wall.remaining, resolve)))
     );
 
-    if (robbed.some(v => !!v)) {
-      console.log("kong was robbed!");
-      // TODO: finish this win path.
+    for (let [pid, claim] of robbed.entries()) {
+      if (claim) {
+        claim.by = pid;
+        return claim;
+      }
     }
 
     // deal supplement tile(s) for as long as necessary
@@ -308,6 +312,21 @@ class Game {
       revealed = player.append(tile);
       if (revealed) players.forEach(p => p.see(revealed, player));
     } while (revealed);
+  }
+
+  /**
+   * if a kong got robbed, then this hand is over and we should exit play()
+   */
+  async processKongRob(claim) {
+    let pid = claim.from;
+    let tile = this.players[pid].giveUpKongTile(claim.tile);
+    this.players.forEach(p => p.playerGaveUpKongTile(pid, claim.tile));
+    let winner = this.players[claim.by];
+    winner.robbed = true;
+    this.currentPlayerId = winner.id;
+    let robbed = true;
+    winner.receiveDiscardForClaim(claim, tile, robbed);
+    return this.processWin(winner, pid);
   }
 
   /**
@@ -348,7 +367,8 @@ class Game {
       // a tile from the shuffled pile of tiles:
       discard = false;
       discardpid = false;
-      await this.dealTile(player);
+      let claim = await this.dealTile(player);
+      if (claim) return this.processKongRob(claim);
     }
 
     else {
@@ -359,8 +379,22 @@ class Game {
       config.log(`${player.id} has [${player.getTileFaces()}], [${player.getLockedTileFaces()}]`);
       players.forEach(p => p.seeClaim(tiles, player, discard, claim));
 
-      // If the claim was for a kong, the player needs a supplement tile.
-      if (tiles.length === 4) await this.dealTile(player);
+      // If this was a kong, can someone rob it to win?
+      if (tiles.length === 4) {
+        let kong = tiles;
+        let robbed = await Promise.all(
+          players.map(p => new Promise(resolve => p.robKong(player.id, kong, this.wall.remaining, resolve)))
+        );
+        for (let [pid, claim] of robbed.entries()) {
+          if (claim) {
+            claim.by = pid;
+            return this.processKongRob(claim);
+          }
+        }
+
+        // if no one can, then this player now needs a supplement tile.
+        await this.dealTile(player);
+      }
     }
 
 
@@ -374,22 +408,25 @@ class Game {
       discard = this.discard = await new Promise(resolve => player.getDiscard(wall.remaining, resolve));
 
       // Did anyone win?
-      if (!discard) {
-        return this.processWin(player, discardpid);
-      }
+      if (!discard) return this.processWin(player, discardpid);
 
       // no winner, but did this player declare/meld a kong?
       if (discard.exception === CLAIM.KONG) {
         let kong = discard.kong;
         let melded = (kong.length === 1);
 
-        await this.processKong(player, kong, melded);
+        // If they did, can someone rob it?
+        let claim = await this.processKong(player, kong, melded);
+        if (claim) return this.processKongRob(claim);
 
-        // Then set the discard to `false` so that we enter the
-        // "waiting for discard from player" state again.
+        // No one robbed this kong. Set the discard to `false` so
+        // that we enter the "waiting for discard from player"
+        // state again.
         discard = false;
       }
-    } while (!discard); // note: we will have exited `play()` in the event of a "no discard" win.
+    } while (!discard);
+    // note: we will have exited `play()` in the event of a
+    // "no discard" win, which is why this check is safe.
 
 
     // No winner - process the discard.
@@ -438,11 +475,11 @@ class Game {
         let kong = await player.checkKong(tile);
         if (kong) {
           console.debug(`${player.id} plays self-drawn kong ${kong[0].getTileFace()} during play`);
-          await this.processKong(player, kong);
+          let claim = await this.processKong(player, kong);
+          if (claim) return claim;
         }
       }
     } while (revealed);
-    return wall.dead;
   }
 
   /**

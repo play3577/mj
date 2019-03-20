@@ -23,6 +23,7 @@ class DatasetObject {
 
   conceal() { this.dataset.concealed = 'concealed'; }
   isConcealed() { return !!this.dataset.concealed; }
+  unconceal() { delete this.dataset.concealed }
 
   winning() { this.dataset.winning = 'winning'; }
   isWinningTile() { return !!this.dataset.winning; }
@@ -75,6 +76,7 @@ const enrich = span => {
 
   span.conceal = () => (span.dataset.concealed = 'concealed');
   span.isConcealed = () => (!!span.dataset.concealed);
+  span.unconceal = () => { delete span.dataset.concealed; }
 
   span.winning = () => (span.dataset.winning = 'winning');
   span.isWinningTile = () => (!!span.dataset.winning);

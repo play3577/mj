@@ -12,10 +12,10 @@ class GameManager {
   constructor(players) {
     this.gameBoard = document.querySelector('.board');
     this.players = players || [
-      new HumanPlayer(0),
-      new BotPlayer(1),
-      new BotPlayer(2),
-      new BotPlayer(3),
+      new HumanPlayer(0, config.WALL_HACK),
+      new BotPlayer(1, config.WALL_HACK),
+      new BotPlayer(2, config.WALL_HACK),
+      new BotPlayer(3, config.WALL_HACK),
     ];
 
     if (config.FORCE_OPEN_BOT_PLAY || config.DEBUG) {

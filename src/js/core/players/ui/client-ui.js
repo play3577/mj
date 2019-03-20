@@ -357,10 +357,34 @@ class ClientUI extends ClientUIMaster {
   /**
    * Do we want to rob a kong to win?
    */
-  spawnKongRobDialog(tiles, tilesRemaining, resolve) {
-    // FIXME: TODO: implement this logic.
-    console.log('clientui.spawnKongRobDialog');
-    resolve();
+  spawnKongRobDialog(pid, tiles, tilesRemaining, suggestion, resolve) {
+    let tile = tiles[0].getTileFace();
+    let claim = false;
+
+    if (suggestion) claim = suggestion;
+    else {
+      let { lookout, waiting } = this.player.tilesNeeded();
+      if (waiting) {
+        let need = lookout[tile];
+        if (need) {
+          let reasons = need.filter(v => v.indexOf('32')!==0);
+          if (reasons.length > 0) {
+            claim = {
+              from: pid,
+              tile: tile,
+              claimtype: CLAIM.WIN,
+              wintype: (reasons[0]|0),
+    };} } } } // it's a lot of checks.
+
+    if (!claim) return resolve();
+
+    modal.choiceInput("Win by robbing a kong?", [
+      { label: 'You better believe it!', value: 'win' },
+      { label: 'No, I think I can do better...', value: '' },
+    ], result => {
+      if (result) return resolve(claim);
+      resolve();
+    }, () => resolve());
   }
 
   /**

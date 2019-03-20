@@ -191,7 +191,7 @@ class Ruleset {
   /**
    * ...docs go here...
    */
-  getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset, winner=false, selfdraw=false, selftile=false, tilesLeft) {
+  getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset, winner=false, selfdraw=false, selftile=false, robbed=false, tilesLeft) {
     let names = config.TILE_NAMES;
     let result = this.aggregateScorePattern(scorePattern, windTile, windOfTheRoundTile);
     result.wind = windTile;
@@ -204,7 +204,7 @@ class Ruleset {
         result.score += this.points_for_winning;
         result.log.push(`${this.points_for_winning} for winning`);
       }
-      this.checkWinnerHandPatterns(scorePattern, winset, selfdraw, selftile, windTile, windOfTheRoundTile, tilesLeft, result);
+      this.checkWinnerHandPatterns(scorePattern, winset, selfdraw, selftile, robbed, windTile, windOfTheRoundTile, tilesLeft, result);
     }
 
     if (result.limit) {
@@ -234,7 +234,7 @@ class Ruleset {
   /**
    * All possible flags and values necessary for performing scoring, used in checkWinnerHandPatterns
    */
-  getState(scorePattern, winset, selfdraw, selftile, windTile, windOfTheRoundTile, tilesLeft) {
+  getState(scorePattern, winset, selfdraw, selftile, robbed, windTile, windOfTheRoundTile, tilesLeft) {
     // We start with some assumptions, and we'll invalidate them as we see more sets.
     let state = {
       allchow: true,
@@ -264,6 +264,7 @@ class Ruleset {
       kongCount: 0,
       suit: false,
       selfdraw: selfdraw,
+      robbed: robbed,
       lastTile: (tilesLeft<=0)
     };
 
@@ -373,6 +374,7 @@ class Ruleset {
     let winner = disclosure.winner;
     let selfdraw = disclosure.selfdraw;
     let selftile = disclosure.selftile ? disclosure.selftile.getTileFace() : false;
+    let robbed = disclosure.robbed;
     let tiles = disclosure.concealed;
     let locked = disclosure.locked;
     let bonus = disclosure.bonus;
@@ -457,7 +459,7 @@ class Ruleset {
         return set;
       }).concat(winner ? [] : locked);
 
-      return this.getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset, winner, selfdraw, selftile, tilesLeft);
+      return this.getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset, winner, selfdraw, selftile, robbed, tilesLeft);
     });
 
     // And then make sure we award each player the highest score they're elligible for.

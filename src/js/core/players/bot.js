@@ -10,9 +10,10 @@ if (typeof process !== "undefined") {
  * and simply do what the code says to do.
  */
 class BotPlayer extends Player {
-  constructor(id) {
+  constructor(id, chicken=false) {
     super(id);
     this.personality = new Personality(this);
+    this.chicken = chicken;
 
     // Don't bind this function unless the config says we should.
     if (config.FORCE_OPEN_BOT_PLAY) this.enableShowTilesAnyway();
@@ -26,7 +27,10 @@ class BotPlayer extends Player {
    */
   reset(hand, wind, windOfTheRound, draws) {
     super.reset(hand, wind, windOfTheRound, draws);
-    if (this.personality) this.personality.setDraws(this.draws);
+    if (this.personality) {
+      this.personality.setDraws(this.draws);
+      if (this.chicken) this.personality.chicken = true;
+    }
   }
 
   // We only assign this a function body in the constructor,
@@ -475,17 +479,25 @@ class BotPlayer extends Player {
    * See if this bot wants to rob the kong that was
    * just played in order to win the current hand.
    */
-  robKong(tiles, tilesRemaining, resolve) {
+  robKong(pid, tiles, tilesRemaining, resolve) {
     // Rob this kong?
     let { lookout, waiting } = this.tilesNeeded();
     if (waiting) {
       let tile = tiles[0].getTileFace();
       let need = lookout[tile];
-      if (need) {
-        let reasons = need.filter(v => v.indexOf('32')!==0);
-        for (let reason of reasons) {
-          // policy-approved?
-          if (this.personality.determineWhetherToWin(tile, reason, tilesRemaining)) resolve(reason);
+      if (need && need.some(v => v.indexOf('32')===0)) {
+        // filter out the "win" calls, which leaves us with the normal claim codes:
+        let reasons = need.filter(v => v.indexOf('32')!==0).sort((a,b)=>(a-b));
+        // the sort() sets us up with pair first, then chow, if both were possible.
+        if (reasons.length > 0) {
+          let reason = (reasons[0]|0);
+          if (this.personality.determineWhetherToWin(tile, reason, tilesRemaining)) return resolve({
+            claimtype: CLAIM.WIN,
+            wintype: reason,
+            from: pid,
+            tile: tile,
+            by: this.id
+          });
         }
       }
     }
