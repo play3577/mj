@@ -33,7 +33,7 @@ class PlayerMaster {
     this.robbed = false;
     this.tracker.reset();
     this.el.innerHTML = '';
-    this.el.classList.remove('winner');
+    this.el.classList.add('winner');
     if (this.ui) this.ui.reset(hand, wind, windOfTheRound, draws);
   }
 

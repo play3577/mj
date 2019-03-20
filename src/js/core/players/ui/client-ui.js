@@ -41,8 +41,8 @@ class ClientUI extends ClientUIMaster {
     if (config.SHOW_BOT_SUGGESTION && suggestion) {
       suggestedTile = this.getSingleTileFromHand(suggestion.getTileFace());
       if (suggestedTile) {
-        suggestedTile.classList.add('suggestion');
-        suggestedTile.setAttribute('title','Bot-recommended discard.');
+        suggestedTile.mark('suggestion');
+        suggestedTile.setTitle('Bot-recommended discard.');
       } else {
         console.log(`The bot got confused and wanted you to throw out something that's not in your hand...!`);
       }
@@ -84,15 +84,15 @@ class ClientUI extends ClientUIMaster {
     let pickAsDiscard = e => {
       listenForInput = false;
       if (suggestedTile) {
-        suggestedTile.classList.remove('suggestion');
-        suggestedTile.removeAttribute('title');
+        suggestedTile.unmark('suggestion');
+        suggestedTile.setTitle('');
       }
       if (latestTile) {
-        latestTile.classList.remove('latest')
+        latestTile.unmark('latest')
       }
       cleanup.forEach(fn => fn());
       let tile = e.target;
-      if (tile) tile.classList.remove('highlight');
+      if (tile) tile.unmark('highlight');
       resolve(tile);
     };
 
@@ -110,17 +110,17 @@ class ClientUI extends ClientUIMaster {
     };
 
     let highlightTile = e => {
-      tiles.forEach(tile => tile.classList.remove('highlight'));
+      tiles.forEach(tile => tile.unmark('highlight'));
       currentTile = e.target;
-      currentTile.classList.add('highlight');
+      currentTile.mark('highlight');
       curid = Array.from(tiles).indexOf(currentTile);
     };
 
     // cleanup for the click listeners
     cleanup.push(() => {
       tiles.forEach(tile => {
-        tile.classList.remove('selectable');
-        tile.classList.remove('highlight');
+        tile.unmark('selectable');
+        tile.unmark('highlight');
         tile.removeEventListener("mouseover", highlightTile);
         tile.removeEventListener("click", pickAsDiscard);
         tile.removeEventListener("mousedown", listenForLongPress);
@@ -130,7 +130,7 @@ class ClientUI extends ClientUIMaster {
 
     // mouse interaction
     tiles.forEach(tile => {
-      tile.classList.add('selectable');
+      tile.mark('selectable');
       tile.addEventListener("mouseover", highlightTile);
       tile.addEventListener("click", pickAsDiscard);
       tile.addEventListener("mousedown", listenForLongPress);
@@ -141,7 +141,7 @@ class ClientUI extends ClientUIMaster {
     let listenForKeys = (() => {
       let tlen = tiles.length;
 
-      currentTile.classList.add('highlight');
+      currentTile.mark('highlight');
 
       return evt => {
         let code = evt.keyCode;
@@ -164,7 +164,7 @@ class ClientUI extends ClientUIMaster {
         if (VK_UP[code] || VK_SIGNAL[code]) {
           if (!vk_signal_lock) {
             lock_vk_signal();
-            currentTile.classList.remove('highlight');
+            currentTile.unmark('highlight');
             pickAsDiscard({ target: currentTile });
           }
         }
@@ -220,7 +220,7 @@ class ClientUI extends ClientUIMaster {
       if (result === CLAIM.KONG) {
         currentTile.exception = CLAIM.KONG;
         currentTile.kong = [...allInHand];;
-        currentTile.classList.remove('highlight');
+        currentTile.unmark('highlight');
         return pickAsDiscard({ target: currentTile });
       }
       if (result === CLAIM.WIN) return pickAsDiscard({ target: undefined });
@@ -253,7 +253,7 @@ class ClientUI extends ClientUIMaster {
       if (types) {
         for(let type of types) {
           if (CLAIM.CHOW <= type && type < CLAIM.PUNG && !mayChow) continue
-          discards.lastChild.classList.add('highlight');
+          discards.lastChild.mark('highlight');
           break;
         }
       }
@@ -261,7 +261,7 @@ class ClientUI extends ClientUIMaster {
 
     // show the bot's play suggestions
     if (config.SHOW_BOT_SUGGESTION && suggestion && suggestion.claimtype) {
-      discards.lastChild.classList.add('suggestion');
+      discards.lastChild.mark('suggestion');
     }
 
     // Set up the dialog spawning for when the user elects to stake a claim.
@@ -283,8 +283,8 @@ class ClientUI extends ClientUIMaster {
         this.canKong(discard) ? { label: "Kong", value: CLAIM.KONG } : false,
         { label: "Win", value: CLAIM.WIN }, // Let's not pre-filter this one
       ], result => {
-        discards.lastChild.classList.remove('highlight');
-        tile.classList.remove('selectable');
+        discards.lastChild.unmark('highlight');
+        tile.unmark('selectable');
         removeAllListeners();
         if (result === CLAIM.WIN) return this.spawnWinDialog(discard, resolve, cancel);
         resolve({ claimtype: result });
@@ -294,7 +294,7 @@ class ClientUI extends ClientUIMaster {
     // Let the game know we're not interested in the current discard.
     let ignore = () => {
       registerUIInput();
-      tile.classList.remove('selectable');
+      tile.unmark('selectable');
       removeAllListeners();
       resolve(CLAIM.IGNORE);
     };
@@ -322,7 +322,7 @@ class ClientUI extends ClientUIMaster {
     };
 
     // mouse interaction
-    tile.classList.add('selectable');
+    tile.mark('selectable');
     tile.addEventListener("click", triggerClaimDialog);
     discards.addEventListener("click", safeIgnore);
 

@@ -145,8 +145,8 @@ class Player extends PlayerMaster {
 
     tiles.forEach(tile => {
       this.remove(tile);
-      tile.classList.remove('latest');
-      tile.removeAttribute('title');
+      tile.unmark('latest');
+      tile.setTitle(``);
       tile.lock();
       if(kong) tile.conceal();
     });

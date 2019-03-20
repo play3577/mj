@@ -403,7 +403,7 @@ class Game {
     // ===========================
 
     do {
-      if (discard) discard.classList.remove('discard');
+      if (discard) discard.unmark('discard');
 
       discard = this.discard = await new Promise(resolve => player.getDiscard(wall.remaining, resolve));
 

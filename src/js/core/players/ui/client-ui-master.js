@@ -212,7 +212,7 @@ class ClientUIMaster {
    * Triggered when play moves from one player to another.
    */
   nextPlayer() {
-    this.discards.lastChild.classList.remove('selectable');
+    this.discards.lastChild.unmark('selectable');
   }
 
   /**
@@ -326,10 +326,10 @@ class ClientUIMaster {
 
     let v=0, b=-1;
     scores.forEach( (score,id) => { if (score>v) { v = score; b = id; }});
-    this.playerbanks.forEach( (e,id) => {
-      e.classList.remove('waiting');
-      e.classList.remove('winner');
-      if (id===b) e.classList.add('game-winner');
+    this.playerbanks.forEach( (bank,id) => {
+      bank.classList.remove('waiting');
+      bank.classList.remove('winner');
+      if (id===b) bank.classList.add('game-winner');
     });
 
     // clear out the player banks, discards, and tile tracker.
@@ -379,11 +379,11 @@ class ClientUIMaster {
    * Mark the player with `id` as the currently active player.
    */
   activate(id) {
-    this.playerbanks.forEach(b => b.classList.remove('active'));
+    this.playerbanks.forEach(bank => bank.classList.remove('active'));
     this.playerbanks[id].classList.add('active');
     if (id != this.id) {
       let latest = this.el.querySelector('.tile.latest');
-      if (latest) latest.classList.remove('latest');
+      if (latest) latest.unmark('latest');
     }
   }
 
@@ -418,12 +418,12 @@ class ClientUIMaster {
   append(t) {
     let old = this.el.querySelector('.tile.latest');
     if (old) {
-      old.classList.remove('latest');
-      old.removeAttribute('title');
+      old.unmark('latest');
+      old.setTitle('');
     }
     if (!t.isLocked()) {
-      t.classList.add('latest');
-      t.setAttribute('title', 'latest tile');
+      t.mark('latest');
+      t.setTitle('latest tile');
     }
     this.el.appendChild(t);
     this.sortTiles();
@@ -480,7 +480,7 @@ class ClientUIMaster {
     }
 
     let discard = create(tile);
-    discard.classList.add('discard');
+    discard.mark('discard');
     discard.setFrom(player.id);
     this.discards.appendChild(discard);
 

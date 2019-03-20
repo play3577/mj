@@ -11,6 +11,11 @@ class DatasetObject {
     this.dataset = {};
   }
 
+  mark(label) { this.classList.add(label); }
+  unmark(label) { this.classList.remove(label); }
+
+  setTitle(title) { if (title) this.setAttribute("title", title); else this.removeAttribute("title"); }
+
   setAttribute(a,v) { this.attributes[a] = v; }
   removeAttribute(a) { delete this.attributes[a]; }
 
@@ -67,6 +72,12 @@ class DatasetObject {
  * HTMLSpanElement objects.
  */
 const enrich = span => {
+
+  span.mark = (label) => span.classList.add(label);
+  span.unmark = (label) => span.classList.remove(label);
+
+  span.setTitle = (title) => { if (title) span.setAttribute("title", title); else span.removeAttribute("title"); }
+
   span.getFrom = () => (span.dataset.from|0);
   span.setFrom = (pid) => (span.dataset.from = pid);
 
