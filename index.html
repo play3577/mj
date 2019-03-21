@@ -466,6 +466,7 @@
         <li>fully concealed (and self drawn) hand: 1</li>
         <li>(self-drawn) win on the last tile from the wall: 1</li>
         <li>claimed win on the last discard: 1</li>
+        <li>winning by robbing a kong: 1</li>
       </ul>
 
       <p>
@@ -523,10 +524,11 @@
         <li>fully concealed hand: 1</li>
         <li>(self-drawn) win on the last tile from the wall: 1</li>
         <li>claimed win on the last discard: 1</li>
+        <li>winning by robbing a kong: 1</li>
       </ul>
 
       <p>
-        The following limit hands (scoring 1 laak) exist:
+        The following limit hands (scoring 1 "laak") exist:
       </p>
 
       <ul>
@@ -548,9 +550,9 @@
         <tr><td>1</td><td>12</td><td>8</td></tr>
         <tr><td>2</td><td>24</td><td>16</td></tr>
         <tr><td>3</td><td>48</td><td>32</td></tr>
-        <tr><td>4-6 (1 laak)</td><td>96</td><td>64</td></tr>
-        <tr><td>7-9 (2 laak)</td><td>192</td><td>128</td></tr>
-        <tr><td>10+ (3 laak)</td><td>384</td><td>256</td></tr>
+        <tr><td>4-6 (1 "laak")</td><td>96</td><td>64</td></tr>
+        <tr><td>7-9 (2 "laak")</td><td>192</td><td>128</td></tr>
+        <tr><td>10+ (3 "laak")</td><td>384</td><td>256</td></tr>
       </table>
     </section>
 
@@ -559,7 +561,20 @@
 
       <p>
         This game can be played with either a mouse or keyboard (or combination of the two).
+        The interface may also give you hints while playing:
       </p>
+
+      <ul>
+        <li>When playing with suggestions turned on (<em>these are on by default</em>) any tile that you
+          can claim will be highlighted in green when someone else plays it.</li>
+        <li>When playing with bot recommendations turned on (<em>these are on by default</em>) any tile
+          that it recommends you claim will be highlighted in pink when someone else plays it.</li>
+        <li>When playing with bot recommendations turned on, recommended discards will be highlighted
+          with a single black bar at the top of the tile.</li>
+        <li>Regardless of suggestion settings, the tile you drew during your turn will be highlighted
+          using a green bar at the bottom of the tile, and your currently selected tile will have a
+          full green border.</li>
+      </ul>
 
       <h3>Mouse controls</h3>
 
