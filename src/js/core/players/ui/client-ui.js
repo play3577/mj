@@ -248,6 +248,7 @@ class ClientUI extends ClientUIMaster {
     // show general claim suggestions
     if (config.SHOW_CLAIM_SUGGESTION) {
       let face = tile.getTileFace();
+      let suit = ((face/9)|0);
       let { lookout } = this.player.tilesNeeded();
       let types = lookout[face];
       if (types) {
@@ -255,6 +256,22 @@ class ClientUI extends ClientUIMaster {
           if (CLAIM.CHOW <= type && type < CLAIM.PUNG && !mayChow) continue
           discards.lastChild.mark('highlight');
           break;
+        }
+      }
+      // If we already have a chow with this tile in it, then
+      // we might not actually _need_ this tile, and so lookout
+      // won't list it. Even though it's a legal claim.
+      else {
+        if (this.getSingleTileFromHand(face)) {
+          let
+          p2 = this.getSingleTileFromHand(face-2), sp2 = (((face-2)/9)|0),
+          p1 = this.getSingleTileFromHand(face-1), sp1 = (((face-1)/9)|0),
+          n1 = this.getSingleTileFromHand(face+1), sn1 = (((face+1)/9)|0),
+          n2 = this.getSingleTileFromHand(face+2), sn2 = (((face+2)/9)|0),
+          c1 = n2 && n1 && sn2===suit && sn1===suit,
+          c2 = n1 && p1 && sn1===suit && sp1===suit,
+          c3 = p2 && p1 && sp2===suit && sp1===suit;
+          if (c1 || c2 || c3) discards.lastChild.mark("highlight");
         }
       }
     }
