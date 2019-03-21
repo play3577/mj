@@ -1,6 +1,5 @@
 if (typeof process !== "undefined") {
     Random = require('./js/core/utils/prng.js');
-    playlog = require('./js/core/utils/logger.js');
 }
 
 const noop = ()=>{};
@@ -268,8 +267,8 @@ const config = {
     // any code that needs to randomise data.
     PRNG: new Random(SEED),
     DEBUG,
-    log: playlog.log,
-    flushLog: playlog.flush,
+    log: noop,
+    flushLog: noop,
     NO_SOUND,
     SEED,
     RULES,
@@ -368,4 +367,8 @@ config.set({ DEBUG });
 // in node context?
 if (typeof process !== "undefined") {
     module.exports = config;
+    playlog = require('./js/core/utils/logger.js');
 }
+
+config.log = playlog.log;
+config.flushLog = playlog.flush;

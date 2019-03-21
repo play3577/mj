@@ -17,7 +17,11 @@ class Player extends PlayerMaster {
   }
 
   async getDiscard(tilesRemaining, resolve) {
-    return this.determineDiscard(tilesRemaining, resolve);
+    let resolveProxy = (discard) => {
+      this.discards.push(discard);
+      resolve(discard);
+    }
+    return this.determineDiscard(tilesRemaining, resolveProxy);
   }
 
   /**

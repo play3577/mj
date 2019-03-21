@@ -24,13 +24,14 @@ class PlayerMaster {
     this.wind = wind;
     this.windOfTheRound = windOfTheRound;
     this.draws = draws;
+    this.discards = []; // tracks this player's discards over the course of a hand
     this.tiles = [];
     this.locked = [];
     this.bonus = [];
-    this.waiting = false;
-    this.has_won = false;
+    this.waiting = false; // waiting to win?
+    this.has_won = false; // totally has won!
     this.selfdraw = false;
-    this.robbed = false;
+    this.robbed = false; // won by robbing a kong?
     this.tracker.reset();
     this.el.innerHTML = '';
     this.el.classList.add('winner');
@@ -103,12 +104,13 @@ class PlayerMaster {
    * Disclose this player's hand information.
    */
   getDisclosure() {
-    let hand = this.getTileFaces();
     return {
       // tile information
-      concealed: hand.filter(v => v < 34),
+      concealed: this.getTileFaces().filter(v => v < 34),
       locked: this.locked,
       bonus: this.bonus,
+      // play information,
+      discards: this.discards.map(t => t?t.getTileFace():t),
       // player information
       wind: this.wind,
       winner: this.has_won,

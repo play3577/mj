@@ -508,9 +508,6 @@ class Game {
     console.log(message);
     config.log(message);
 
-    players.forEach(p => {
-    });
-
     // Let everyone know what everyone had. It's the nice thing to do.
     let fullDisclosure = players.map(p => p.getDisclosure());
     console.debug('disclosure array:', fullDisclosure);
@@ -525,8 +522,8 @@ class Game {
     let eastid = 0;
     players.forEach(p => { if(p.wind === 0) eastid = p.id; });
     let adjustments = this.rules.settleScores(scores, player.id, eastid, discardpid);
-    players.forEach(p => {
-      config.log(`${p.id}: ${adjustments[p.id]}, hand: ${p.getTileFaces()}, [${p.getLockedTileFaces()}], (${p.bonus})`);
+    players.forEach((p,i) => {
+      config.log(`${p.id}: ${adjustments[p.id]}, hand: ${p.getTileFaces()}, [${p.getLockedTileFaces()}], (${p.bonus}), discards: ${fullDisclosure[i].discards}`);
       p.recordScores(adjustments);
     });
 
