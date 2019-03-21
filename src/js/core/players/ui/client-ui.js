@@ -262,12 +262,12 @@ class ClientUI extends ClientUIMaster {
       // we might not actually _need_ this tile, and so lookout
       // won't list it. Even though it's a legal claim.
       else {
-        if (this.getSingleTileFromHand(face)) {
+        if (mayChow && face < 27 && this.getSingleTileFromHand(face)) {
           let
-          p2 = this.getSingleTileFromHand(face-2), sp2 = (((face-2)/9)|0),
-          p1 = this.getSingleTileFromHand(face-1), sp1 = (((face-1)/9)|0),
-          n1 = this.getSingleTileFromHand(face+1), sn1 = (((face+1)/9)|0),
-          n2 = this.getSingleTileFromHand(face+2), sn2 = (((face+2)/9)|0),
+          n1 = face < 26 && this.getSingleTileFromHand(face+1), sn1 = (((face+1)/9)|0),
+          n2 = face < 25 && this.getSingleTileFromHand(face+2), sn2 = (((face+2)/9)|0),
+          p2 = face > 1 && this.getSingleTileFromHand(face-2), sp2 = (((face-2)/9)|0),
+          p1 = face > 0 && this.getSingleTileFromHand(face-1), sp1 = (((face-1)/9)|0),
           c1 = n2 && n1 && sn2===suit && sn1===suit,
           c2 = n1 && p1 && sn1===suit && sp1===suit,
           c3 = p2 && p1 && sp2===suit && sp1===suit;
