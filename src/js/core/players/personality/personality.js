@@ -62,24 +62,33 @@ class Personality {
    * Decide whether or not a chowhand is acceptable
    */
   analyse() {
-    let stats = buildStatsContainer(this.player);
+    let player = this.player;
+    let stats = buildStatsContainer(player);
 
     // should we play clean?
     let most = max(...stats.suits);
     let total = stats.numerals;
-    if (this.playClean === false && most/total > this.cleanThreshold_high) {
+    if (this.playClean === false && !this.stopClean && most/total > this.cleanThreshold_high) {
       this.playClean = stats.suits.indexOf(most);
-      console.debug(`${this.player.id} will play clean (${this.playClean})`);
+      console.debug(`${player.id} will play clean (${this.playClean})`);
     }
+
     // if we're already playing clean, should we _stop_ playing clean?
-    if (this.playClean !== false && most/total < this.cleanThreshold_low) {
-      this.playClean = false;
-      console.debug(`${this.player.id} will stop trying to play clean (${this.playClean})`);
+    if (this.playClean !== false) {
+      if (player.locked.length > 0) {
+        let mismatch = player.locked.some(set => set[0].getTileFace() !== this.playClean);
+        if (mismatch) { this.playClean = false; }
+      }
+      if (most/total < this.cleanThreshold_low) { this.playClean = false; }
+      if (this.playClean === false) {
+        this.stopClean = true;
+        console.debug(`${player.id} will stop trying to play clean.`);
+      }
     }
 
 
     // if we haven't locked anything yet, is this gearing up to be a chow hand?
-    if (!this.player.locked.length) {
+    if (!player.locked.length) {
       let chowScore = stats.cpairs/2 + stats.chows;
       this.playChowHand = (stats.honours <=3 &&  chowScore >= 2 && stats.pungs < stats.chows);
       // note that this is a fluid check until we claim something, when it locks.

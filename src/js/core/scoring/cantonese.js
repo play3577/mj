@@ -10,14 +10,16 @@ class Cantonese extends Ruleset {
   constructor() {
     super(
       Ruleset.FAAN_LAAK,
-      2000,  // start points
-      16,    // limit
-      0,     // points for winning
-      false, // losers settle their scores after paying the winner
-      false, // east pays and receives double
-      true,  // discarding player pays double
-      true,  // player winds rotate counter to the wind of the round
-      true,  // pass the deal if east wins
+      500,         // start score
+      [5, 7, 10],  // tiered limits
+      0,           // points for winning
+      0.5,         // no-point hand score
+      false,       // losers do not pay each other
+      false,       // east does not doubles up
+      true,        // selfdraw wins pay double
+      true,        // discarding player pays double
+      true,        // reverse wind direction
+      true         // deal passes when east wins
     );
   }
 
@@ -93,13 +95,19 @@ class Cantonese extends Ruleset {
    * by winning the hand. Calculate those here:
    */
   checkWinnerHandPatterns(scorePattern, winset, selfdraw, selftile, robbed, windTile, windOfTheRoundTile, tilesLeft, scoreObject) {
+    let names = config.TILE_NAMES;
     let suits = config.SUIT_NAMES;
 
     let state = this.getState(scorePattern, winset, selfdraw, selftile, robbed, windTile, windOfTheRoundTile, tilesLeft);
 
+    if (state.selfdraw) {
+      scoreObject.score += 1;
+      scoreObject.log.push(`1 faan for self-drawn win (${names[selftile]})`);
+    }
+
     if (state.robbed) {
       scoreObject.score += 1;
-      scoreObject.log.push(`1 faan for robbing a kong`);
+      scoreObject.log.push(`1 faan for robbing a kong (${names[winset[0]]})`);
     }
 
     if (state.allchow && !state.majorPair) {
@@ -109,11 +117,11 @@ class Cantonese extends Ruleset {
 
     if (state.onesuit) {
       if (state.honours) {
-        scoreObject.score += 3;
-        scoreObject.log.push(`3 faan for one suit (${suits[state.suit]}) and honours hand`);
+        scoreObject.score += 1;
+        scoreObject.log.push(`1 faan for one suit (${suits[state.suit]}) and honours hand`);
       } else {
-        scoreObject.score += 6;
-        scoreObject.log.push(`6 faan for clean one suit hand (${suits[state.suit]})`);
+        scoreObject.score += 5;
+        scoreObject.log.push(`5 faan for clean one suit hand (${suits[state.suit]})`);
       }
     }
 
@@ -122,8 +130,7 @@ class Cantonese extends Ruleset {
     }
 
     if (state.allhonours) {
-      scoreObject.score += 6;
-      scoreObject.log.push(`7 faan for all honours hands`);
+      scoreObject.limit = `all honours hand`;
     }
 
     if (state.punghand) {
@@ -148,13 +155,9 @@ class Cantonese extends Ruleset {
       scoreObject.log.push(`1 faan for fully concealed hand`);
     }
 
-    if (state.lastTile) {
-      scoreObject.score += 1;
-      if (selfdraw) {
-        scoreObject.log.push(`1 faan for winning with the last available wall tile`);
-      } else {
-        scoreObject.log.push(`1 faan for winning with the last discard`);
-      }
+    // no point hand?
+    if (scoreObject.score === 0) {
+      scoreObject.log.push(`${this.no_point_score} for no-point hand`);
     }
   }
 

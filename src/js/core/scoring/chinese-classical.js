@@ -10,14 +10,16 @@ class ChineseClassical extends Ruleset {
   constructor() {
     super(
       Ruleset.POINTS_DOUBLES,
-      2000,  // start points
-      1000,  // limit
-      10,    // points for winning
-      true,  // losers settle their scores after paying the winner
-      true,  // east pays and receives double
-      false, // discarding player pays double
-      true,  // player winds rotate E/S/W/N => N/E/S/W
-      false, // do not pass the deal if east wins
+      2000,  // start score
+      1000,  // single limit
+      10,    // 10 points for winning
+      false, // no-point hand does not exist in this ruleset
+      true,  // losers pay each other
+      true,  // east doubles up
+      false, // selfdraw wins do not pay double
+      false, // discarding player does not pay double
+      true,  // reverse wind direction
+      false  // deal does not pass when east wins
     );
   }
 
@@ -194,7 +196,7 @@ class ChineseClassical extends Ruleset {
 
     if (state.robbed) {
       scoreObject.doubles += 1;
-      scoreObject.log.push(`1 double for robbing a kong`);
+      scoreObject.log.push(`1 double for robbing a kong (${names[winset[0]]})`);
     }
 
     if (state.outonPair) {

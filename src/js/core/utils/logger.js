@@ -41,11 +41,15 @@ if (typeof process !== "undefined") {
         lines = [];
     };
 
-    playlog.log = (text) => {
-        if (typeof text !== "string") text = text.toString()
-        text.split('\n').forEach(line => {
-            lines.push(`${prefix()}${line}`);
-        });
+    playlog.log = (...args) => {
+        args.forEach((text,i) => {
+            if (typeof text !== "string") text = JSON.stringify(text);
+            if (text) {
+                text.split('\n').forEach(line => {
+                    lines.push(`${prefix()}${line}`);
+                });
+            }
+        })
     };
 
     process.on('SIGINT', function() {

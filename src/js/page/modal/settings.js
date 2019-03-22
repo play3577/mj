@@ -58,18 +58,20 @@ class SettingsModal {
       'Highlight claimable discards': { key: 'show_claim_suggestion', options: ['true','false'] },
       'Show bot play suggestions': { key: 'show_bot_suggestion', options: ['true','false'] },
       '-': {},
+      // flags
       'Turn on debug logging' : { key: 'debug', options: ['true','false'] },
-      'Set random number seed': { key: 'seed' },
       'Play without sound': { key: 'nosound', options: ['true','false'] },
       'Autostart bot play': { key: 'autoplay', options: ['true','false'] },
-      'Bot quick play threshold': { key: 'bot_chicken_threshold' },
       'Pause game unless focused': { key: 'pause_on_blur', options: ['true','false'] },
       'Pretend hands start after a draw': { key: 'force_draw', options: ['true','false'] },
+      'Generate game log after play': { key: 'write_game_log', options: ['true','false'] },
+      // values
+      'Set random number seed': { key: 'seed' },
+      'Bot quick play threshold': { key: 'bot_chicken_threshold' },
       'Delay (in ms) between player turns': { key: 'play' },
       'Delay (in ms) before starting next hand': { key: 'hand' },
       'Delay (in ms) for bots reacting to things': { key: 'bot_delay' },
       'Set up a specific wall': { key: 'wall_hack', options: ['', ...Object.keys(WallHack.hacks)], value: values.wall_hack },
-      'Generate game log after play': { key: 'write_game_log', options: ['true','false'] },
     };
 
 

@@ -1,5 +1,6 @@
 if (typeof process !== "undefined") {
   LimitHands = require('./limit-hands.js');
+  FaakLaakTable = require('./faan-laak-table.js');
 }
 
 /**
@@ -15,17 +16,46 @@ class Ruleset {
   allFlowers(bonus) { return [34, 35, 36, 37].every(t => bonus.indexOf(t) > -1); }
   allSeasons(bonus) { return [38, 39, 40, 41].every(t => bonus.indexOf(t) > -1); }
 
-  constructor(scoretype, startscore, limit, points_for_winning, losers_settle_scores=config.LOSERS_SETTLE_SCORES, east_doubles_up=false, discard_pays_double=false, reverse_wind_direction=false, pass_on_east_win=true) {
+  constructor(
+    scoretype,
+    player_start_score,
+    limit,
+    points_for_winning,
+    no_point_score,
+    losers_settle_scores,
+    east_doubles_up,
+    selfdraw_pays_double,
+    discard_pays_double,
+    reverse_wind_direction,
+    pass_on_east_win,
+  ) {
     this.scoretype = scoretype;
-    this.player_start_score = startscore;
+    this.limits = new LimitHands();
+    // Base values
+    this.player_start_score = player_start_score;
     this.limit = limit;
     this.points_for_winning = points_for_winning;
+    this.no_point_score = no_point_score;
+    // Ruleset flags
     this.losers_settle_scores = losers_settle_scores;
     this.east_doubles_up = east_doubles_up;
+    this.selfdraw_pays_double = selfdraw_pays_double;
     this.discard_pays_double = discard_pays_double;
     this.reverse_wind_direction = reverse_wind_direction;
     this.pass_on_east_win = pass_on_east_win;
-    this.limits = new LimitHands();
+    // do we need a faan/laak table?
+    if (scoretype === Ruleset.FAAN_LAAK) {
+      this.limit = limit[0];
+      this.faan_laak_limits = limit;
+      this.setupFaanLaakTable(no_point_score, limit);
+    }
+  }
+
+  /**
+   * This is its own function, so that subclasses can override it with different values.
+   */
+  setupFaanLaakTable(no_point_score, limits) {
+    this.faan_laak_table = new FaakLaakTable(no_point_score, limits);
   }
 
   /**
@@ -39,28 +69,21 @@ class Ruleset {
    * calculate the actual number of points awarded under point/double rules.
    */
   getFaanLaakLimit(selfdraw) {
-    return this.convertFaan(0, selfdraw, true);
+    return this.faan_laak_table.get(0, selfdraw, true);
   }
 
   /**
    * perform standard Faan conversion
    */
   convertFaan(points, selfdraw, limit) {
-    if (limit) points = 6; //
-    if (points === 0) return selfdraw ? 0 : 4;
-    if (points === 1) return selfdraw ? 12 : 8;
-    if (points === 2) return selfdraw ? 24 : 16;
-    if (points === 3) return selfdraw ? 48 : 32;
-    // tiered limits, or "laak" scores:
-    if (points >= 4 && points <= 6) return selfdraw ? 96 : 64;   // 1 "laak"
-    if (points >= 7 && points <= 9) return selfdraw ? 192 : 128; // 2 "laak"
-    if (points >= 10) return selfdraw ? 384 : 256;               // 3 "laak"
+    return this.faan_laak_table.get(points, selfdraw, limit);
   }
 
   /**
    * perform points/doubles conversion
    */
   convertPoints(points, doubles) {
+    if (!points && this.no_point_score) points = this.no_point_score
     return points * (2 ** doubles);
   }
 
@@ -103,21 +126,28 @@ class Ruleset {
    * losers end up paying" calculations.
    */
   settleScores(scores, winningplayer, eastplayer, discardpid) {
-    let adjustments = [0, 0, 0, 0];
-    let eastwin = winningplayer === eastplayer ? 2 : 1;
-
     console.debug(`%cSettling payment`, `color: red`);
+
+    let adjustments = [0, 0, 0, 0];
+    let eastWinFactor = (winningplayer === eastplayer) ? 2 : 1;
+    let wscore = scores[winningplayer].total;
+    let selfdraw = (discardpid===false);
+
+    console.debug(`winning score: ${wscore}, double east? ${this.east_doubles_up}`);
 
     for (let i = 0; i < scores.length; i++) {
       if (i === winningplayer) continue;
 
       // every non-winner pays the winner.
       if (i !== winningplayer) {
-        let wscore = scores[winningplayer].total;
-        let east = 1;
-        if (this.east_doubles_up) east = (i === eastplayer) ? 2 : 1;
-        let difference = wscore * Math.max(eastwin, east);
-        if (this.discard_pays_double && i===discardpid) difference *= 2;
+        let difference = wscore;
+        if (this.east_doubles_up) {
+          let paysAsEast = (i === eastplayer) ? 2 : 1;
+          difference *= Math.max(eastWinFactor, paysAsEast);
+        }
+        if ((this.discard_pays_double && i===discardpid) || (this.selfdraw_pays_double && selfdraw)) {
+          difference *= 2;
+        }
         adjustments[winningplayer] += difference;
         console.debug(`${winningplayer} gets ${difference} from ${i}`);
         adjustments[i] -= difference;
@@ -131,9 +161,11 @@ class Ruleset {
       for (let j = i + 1; j < scores.length; j++) {
         if (j === winningplayer) continue;
 
-        let east = 1;
-        if (this.east_doubles_up) east = (i === eastplayer) ? 2 : 1;
-        let difference = (scores[i].total - scores[j].total) * east;
+        let difference = (scores[i].total - scores[j].total);
+        if (this.east_doubles_up) {
+          let paysAsEast = (i === eastplayer) ? 2 : 1;
+          difference *= paysAsEast;
+        }
         console.debug(`${i} gets ${difference} from ${j}`);
         adjustments[i] += difference;
         console.debug(`${j} pays ${difference} to ${i}`);
@@ -141,8 +173,10 @@ class Ruleset {
       }
     }
 
-    if (winningplayer === eastplayer) scores[eastplayer].log.push(`Player won as East`);
-    else scores[eastplayer].log.push(`Player lost as East`);
+    if (this.east_doubles_up) {
+      if (winningplayer === eastplayer) scores[eastplayer].log.push(`Player won as East`);
+      else scores[eastplayer].log.push(`Player lost as East`);
+    }
 
     return adjustments;
   }
@@ -368,7 +402,7 @@ class Ruleset {
    * is the score the player will be assigned.
    */
   scoreTiles(disclosure, id, windOfTheRound, tilesLeft) {
-    console.debug(id, disclosure, windOfTheRound, tilesLeft);
+    console.debug("SCORE TILES", id, disclosure, windOfTheRound, tilesLeft);
 
     // Let's get the administrative data:
     let winner = disclosure.winner;
@@ -416,13 +450,17 @@ class Ruleset {
     if (winner) {
       // first check for non-standard-pattern limit hands
       let limit = this.checkForLimit(allTiles, locked.reduce((t,s) => t + s.length, 0));
-      if (limit) return this.generateLimitObject(limit, selfdraw);
+      if (limit) {
+        config.log('limit hand');
+        return this.generateLimitObject(limit, selfdraw);
+      }
 
       // no limit: proceed to score hand based on normal win paths.
       openCompositions = tileInformation.winpaths;
     } else {
       // Do we even bother figuring out what the not-winner has?
       if (!this.losers_settle_scores) {
+        config.log('losers do not require score computation');
         return { score: 0, doubles: 0, log: [], total: 0 };
       }
 
@@ -462,10 +500,12 @@ class Ruleset {
       return this.getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset, winner, selfdraw, selftile, robbed, tilesLeft);
     });
 
+    config.log('possible scores:', possibleScores);
+
     // And then make sure we award each player the highest score they're elligible for.
     let finalScore = possibleScores.sort( (a,b) => { a = a.total; b = b.total; return a - b; }).slice(-1)[0];
+    config.log('final score:', finalScore);
 
-    console.debug(finalScore);
     return finalScore;
   }
 }

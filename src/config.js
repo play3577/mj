@@ -113,6 +113,7 @@ console.log(`using bot threshold ${BOT_CHICKEN_THRESHOLD}`);
 
 if (WALL_HACK || PLAY_IMMEDIATELY) {
     FORCE_OPEN_BOT_PLAY = true;
+    NO_SOUND = true;
 }
 
 // The simple config is for settings I

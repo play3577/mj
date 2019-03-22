@@ -486,11 +486,32 @@ class BotPlayer extends Player {
       let tile = tiles[0].getTileFace();
       let need = lookout[tile];
       if (need && need.some(v => v.indexOf('32')===0)) {
-        // filter out the "win" calls, which leaves us with the normal claim codes:
-        let reasons = need.filter(v => v.indexOf('32')!==0).sort((a,b)=>(a-b));
-        // the sort() sets us up with pair first, then chow, if both were possible.
+        // get the win calls, and remove their win marker
+        let reasons = need.filter(v => v.indexOf('32')===0).map(v => parseInt(v.replace('32s','')));
         if (reasons.length > 0) {
-          let reason = (reasons[0]|0);
+          let reason = reasons[0];
+
+          if (reasons.length > 1) {
+            // all of these are valid wins, but some will score better than others.
+            reasons.sort((a,b)=>(a-b));
+            // pairs are always best, but if we can't win on a pair, and the first
+            // reason is not a pung, we might have chow/pung competition
+            reason = reasons[0];
+            if (reason >= CLAIM.CHOW && reason <= CLAIM.PUNG) {
+              if (reasons.indexOf(CLAIM.PUNG) > 0) {
+                let chows = true;
+                let pungs = true;
+                this.locked.forEach(set => {
+                  if (set[0].getTileFace() !== set[1].getTileFace()) pungs = false;
+                  else chows = false;
+                });
+                if (chows && !pungs) { reason = reasons[0]; } // chow-only
+                if (!chows && pungs) { reason = CLAIM.PUNG; } // pung-only
+                if (!chows && !pungs) { reason = CLAIM.PUNG; } // mixed, go for the pung
+              }
+            }
+          }
+
           if (this.personality.determineWhetherToWin(tile, reason, tilesRemaining)) return resolve({
             claimtype: CLAIM.WIN,
             wintype: reason,

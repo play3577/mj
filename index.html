@@ -496,10 +496,10 @@
 
       <ul>
         <li>scoring is based on points ("faan") and tiered limits ("laak"), which are mapped to a real score</li>
-        <li>the standard limit is the 1 laak tier (see table below)</li>
-        <li>players start with 2000 points</li>
+        <li>limit hands score at laak 2 (see table below)</li>
+        <li>players start with 500 points</li>
         <li>only the winner scores points</li>
-        <li>losers pay double on a self-drawn win, otherwise only the discarding player pays double</li>
+        <li>winners are paid double by all players on a self-drawn win, otherwise only the discarding player pays double</li>
       </ul>
 
       <p>
@@ -519,20 +519,19 @@
         <li>chow hand (four chows and a non-scoring pair): 1</li>
         <li>one suit and honour (numbered tiles all from the same suit) : 3</li>
         <li>one suit (only number tiles, all the same suit): 6</li>
-        <li>all honours hand: 6</li>
+        <li>all honours hand: 5</li>
         <li>all pung hand: 3</li>
         <li>fully concealed hand: 1</li>
-        <li>(self-drawn) win on the last tile from the wall: 1</li>
-        <li>claimed win on the last discard: 1</li>
         <li>winning by robbing a kong: 1</li>
       </ul>
 
       <p>
-        The following limit hands (scoring 1 "laak") exist:
+        The following limit hands exist:
       </p>
 
       <ul>
         <li>all terminals: pungs and pairs of only 1 and 9 tiles</li>
+        <li>all honours: pungs and pairs of only winds and dragons</li>
         <li>three great scholars: pung/kong of each dragon</li>
         <li>little four winds: pung/kong of three winds, pair of last wind</li>
         <li>big four winds: pung/kong of all winds</li>
@@ -541,19 +540,27 @@
       </ul>
 
       <p>
-        The total number of points translate to actual scores as:
+        The conversion table for turning faan into a hand score is:
       </p>
 
       <table>
-        <tr><th>"faan"</th><th>self-drawn</th><th>discarded</th></tr>
-        <tr><td>0</td><td>0</td><td>4</td></tr>
-        <tr><td>1</td><td>12</td><td>8</td></tr>
-        <tr><td>2</td><td>24</td><td>16</td></tr>
-        <tr><td>3</td><td>48</td><td>32</td></tr>
-        <tr><td>4-6 (1 "laak")</td><td>96</td><td>64</td></tr>
-        <tr><td>7-9 (2 "laak")</td><td>192</td><td>128</td></tr>
-        <tr><td>10+ (3 "laak")</td><td>384</td><td>256</td></tr>
+        <tr><th>faan</th><th>hand score</th></tr>
+        <tr><td>0</td><td>0.5</td></tr>
+        <tr><td>1</td><td>1</td></tr>
+        <tr><td>2</td><td>2</td></tr>
+        <tr><td>3</td><td>4</td></tr>
+        <tr><td>4</td><td>8</td></tr>
+        <tr><td>5-6 (laak 1)</td><td>16</td></tr>
+        <tr><td>7+ (laak 2)</td><td>32</td></tr>
       </table>
+
+      <p>
+        Because of the payment rules explained above, a hand score leads to
+        a total winnings of either 4x the points when winning off of a discard
+        (discarding player pays double, the other two players pay the base
+        score), or 6x the points when declaring a self-drawn win (all other
+        players pay double).
+      </p>
     </section>
 
     <section id="controls">
@@ -671,6 +678,7 @@
       <script src="src/js/core/algorithm/tiles-needed.js"></script>
 
       <script src="src/js/core/scoring/limit-hands.js"></script>
+      <script src="src/js/core/scoring/faan-laak-table.js"></script>
       <script src="src/js/core/scoring/ruleset.js"></script>
       <script src="src/js/core/scoring/cantonese.js"></script>
       <script src="src/js/core/scoring/chinese-classical.js"></script>

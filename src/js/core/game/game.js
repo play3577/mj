@@ -514,7 +514,11 @@ class Game {
     players.forEach(p => p.endOfHand(fullDisclosure));
 
     // And od course, calculate the scores.
+    console.debug("SCORING TILES");
+
     let scores = fullDisclosure.map((d,id) => this.rules.scoreTiles(d, id, windOfTheRound, this.wall.remaining));
+
+    config.flushLog();
 
     // In order to make sure payment is calculated correctly,
     // check which player is currently playing east, and then
@@ -522,11 +526,11 @@ class Game {
     let eastid = 0;
     players.forEach(p => { if(p.wind === 0) eastid = p.id; });
     let adjustments = this.rules.settleScores(scores, player.id, eastid, discardpid);
+
     players.forEach((p,i) => {
       config.log(`${p.id}: ${adjustments[p.id]}, hand: ${p.getTileFaces()}, [${p.getLockedTileFaces()}], (${p.bonus}), discards: ${fullDisclosure[i].discards}`);
       p.recordScores(adjustments);
     });
-
 
     // Before we move on, record this step in the game,
     // and show the score line in a dismissable modal.

@@ -23,6 +23,9 @@ if (typeof process !== "undefined") {
   let nw = process.argv.indexOf('-nw');
   if (nw>0) config.WRITE_GAME_LOG = false;
 
+  let cn = process.argv.indexOf('-cn');
+  if (cn>0) config.RULES = 'Cantonese';
+
   console.log(`\nSCRIPT WILL RECORD ${runs} GAME${runs===1?``:`S`} STARTING AT SEED=${seed}`);
 
   (async () => {
@@ -36,6 +39,7 @@ if (typeof process !== "undefined") {
         var GameManager = require('../core/game/game-manager.js');
         var gm = new GameManager([0,1,2,3].map(id => new BotPlayer(id)));
         var game = gm.newGame();
+
         game.startGame((secondsTaken) => {
 
           let players = game.players;

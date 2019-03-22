@@ -209,6 +209,17 @@ if (typeof process !== "undefined") { (function() {
         win: false,
         waiting: false,
         want: [[21], [23], [24], [26]]
+      },
+      {
+        title: "this really shouldn't be a win",
+        hand: [ 22, 24, 26, 27, 27 ],
+        locked: [
+          [9,10,11],
+          [0,1,2],
+          [23,24,25]
+        ],
+        win: false,
+        waiting: false
       }
     ]
 

@@ -34,9 +34,13 @@ Most of the code is aware of whether it's running in the browser, or in node con
 - `node src/js/core/algorithm/tiles-needed.js` runs unit tests
 - `node src/js/core/scoring/chinese-classical.js` runs unit tests
 
-And for full gameplay debugging through play recordings, you can use:
+And for full gameplay debugging through play recordings, you can use `node src/js/test/play-game` with the following optional flags:
 
-- `node src/js/test/play-game -s 123 -r 456`, which plays {r} games starting at seed {s}, defaulting to s=1 and r=1 if left unspecified. An `-nw` flag can be specified to **n**ot **w**rite a game log at the end of the run.
+- `-s <number>` the initial seed value for the pseudo-random number generator (defaults to 1).
+- `-r <number>` the number of games to play, bumping the seed up by 1 for each new game (defaults to 1).
+- `-nw` do **n**ot **w**rite a game log file upon finishing a game (defaults to writing log files).
+- `-cc` use the Chinese Classical ruleset (default ruleset).
+- `-cn` use the Cantonese ruleset.
 
 ### I have (a) question(s)!
 
