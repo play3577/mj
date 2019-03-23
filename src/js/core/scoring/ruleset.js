@@ -319,7 +319,7 @@ class Ruleset {
       if (tile < 27) {
         if (state.suit === false) state.suit = tilesuit;
         else if (state.suit !== tilesuit) state.onesuit = false;
-        if (set.some(t => t !== 0 || t !== 8)) {
+        if (set.some(t => (t%9) !== 0 && (t%9) !== 8)) {
           state.terminals = false;
           state.allterminals = false;
         }

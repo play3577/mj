@@ -234,7 +234,7 @@ class ChineseClassical extends Ruleset {
       scoreObject.limit = `all honours hand`;
     }
 
-    if (state.terminal && state.honours) {
+    if (state.terminals && state.honours) {
       scoreObject.doubles += 1;
       scoreObject.log.push(`1 double for terminals an honours hand`);
     }
@@ -338,6 +338,7 @@ if (typeof process !== "undefined") {
     (function() {
       config = require('../../../config.js');
       tilesNeeded = require("../algorithm/tiles-needed.js");
+      create = require('../utils/utils.js').create;
       Logger = console;
 
       // shortcut if we're merely being required
@@ -347,16 +348,20 @@ if (typeof process !== "undefined") {
       let rules = new ChineseClassical();
 
       function lock(sets, win) {
-        return sets.map((set, sid) =>
-          set.map(t => {
-            let dataset = { tile: t, locked: "locked" };
-            if (sid === win) dataset.winning = "winning";
-            return { dataset };
+        console.log('lock', sets);
+        return sets.map((set, sid) => {
+          console.log('set', set);
+          return set.map(t => {
+            let tile = create(t);
+            tile.lock();
+            if (sid === win) tile.winning();
+            return tile;
           })
-        );
+        });
       }
 
       let tests = [
+        /*
         {
           id: 0,
           wotr: 0,
@@ -369,7 +374,7 @@ if (typeof process !== "undefined") {
           wind: 1
         },
         {
-          id: 0,
+          id: 1,
           wotr: 0,
           tilesLeft: 50,
           winner: true,
@@ -379,12 +384,27 @@ if (typeof process !== "undefined") {
           bonus: [],
           wind: 1
         },
+        */
+        {
+          id: 2,
+          wotr: 0,
+          tilesLeft: 50,
+          winner: true,
+          selfdraw: true,
+          selftile: create(18),
+          concealed: [18,18,18, 33,33],
+          locked: lock([[26,26,26], [28,28,28], [32,32,32]]),
+          bonus: [37],
+          wind: 1
+        },
       ];
 
       tests.forEach((test,id) => {
-        if (id < 1) return;
+        if (id < 0) return;
 
-        console.log(test.concealed, test.locked.map(set => set.map(t => t.getTileFace())), test.bonus);
+        console.log(test.concealed)
+        console.log(test.locked.map(set => set.map(t => t.getTileFace())));
+        console.log(test.bonus);
         let scores = rules.scoreTiles(test, test.id, test.wotr, test.tilesLeft);
         console.log(scores);
       });

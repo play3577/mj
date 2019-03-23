@@ -12,6 +12,19 @@ if (typeof process !== "undefined") {
 class ClientUI extends ClientUIMaster {
   constructor(player, tracker) {
     super(player, tracker);
+    this.listeners = [];
+  }
+
+  listen(target, event, handler) {
+    this.listeners.push({ target, event, handler });
+    target.addEventListener(event, handler);
+  }
+
+  removeAllListeners(target, event, handler) {
+    this.listeners.forEach(data => {
+      data.target.removeEventListener(data.event, data.handler);
+    });
+    this.listeners = [];
   }
 
   pause(lock) {
@@ -233,142 +246,173 @@ class ClientUI extends ClientUIMaster {
    * in order to form a specific set, or even win.
    */
   listenForClaim(pid, discard, suggestion, resolve, interrupt, claimTimer) {
-    // TODO: split this monster up, it's too much code in a single function.
+    this.claimTimer = claimTimer;
     let discards = this.discards;
     let tile = discards.lastChild;
     let mayChow = this.player.mayChow(pid);
 
-    this.claimTimer = claimTimer;
-
-    let registerUIInput = () => {
-      if (this.countdownTimer) this.countdownTimer.cancel();
-      interrupt();
-    }
-
     // show general claim suggestions
     if (config.SHOW_CLAIM_SUGGESTION) {
-      let face = tile.getTileFace();
-      let suit = ((face/9)|0);
-      let { lookout } = this.player.tilesNeeded();
-      let types = lookout[face];
-      if (types) {
-        for(let type of types) {
-          if (CLAIM.CHOW <= type && type < CLAIM.PUNG && !mayChow) continue
-          discards.lastChild.mark('highlight');
-          break;
-        }
-      }
-      // If we already have a chow with this tile in it, then
-      // we might not actually _need_ this tile, and so lookout
-      // won't list it. Even though it's a legal claim.
-      else {
-        if (mayChow && face < 27 && this.getSingleTileFromHand(face)) {
-          let
-          n1 = face < 26 && this.getSingleTileFromHand(face+1), sn1 = (((face+1)/9)|0),
-          n2 = face < 25 && this.getSingleTileFromHand(face+2), sn2 = (((face+2)/9)|0),
-          p2 = face > 1 && this.getSingleTileFromHand(face-2), sp2 = (((face-2)/9)|0),
-          p1 = face > 0 && this.getSingleTileFromHand(face-1), sp1 = (((face-1)/9)|0),
-          c1 = n2 && n1 && sn2===suit && sn1===suit,
-          c2 = n1 && p1 && sn1===suit && sp1===suit,
-          c3 = p2 && p1 && sp2===suit && sp1===suit;
-          if (c1 || c2 || c3) discards.lastChild.mark("highlight");
-        }
-      }
+      this.tryClaimHighlight(pid, tile, mayChow);
     }
 
     // show the bot's play suggestions
     if (config.SHOW_BOT_SUGGESTION && suggestion && suggestion.claimtype) {
-      discards.lastChild.mark('suggestion');
+      tile.mark('suggestion');
     }
-
-    // Set up the dialog spawning for when the user elects to stake a claim.
-    let triggerClaimDialog = evt => {
-      if(evt) evt.stopPropagation();
-
-      registerUIInput();
-      let CLAIM = config.CLAIM;
-
-      // let's spawn a little modal to see what the user actually wanted to do here.
-      let cancel = () => resolve({ claimtype: CLAIM.IGNORE});
-
-      modal.choiceInput("What kind of claim are you making?", [
-        { label: "Ignore", value: CLAIM.IGNORE },
-        (mayChow && this.canChow(discard, CLAIM.CHOW1)) ? { label: "Chow (▮▯▯)", value: CLAIM.CHOW1 } : false,
-        (mayChow && this.canChow(discard, CLAIM.CHOW2)) ? { label: "Chow (▯▮▯)", value: CLAIM.CHOW2 } : false,
-        (mayChow && this.canChow(discard, CLAIM.CHOW3)) ? { label: "Chow (▯▯▮)", value: CLAIM.CHOW3 } : false,
-        this.canPung(discard) ? { label: "Pung", value: CLAIM.PUNG } : false,
-        this.canKong(discard) ? { label: "Kong", value: CLAIM.KONG } : false,
-        { label: "Win", value: CLAIM.WIN }, // Let's not pre-filter this one
-      ], result => {
-        discards.lastChild.unmark('highlight');
-        tile.unmark('selectable');
-        removeAllListeners();
-        if (result === CLAIM.WIN) return this.spawnWinDialog(discard, resolve, cancel);
-        resolve({ claimtype: result });
-      }, cancel);
-    }
-
-    // Let the game know we're not interested in the current discard.
-    let ignore = () => {
-      registerUIInput();
-      tile.unmark('selectable');
-      removeAllListeners();
-      resolve(CLAIM.IGNORE);
-    };
-
 
     // an unpause protection, so that a mousedown/touchstart that
     // resumes a paused state does not then also allow the click
     // from the same event interaction to go through
-    let paused = false;
-    let checkPaused = evt => {
-      if (this.paused) paused = true;
-    };
+    this.pause_protection = false;
 
-    // This adds a safety region around the discarded tile, for
-    // fat fingers, as well as unpause protection (not registering
-    // as real "click" if we just resumed from a paused state).
-    let safeIgnore = evt => {
-      if (paused) return (paused = false);
-      let bbox = discards.lastChild.getBoundingClientRect();
-      let midpoint = { x: (bbox.left + bbox.right)/2, y: (bbox.top + bbox.bottom)/2 };
-      let vector = { x: midpoint.x - evt.clientX, y: midpoint.y - evt.clientY };
-      let distance = Math.sqrt(vector.x ** 2 + vector.y ** 2);
-      if (distance > 40) return ignore();
-      return triggerClaimDialog();
-    };
-
-    // mouse interaction
     tile.mark('selectable');
-    tile.addEventListener("click", triggerClaimDialog);
-    discards.addEventListener("click", safeIgnore);
 
-    discards.addEventListener("mousedown", checkPaused);
-    discards.addEventListener("touchstart", checkPaused);
+    this.listen(tile, "click",  evt => this.triggerClaimDialog(tile, mayChow, interrupt, resolve));
+    this.listen(discards, "click", evt => this.safelyIgnoreDicard(evt, tile, mayChow, interrupt, resolve));
+    this.listen(discards, "mousedown", evt => this.verifyPauseProtection);
+    this.listen(discards, "touchstart", evt => this.verifyPauseProtection);
+    this.listen(document, "keydown", evt => this.handleKeyDuringClaim(evt, tile, mayChow, interrupt, resolve));
+  }
 
-    // rely on this function getting hoisted because we
-    // need to call it in code above this function.
-    function removeAllListeners() {
-      tile.removeEventListener("click", triggerClaimDialog);
-      discards.removeEventListener("click", safeIgnore);
+  /**
+   * Set the pause protection flag based on
+   * the current pause state.
+   */
+  verifyPauseProtection() {
+    if (this.paused) {
+      this.pause_protection = true;
+    }
+  };
+
+  /**
+   * Get the distance from a click event to the
+   * center of the specified tile.
+   */
+  getDistanceToTile(evt, tile) {
+    let bbox = tile.getBoundingClientRect();
+    let midpoint = { x: (bbox.left + bbox.right)/2, y: (bbox.top + bbox.bottom)/2 };
+    let vector = { x: midpoint.x - evt.clientX, y: midpoint.y - evt.clientY };
+    return Math.sqrt(vector.x ** 2 + vector.y ** 2);
+  }
+
+  /**
+   * Register that user interaction has occurred.
+   */
+  registerUIInput(interrupt) {
+    if (this.countdownTimer) this.countdownTimer.cancel();
+    interrupt();
+  }
+
+  /**
+   * Handle key events during listenForClaim.
+   */
+  handleKeyDuringClaim(evt, tile, mayChow, interrupt, resolve) {
+    // Prevent keyrepeat immediately kicking in off of a discard action, which uses the same signal:
+    if (vk_signal_lock) return;
+
+    let code = evt.keyCode;
+    let willBeHandled = (VK_LEFT[code] || VK_RIGHT[code] || VK_UP[code] || VK_SIGNAL[code]);
+    if (!willBeHandled) return;
+    evt.preventDefault();
+    this.removeAllListeners();
+    if (VK_UP[code] || VK_SIGNAL[code]) return this.triggerClaimDialog(tile, mayChow, interrupt, resolve);
+    return this.ignoreDiscard(tile, interrupt, resolve);
+  }
+
+  /**
+   * Let the game know we're not interested in
+   * claiming the current discard for anything.
+   */
+  ignoreDiscard(tile, interrupt, resolve) {
+    this.registerUIInput(interrupt);
+    tile.unmark('highlight');
+    tile.unmark('suggestion');
+    tile.unmark('selectable');
+    this.removeAllListeners();
+    resolve({ claimtype: CLAIM.IGNORE });
+  }
+
+  /**
+   * This adds a safety region around the discarded tile, for
+   * fat fingers, as well as unpause protection (not registering
+   * as real "click" if we just resumed from a paused state).
+   */
+  safelyIgnoreDicard(evt, tile, mayChow, interrupt, resolve) {
+    if (this.pause_protection) {
+      return (this.pause_protection = false);
+    }
+    if (this.getDistanceToTile(evt, tile) > 40) {
+      return this.ignoreDiscard(tile, interrupt, resolve);
+    }
+    this.triggerClaimDialog(tile, mayChow, interrupt, resolve);
+  }
+
+  /**
+   * Can we highlight the latest discard as a signal
+   * to the user that it's (technically, but not
+   * necessarily practically) a claimable tile.
+   */
+  tryClaimHighlight(pid, tile, mayChow) {
+    let face = tile.getTileFace();
+    let suit = ((face/9)|0);
+    let { lookout } = this.player.tilesNeeded();
+    let types = lookout[face];
+
+    if (types) {
+      for(let type of types) {
+        if (CLAIM.CHOW <= type && type < CLAIM.PUNG && !mayChow) continue
+        return tile.mark('highlight');
+      }
     }
 
-    // keyboard interaction
-    let listenForKeys = evt => {
-      // Prevent keyrepeat immediately kicking in off of a
-      // discard action, which uses the same signal:
-      if (vk_signal_lock) return;
+    this.tryChowHighlight(tile, mayChow, face, suit);
+  }
 
-      let code = evt.keyCode;
-      let willBeHandled = (VK_LEFT[code] || VK_RIGHT[code] || VK_UP[code] || VK_SIGNAL[code]);
-      if (!willBeHandled) return;
-      evt.preventDefault();
-      document.removeEventListener('keydown', listenForKeys);
-      if (VK_UP[code] || VK_SIGNAL[code]) return triggerClaimDialog();
-      return ignore();
-    };
+  /**
+   * If we already have a chow with this tile in it, then
+   * we might not actually _need_ this tile, and so lookout
+   * won't list it. Even though it's a legal claim.
+   */
+  tryChowHighlight(tile, mayChow, face, suit) {
+    if (mayChow && face < 27 && this.getSingleTileFromHand(face)) {
+      let
+      n1 = face < 26 && this.getSingleTileFromHand(face+1), sn1 = (((face+1)/9)|0),
+      n2 = face < 25 && this.getSingleTileFromHand(face+2), sn2 = (((face+2)/9)|0),
+      p2 = face > 1 && this.getSingleTileFromHand(face-2), sp2 = (((face-2)/9)|0),
+      p1 = face > 0 && this.getSingleTileFromHand(face-1), sp1 = (((face-1)/9)|0),
+      c1 = n2 && n1 && sn2===suit && sn1===suit,
+      c2 = n1 && p1 && sn1===suit && sp1===suit,
+      c3 = p2 && p1 && sp2===suit && sp1===suit;
+      if (c1 || c2 || c3) tile.mark("highlight");
+    }
+  }
 
-    document.addEventListener('keydown', listenForKeys);
+  /**
+   * Set up the dialog spawning for when the user elects to stake a claim.
+   */
+  triggerClaimDialog(tile, mayChow, interrupt, resolve) {
+    this.registerUIInput(interrupt);
+    this.removeAllListeners();
+
+    let cancel = () => this.ignoreDiscard(tile, interrupt, resolve);
+
+    modal.choiceInput("What kind of claim are you making?", [
+      { label: "Ignore", value: CLAIM.IGNORE },
+      (mayChow && this.canChow(tile, CLAIM.CHOW1)) ? { label: "Chow (▮▯▯)", value: CLAIM.CHOW1 } : false,
+      (mayChow && this.canChow(tile, CLAIM.CHOW2)) ? { label: "Chow (▯▮▯)", value: CLAIM.CHOW2 } : false,
+      (mayChow && this.canChow(tile, CLAIM.CHOW3)) ? { label: "Chow (▯▯▮)", value: CLAIM.CHOW3 } : false,
+      this.canPung(tile) ? { label: "Pung", value: CLAIM.PUNG } : false,
+      this.canKong(tile) ? { label: "Kong", value: CLAIM.KONG } : false,
+      { label: "Win", value: CLAIM.WIN }, // Let's not pre-filter this one
+    ], result => {
+      tile.unmark('highlight');
+      tile.unmark('suggestion');
+      tile.unmark('selectable');
+      this.removeAllListeners();
+      if (result === CLAIM.WIN) return this.spawnWinDialog(tile, resolve, cancel);
+      resolve({ claimtype: result });
+    }, cancel);
   }
 
   /**
@@ -380,18 +424,21 @@ class ClientUI extends ClientUIMaster {
 
     if (suggestion) claim = suggestion;
     else {
-      let { lookout, waiting } = this.player.tilesNeeded();
-      if (waiting) {
+      (() => {
+        let { lookout, waiting } = this.player.tilesNeeded();
+        if (!waiting) return;
         let need = lookout[tile];
-        if (need) {
-          let reasons = need.filter(v => v.indexOf('32')!==0);
-          if (reasons.length > 0) {
-            claim = {
-              from: pid,
-              tile: tile,
-              claimtype: CLAIM.WIN,
-              wintype: (reasons[0]|0),
-    };} } } } // it's a lot of checks.
+        if (!need) return;
+        let reasons = need.filter(v => v.indexOf('32')!==0);
+        if (reasons.length === 0) return;
+        claim = {
+          from: pid,
+          tile: tile,
+          claimtype: CLAIM.WIN,
+          wintype: (reasons[0]|0),
+        };
+      })();
+    }
 
     if (!claim) return resolve();
 
@@ -406,7 +453,7 @@ class ClientUI extends ClientUIMaster {
 
   /**
    * Called in `listenForClaim`, this function spawns a modal
-   * that allows the user to claim a discard for the purposes
+   * that allows tlistenForClhe user to claim a discard for the purposes
    * of declaring a win.
    */
   spawnWinDialog(discard, resolve, cancel) {
