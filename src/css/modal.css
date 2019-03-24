@@ -18,7 +18,7 @@
   background: white;
   padding: 0em 1em 1em;
   display: inline-block;
-  max-height: calc(100% + 2em);
+  max-height: calc(100% + 8em);
   overflow: auto;
   border: 1px solid black;
   box-shadow: 0 0 5px 0 black;
@@ -58,6 +58,22 @@
   font-size: 100%;
   border-width: 3px;
   height: 2em;
+}
+
+.modal .panel table {
+  width: 95%;
+  margin: auto;
+}
+
+.modal .panel.settings table tr.spacer-1 td {
+  padding: 0.5em 0;
+  text-align: center;
+}
+
+.modal .panel.settings table tr.spacer-1 td input {
+  padding: 4px 8px;
+  font-family: Verdana;
+  width: 16 em;
 }
 
 .modal .panel button:active,

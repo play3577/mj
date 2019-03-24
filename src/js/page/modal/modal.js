@@ -98,7 +98,7 @@ class Modal {
     };
 
     panel.addEventListener('click', defaultFocus);
-    panel.addEventListener('touchstart', defaultFocus);
+    panel.addEventListener('touchstart', defaultFocus, {passive:true});
     panel.gainFocus();
   }
 

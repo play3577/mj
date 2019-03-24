@@ -307,7 +307,6 @@ class Ruleset {
 
     // FIXME: still missing
     //        - out on supplement tile
-    //        - out by robbing a kong
     //        - ready after initial deal
     //        - winning 13 times in a row as East
 

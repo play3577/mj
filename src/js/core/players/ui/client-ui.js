@@ -13,18 +13,34 @@ class ClientUI extends ClientUIMaster {
   constructor(player, tracker) {
     super(player, tracker);
     this.listeners = [];
+    this.longPressTimeout = false;
   }
 
   listen(target, event, handler) {
     this.listeners.push({ target, event, handler });
-    target.addEventListener(event, handler);
+    let opts = {};
+    if (event.indexOf('touch') !== -1) opts.passive = true;
+    target.addEventListener(event, handler, opts);
   }
 
-  removeAllListeners(target, event, handler) {
-    this.listeners.forEach(data => {
-      data.target.removeEventListener(data.event, data.handler);
+  removeListeners(target, event) {
+    let removals = this.listeners.filter(data => (data.target === target && data.event===event));
+    removals.forEach(data => {
+      let opts = {};
+      if (data.event.indexOf('touch') !== -1) opts.passive = true;
+      data.target.removeEventListener(data.event, data.handler, opts);
     });
-    this.listeners = [];
+    this.listeners = this.listeners.filter(data => (data.target !== target || data.event !== event));
+    // return a "restore()" function that turns listening back on.
+    return () => removals.forEach(data => this.listen(data.target, data.event, data.handler));
+  }
+
+  removeAllListeners() {
+    this.listeners.forEach(data => {
+      let opts = {};
+      if (data.event.indexOf('touch') !== -1) opts.passive = true;
+      data.target.removeEventListener(data.event, data.handler, opts);
+    });
   }
 
   pause(lock) {
@@ -42,17 +58,132 @@ class ClientUI extends ClientUIMaster {
    * lets the user pick a tile to discard through the GUI.
    */
   listenForDiscard(resolve, suggestion, lastClaim, winbypass) {
-    let listenForInput = true;
+    // Figure out the initial tile to highlight
     let tiles = this.getAvailableTiles();
-    let latestTile = this.player.latest;
-    let currentTile = latestTile;
+    let currentTile = this.currentTile = this.player.latest;
     let curid = currentTile ? Array.from(tiles).indexOf(currentTile) : 0;
-    if (curid===0) currentTile = tiles[0];
-    let { winner } = this.player.tilesNeeded();
-    let suggestedTile = false;
+    if (curid === -1) curid = 0;
+    this.markCurrentTile(curid);
 
+    // highlight the discard suggestion
+    this.highlightBotSuggestion(suggestion);
+
+    // If we have no tiles left to discard, that's
+    // an automatic win declaration.
+    if (tiles.length === 0) return resolve(undefined);
+
+    // If we just claimed a win, that's also
+    // an automatic win declaration.
+    if (lastClaim && lastClaim.claimtype === CLAIM.WIN) return resolve(undefined);
+
+    // If the bot knows we have a winning hand,
+    // let the user decide whether to declare a
+    // win or whether to keep playing.
+    let { winner } = this.player.tilesNeeded();
+    if (winner && !winbypass) return this.askForWinConfirmation(resolve);
+
+    // tag all tiles to allow for CSS highlighting
+    tiles.forEach(tile => tile.mark('selectable'));
+
+    // Add keyboard and mouse event listening for navigating
+    // the selectable tiles and picking a discard.
+    this.listen(document, "keydown", evt => this.listenForDiscardFromKeys(evt, tiles, suggestion, resolve));
+    this.listenForDiscardFromMouse(tiles, suggestion, resolve);
+  }
+
+  /**
+   * Mouse/touch interaction for discard selection.
+   */
+  listenForDiscardFromMouse(tiles, suggestion, resolve) {
+    tiles.forEach(tile => this.addMouseEventsToTile(tile, suggestion, resolve));
+  }
+
+  /**
+   * Add both mouse and touch event handling to all
+   * (discardable) tiles in the player's tilebank.
+   */
+  addMouseEventsToTile(tile, suggestion, resolve) {
+    this.listen(tile, "mouseover", evt => this.highlightTile(tile));
+    this.listen(tile, "click", evt => this.discardCurrentHighlightedTile(suggestion, resolve));
+    this.listen(tile, "mousedown", evt => this.initiateLongPress(evt, suggestion, resolve));
+    this.listen(tile, "touchstart", evt => this.initiateLongPress(evt, suggestion, resolve));
+  }
+
+  /**
+   * Keyboard interaction for discard selection.
+   */
+  listenForDiscardFromKeys(evt, tiles, suggestion, resolve) {
+    let code = evt.keyCode;
+    let willBeHandled = [VK_LEFT, VK_RIGHT, VK_UP, VK_DOWN, VK_SIGNAL, VK_START, VK_END].some(supported => supported[code]);
+    if (!willBeHandled) return;
+    if (VK_SIGNAL[code] && evt.repeat) return; // ignore all "action" key repeats
+
+    evt.preventDefault();
+
+    // Handling for moving the highlight from one tile to another.
+    let tlen = tiles.length;
+    let currentTile = this.currentTile;
+    let curid = this.curid;
+    if (VK_LEFT[code]) curid = (currentTile === false) ? tlen - 1 : (curid === 0) ? tlen - 1 : curid - 1;
+    if (VK_RIGHT[code]) curid = (currentTile === false) ? 0 : (curid === tlen-1) ? 0 : curid + 1;
+    if (VK_START[code]) curid = 0;
+    if (VK_END[code]) curid = tlen-1;
+    currentTile = this.markCurrentTile(curid);
+
+    // "up"/"signal" is the discard action.
+    if (VK_UP[code] || VK_SIGNAL[code]) {
+      if (!vk_signal_lock) {
+        lock_vk_signal();
+        this.currentTile.unmark('highlight');
+        this.discardCurrentHighlightedTile(suggestion, resolve);
+      }
+    }
+
+    // "down" is used to declared self-drawn kongs and self-drawn wins.
+    if (VK_DOWN[code]) this.spawnDeclarationModal(suggestion, resolve);
+  }
+
+  /**
+   * Highlight a particular tile
+   */
+  highlightTile(tile) {
+    let tiles = this.getAvailableTiles();
+    let curid = Array.from(tiles).indexOf(tile);
+    this.markCurrentTile(curid);
+  }
+
+  /**
+   * Highlight a particular tile
+   */
+  markCurrentTile(curid) {
+    let tiles = this.getAvailableTiles();
+    if (tiles.length === 0) return;
+    this.curid = curid;
+    this.currentTile = tiles[curid];
+    tiles.forEach(tile => tile.unmark('highlight'));
+    this.currentTile.mark('highlight');
+    return this.currentTile;
+  };
+
+
+  /**
+   * Initiate a longpress timeout. If it triggers after
+   */
+  initiateLongPress(evt, suggestion, resolve) {
+    if (evt.type === 'mousedown' && evt.which !== 1) return;
+    this.longPressTimeout = setTimeout(() => {
+      evt.stopPropagation();
+      let restore = this.removeListeners(evt.target, "click");
+      this.spawnDeclarationModal(suggestion, resolve, restore);
+    }, 1000);
+  };
+
+  /**
+   * Highlight the tile that the superclass would discard if they were playing.
+   */
+  highlightBotSuggestion(suggestion) {
     if (config.SHOW_BOT_SUGGESTION && suggestion) {
-      suggestedTile = this.getSingleTileFromHand(suggestion.getTileFace());
+      let suggestedTile = this.getSingleTileFromHand(suggestion.getTileFace());
       if (suggestedTile) {
         suggestedTile.mark('suggestion');
         suggestedTile.setTitle('Bot-recommended discard.');
@@ -60,138 +191,45 @@ class ClientUI extends ClientUIMaster {
         console.log(`The bot got confused and wanted you to throw out something that's not in your hand...!`);
       }
     }
+  }
 
-    // If we have no tiles left to discard, that's
-    // an automatic win declaration.
-    if (tiles.length === 0) {
-      return resolve(undefined);
-    }
+  /**
+   * The user can win with the tiles they currently have. Do they want to?
+   */
+  askForWinConfirmation(resolve) {
 
-    // If we just claimed a win, that's also
-    // an automatic win declaration.
-    if (lastClaim && lastClaim.claimtype === CLAIM.WIN) {
-      return resolve(undefined);
-    }
+    console.log('scent of claim?', this.id, ':', this.player.lastClaim);
 
-    // If the bot knows we have a winning hand,
-    // let the user decide whether to declare a
-    // win or whether to keep playing.
-    if (winner && !winbypass) {
-      let cancel = () => resolve(undefined);
-      return modal.choiceInput("Declare win?", [
-        { label: 'You better believe it!', value: 'win' },
-        { label: 'No, I think I can do better...', value: '' },
-      ], result => {
-        if (result) {
+    let cancel = () => resolve(undefined);
+    modal.choiceInput("Declare win?", [
+      { label: 'You better believe it!', value: 'win' },
+      { label: 'No, I think I can do better...', value: '' },
+    ], result => {
+      if (result) {
+        if (!this.player.lastClaim) {
           this.player.selfdraw = true;
-          resolve(undefined);
         }
-        else this.listenForDiscard(resolve, false, false, true);
-      }, cancel);
+        resolve(undefined);
+      }
+      else this.listenForDiscard(resolve, false, false, true);
+    }, cancel);
+  }
+
+  /**
+   * Discard a selected tile from the player's hand
+   */
+  discardCurrentHighlightedTile(suggestion, resolve) {
+    let tiles = this.getAvailableTiles();
+    if (this.longPressTimeout) this.longPressTimeout = clearTimeout(this.longPressTimeout);
+    if (suggestion) {
+      suggestion.unmark('suggestion');
+      suggestion.setTitle('');
     }
-
-    let cleanup = [];
-
-    // The actual discard function that resolves this
-    // entire user action.
-    let pickAsDiscard = e => {
-      listenForInput = false;
-      if (suggestedTile) {
-        suggestedTile.unmark('suggestion');
-        suggestedTile.setTitle('');
-      }
-      if (latestTile) {
-        latestTile.unmark('latest')
-      }
-      cleanup.forEach(fn => fn());
-      let tile = e.target;
-      if (tile) tile.unmark('highlight');
-      resolve(tile);
-    };
-
-    // declaration using mouse = long press
-    let listenForLongPress = e => {
-      if (e.type === 'mousedown' && e.which !== 1) return;
-      setTimeout(() => {
-        if (!listenForInput) return;
-        e.stopPropagation();
-        e.target.removeEventListener("click", pickAsDiscard);
-        this.spawnDeclarationModal(e.target, pickAsDiscard, () => {
-          e.target.addEventListener("click", pickAsDiscard);
-        });
-      }, 1000);
-    };
-
-    let highlightTile = e => {
-      tiles.forEach(tile => tile.unmark('highlight'));
-      currentTile = e.target;
-      currentTile.mark('highlight');
-      curid = Array.from(tiles).indexOf(currentTile);
-    };
-
-    // cleanup for the click listeners
-    cleanup.push(() => {
-      tiles.forEach(tile => {
-        tile.unmark('selectable');
-        tile.unmark('highlight');
-        tile.removeEventListener("mouseover", highlightTile);
-        tile.removeEventListener("click", pickAsDiscard);
-        tile.removeEventListener("mousedown", listenForLongPress);
-        tile.removeEventListener("touchstart", listenForLongPress);
-      });
-    });
-
-    // mouse interaction
-    tiles.forEach(tile => {
-      tile.mark('selectable');
-      tile.addEventListener("mouseover", highlightTile);
-      tile.addEventListener("click", pickAsDiscard);
-      tile.addEventListener("mousedown", listenForLongPress);
-      tile.addEventListener("touchstart", listenForLongPress);
-    });
-
-    // keyboard interaction
-    let listenForKeys = (() => {
-      let tlen = tiles.length;
-
-      currentTile.mark('highlight');
-
-      return evt => {
-        let code = evt.keyCode;
-        if (VK_SIGNAL[code] && evt.repeat) return; // ignore all "action" key repeats
-
-        let willBeHandled = (VK_LEFT[code] || VK_RIGHT[code] || VK_UP[code] || VK_DOWN[code] || VK_SIGNAL[code] || VK_START[code] || VK_END[code]);
-        if (!willBeHandled) return;
-        evt.preventDefault();
-
-        if (currentTile.isLocked()) currentTile = false;
-
-        if (VK_LEFT[code]) curid = (currentTile === false) ? tlen - 1 : (curid === 0) ? tlen - 1 : curid - 1;
-        if (VK_RIGHT[code]) curid = (currentTile === false) ? 0 : (curid === tlen-1) ? 0 : curid + 1;
-        if (VK_START[code]) curid = 0;
-        if (VK_END[code]) curid = tlen-1;
-
-        currentTile = tiles[curid];
-        highlightTile({ target: currentTile });
-
-        if (VK_UP[code] || VK_SIGNAL[code]) {
-          if (!vk_signal_lock) {
-            lock_vk_signal();
-            currentTile.unmark('highlight');
-            pickAsDiscard({ target: currentTile });
-          }
-        }
-
-        if (VK_DOWN[code]) this.spawnDeclarationModal(currentTile, pickAsDiscard);
-      };
-    })();
-
-    // cleanup for the key listener
-    cleanup.push(() => {
-      document.removeEventListener('keydown', listenForKeys);
-    });
-
-    document.addEventListener('keydown', listenForKeys);
+    let latest = this.player.latestTile;
+    if (latest) latest.unmark('latest');
+    tiles.forEach(tile => tile.unmark('selectable','highlight','suggestion'));
+    this.removeAllListeners();
+    resolve(this.currentTile);
   }
 
   /**
@@ -199,7 +237,8 @@ class ClientUI extends ClientUIMaster {
    * spawns a modal that allows the user to declaring they can
    * form a kong or that they have won on their own turn.
    */
-  spawnDeclarationModal(currentTile, pickAsDiscard, cancel) {
+  spawnDeclarationModal(suggestion, resolve, restore) {
+    let currentTile = this.currentTile;
     let face = currentTile.getTileFace();
     let allInHand = this.getAllTilesInHand(face);
     let canKong = false;
@@ -210,10 +249,11 @@ class ClientUI extends ClientUIMaster {
     // can we meld a kong?
     else if (this.player.locked.some(set => set.every(t => t.getTileFace()==face))) canKong = true;
 
-    // can we win?
+    // can we declare a standard win?
     let { winpaths } = this.player.tilesNeeded();
     let canWin = winpaths.length > 0;
 
+    // can we declare a limit hand?
     if (!canWin) {
       let allTiles = this.getTileFaces(true).filter(t => t<34);
       canWin = this.player.rules.checkForLimit(allTiles);
@@ -228,13 +268,12 @@ class ClientUI extends ClientUIMaster {
 
     modal.choiceInput("Declare a kong or win?", options, result => {
       if (result === CLAIM.IGNORE) {
-        return cancel ? cancel() : false;
+        if (restore) restore();
       }
       if (result === CLAIM.KONG) {
         currentTile.exception = CLAIM.KONG;
         currentTile.kong = [...allInHand];;
-        currentTile.unmark('highlight');
-        return pickAsDiscard({ target: currentTile });
+        return this.discardCurrentHighlightedTile(suggestion, resolve);
       }
       if (result === CLAIM.WIN) return pickAsDiscard({ target: undefined });
     });
@@ -246,10 +285,12 @@ class ClientUI extends ClientUIMaster {
    * in order to form a specific set, or even win.
    */
   listenForClaim(pid, discard, suggestion, resolve, interrupt, claimTimer) {
-    this.claimTimer = claimTimer;
-    let discards = this.discards;
-    let tile = discards.lastChild;
+    let tile = this.discards.lastChild;
     let mayChow = this.player.mayChow(pid);
+
+    // make sure that all events we set up get removed when the timer ticks over.
+    this.claimTimer = claimTimer;
+    this.setClaimTimerCleanup(() => this.removeAllListeners());
 
     // show general claim suggestions
     if (config.SHOW_CLAIM_SUGGESTION) {
@@ -266,8 +307,17 @@ class ClientUI extends ClientUIMaster {
     // from the same event interaction to go through
     this.pause_protection = false;
 
-    tile.mark('selectable');
+    // Start listening for discard claim events
+    this.setupInputListening(tile, mayChow, interrupt, resolve);
+  }
 
+  /**
+   * Set up all the event listening necessary to enable
+   * keyboard and mouse triggers for claims.
+   */
+  setupInputListening(tile, mayChow, interrupt, resolve) {
+    tile.mark('selectable');
+    let discards = this.discards;
     this.listen(tile, "click",  evt => this.triggerClaimDialog(tile, mayChow, interrupt, resolve));
     this.listen(discards, "click", evt => this.safelyIgnoreDicard(evt, tile, mayChow, interrupt, resolve));
     this.listen(discards, "mousedown", evt => this.verifyPauseProtection);
@@ -396,6 +446,8 @@ class ClientUI extends ClientUIMaster {
     this.removeAllListeners();
 
     let cancel = () => this.ignoreDiscard(tile, interrupt, resolve);
+
+    console.debug(this.player.id, tile, mayChow, this, this.canPung(tile));
 
     modal.choiceInput("What kind of claim are you making?", [
       { label: "Ignore", value: CLAIM.IGNORE },

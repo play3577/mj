@@ -113,6 +113,14 @@ class ClientUIMaster {
   }
 
   /**
+   * If we need to do anything once the claim timer
+   * ticks over, that can get bound here.
+   */
+  setClaimTimerCleanup(fn) {
+    this.claimCleanup = fn;
+  }
+
+  /**
    * Start a count-down bar that signals to the user
    * that there is "some time remaining" without
    * giving them (milli)second accurate numbers.
@@ -132,6 +140,8 @@ class ClientUIMaster {
         if (fraction === 1) {
           this.bar.classList.remove('active');
           this.countdownTimer = false;
+          if (this.claimCleanup) this.claimCleanup();
+          this.claimCleanup = false;
         }
       },
       10

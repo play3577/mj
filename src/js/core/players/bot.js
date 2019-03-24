@@ -124,12 +124,22 @@ class BotPlayer extends Player {
       // We may very well have won! ...except not if our play policy
       // has requirements that this win is not allowed under.
       if (this.personality.isValidWin(tilesRemaining)) {
-        // We have indeed won! Mark this as a self-drawn win, because
-        // if it was a claimed win we would have exited this function
-        // already (due to `this.has_won`), and then let the game.js
-        // game loop discover we've won by not discarding anything.
-        this.selfdraw = true;
-        console.debug(`Self-drawn win for player ${this.id} on ${this.latest.getTileFace()}`);
+        // We have indeed won! Mark this as a self-drawn win, but only
+        // if `this.lastClaim` is false, because it's possible that we
+        // reach this code from someone claiming the set they needed,
+        // instead of saying it was a win, at which point this code
+        // will detect they have (of course) won. That should NOT be
+        // a self-drawn win, of course.
+        //
+        // However, if this was a normal claimed win (by clicking "win"
+        // as claim type) then we would have exited `determineDiscard`
+        // already (due to `this.has_won`), and then the game.js game
+        // loop will discover we've won by the fact that this player
+        // is opting not to discard anything.
+        if (!this.lastClaim) {
+          this.selfdraw = true;
+          console.debug(`Self-drawn win for player ${this.id} on ${this.latest.getTileFace()}`);
+        }
         return resolve(undefined);
       }
       // If we get here, we have not won.

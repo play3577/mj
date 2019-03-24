@@ -11,8 +11,8 @@ class DatasetObject {
     this.dataset = {};
   }
 
-  mark(label) { this.classList.add(label); }
-  unmark(label) { this.classList.remove(label); }
+  mark(...labels) { labels.forEach(label => this.classList.add(label)); }
+  unmark(...labels) { labels.forEach(label => this.classList.remove(label)); }
 
   setTitle(title) { if (title) this.setAttribute("title", title); else this.removeAttribute("title"); }
 
@@ -73,8 +73,8 @@ class DatasetObject {
  */
 const enrich = span => {
 
-  span.mark = (label) => span.classList.add(label);
-  span.unmark = (label) => span.classList.remove(label);
+  span.mark = (...labels) => labels.forEach(label => span.classList.add(label));
+  span.unmark = (...labels) => labels.forEach(label => span.classList.remove(label));
 
   span.setTitle = (title) => { if (title) span.setAttribute("title", title); else span.removeAttribute("title"); }
 

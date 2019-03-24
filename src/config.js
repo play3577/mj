@@ -3,7 +3,7 @@ if (typeof process !== "undefined") {
 }
 
 const noop = ()=>{};
-const __console_debug = console.debug;
+const __console_debug = console.debug.bind(console);
 
 // This flag needs no explanation
 let DEBUG = false;
@@ -259,7 +259,15 @@ const config = {
             let value = opt[key];
             if (typeof config[key] !== "undefined") {
                 config[key] = value;
-                if (key === `DEBUG`) console.debug = value ? __console_debug : noop;
+                if (key === `DEBUG`) {
+                    if (value) {
+                        console.log('activating');
+                        console.debug = __console_debug;
+                    } else {
+                        console.log('deactivating');
+                        console.debug = noop;
+                    }
+                }
             }
         })
     },

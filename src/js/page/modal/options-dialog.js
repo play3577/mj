@@ -76,7 +76,7 @@ class OptionsDialog {
     panel.gainFocus = () => btns[bid].focus();
     document.addEventListener('focus', panel.gainFocus);
     panel.addEventListener('click', panel.gainFocus);
-    panel.addEventListener('touchstart', panel.gainFocus);
+    panel.addEventListener('touchstart', panel.gainFocus, {passive: true});
     panel.gainFocus();
   }
 }

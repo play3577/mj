@@ -47,7 +47,6 @@ class Game {
 
     this.fixValues = () => {
       // drop in term fixes (hand/draw/seed/wind/wotr) here.
-//      this.hand=23; this.draws=1; config.PRNG.seed(301917549); this.wind=2; this.windOfTheRound=3;
     }
 
     config.log(`starting game.`);
@@ -158,7 +157,6 @@ class Game {
 
     // used for play debugging:
     if (config.PAUSE_ON_HAND && this.hand === config.PAUSE_ON_HAND) config.HAND_INTERVAL = 60 * 60 * 1000;
-    if (this.fixValues) { this.fixValues(); this.fixValues=()=>{}; }
 
     // "Starting hand" / "Restarting hand"
     let pre = result.draw ? 'Res' : 'S';
@@ -166,6 +164,8 @@ class Game {
     let style = `color: red; font-weight: bold; font-size: 120%; border-bottom: 1px solid black;`;
     console.log(`\n${ (typeof process === "undefined") ? `%c` : `` }${logNotice}`, (typeof process === "undefined") ? style : ``);
     config.log(`\n${logNotice}`);
+
+    if (this.fixValues) { this.fixValues(); this.fixValues=()=>{}; }
 
     logNotice = `this.hand=${this.hand}; this.draws=${this.draws}; config.PRNG.seed(${config.PRNG.seed()}); this.wind=${this.wind}; this.windOfTheRound=${this.windOfTheRound};`;
     console.log(logNotice);

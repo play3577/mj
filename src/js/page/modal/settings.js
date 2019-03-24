@@ -23,12 +23,12 @@ class SettingsModal {
     form.setAttribute("action", "index.html");
     form.setAttribute("method", "GET");
     let table = document.createElement('table');
-    table.innerHTML = `
-      <tr>
-        <th>setting</th>
-        <th>value</th>
-      </tr>
-    `;
+    // table.innerHTML = `
+    //   <tr>
+    //     <th>setting</th>
+    //     <th>value</th>
+    //   </tr>
+    // `;
     form.appendChild(table);
     panel.appendChild(form);
 
@@ -54,17 +54,19 @@ class SettingsModal {
 
     const options = {
       'Rules': { key: 'rules', options: [...Ruleset.getRulesetNames()] },
-      'Always show everyone\'s tiles': { key: 'force_open_bot_play', options: ['true','false'] },
-      'Highlight claimable discards': { key: 'show_claim_suggestion', options: ['true','false'] },
-      'Show bot play suggestions': { key: 'show_bot_suggestion', options: ['true','false'] },
-      '-': {},
+      '-0': {},
+      '🀄 Always show everyone\'s tiles': { key: 'force_open_bot_play', options: ['true','false'] },
+      '✨ Highlight claimable discards': { key: 'show_claim_suggestion', options: ['true','false'] },
+      '💬 Show bot play suggestions': { key: 'show_bot_suggestion', options: ['true','false'] },
+      '-1': {},
       // flags
-      'Turn on debug logging' : { key: 'debug', options: ['true','false'] },
-      'Play without sound': { key: 'nosound', options: ['true','false'] },
-      'Autostart bot play': { key: 'autoplay', options: ['true','false'] },
-      'Pause game unless focused': { key: 'pause_on_blur', options: ['true','false'] },
-      'Pretend hands start after a draw': { key: 'force_draw', options: ['true','false'] },
-      'Generate game log after play': { key: 'write_game_log', options: ['true','false'] },
+      '💻 Turn on debug logging' : { key: 'debug', options: ['true','false'] },
+      '🎵 Play without sound': { key: 'nosound', options: ['true','false'] },
+      '♻️ Autostart bot play': { key: 'autoplay', options: ['true','false'] },
+      '🛑 Pause game unless focused': { key: 'pause_on_blur', options: ['true','false'] },
+      '😐 Pretend hands start after a draw': { key: 'force_draw', options: ['true','false'] },
+      '📃 Generate game log after play': { key: 'write_game_log', options: ['true','false'] },
+      '-2': {},
       // values
       'Set random number seed': { key: 'seed' },
       'Bot quick play threshold': { key: 'bot_chicken_threshold' },
@@ -76,7 +78,7 @@ class SettingsModal {
 
 
     Object.keys(options).forEach(label => {
-      if (label==='-') {
+      if (label.startsWith('-')) {
         let row = document.createElement('tr');
         row.innerHTML = `<td colspan="2">&nbsp;</td>`;
         return table.appendChild(row);
@@ -100,12 +102,13 @@ class SettingsModal {
     });
 
     let row = document.createElement('tr');
+    row.classList.add('spacer-1');
     row.innerHTML = `
       <td>
-        <input id="ok" type="submit" value="Play using these settings">
+        <input id="reset" type="reset" value="Reset to default settings">
       </td>
       <td>
-        <input id="reset" type="reset" value="Reset to default settings">
+        <input id="ok" type="submit" value="Play using these settings">
       </td>
     `;
     table.appendChild(row);
