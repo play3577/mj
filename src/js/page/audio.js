@@ -65,7 +65,13 @@ function playClip(name, id) {
   let pos = id || random(bin.length);
   let audio = bin[pos];
   if (!audio) return console.error(`audio bin ${name} does not have a clip ${pos}`);
-  audio.play();
+  audio.cloneNode().play();
+
+  // cloneNode is used here to make sure that the same
+  // clip can be played "while it is already playing",
+  // e.g. a randomised tile play sound that happens to
+  // pick the same clip in sequence should not "cut off"
+  // the first playback because it's the same <audio>
 }
 
 if (typeof process !== "undefined") {

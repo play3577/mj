@@ -305,11 +305,6 @@ class Ruleset {
     // classic limit hands
     state.allGreen = scorePattern.every(set => set.every(t => [1,2,3,5,7,31].indexOf(t) > -1));
 
-    // FIXME: still missing
-    //        - out on supplement tile
-    //        - ready after initial deal
-    //        - winning 13 times in a row as East
-
     let tile, tilesuit;
     scorePattern.forEach(set => {
       tile = set[0];
