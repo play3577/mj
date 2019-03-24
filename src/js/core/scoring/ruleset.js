@@ -431,7 +431,7 @@ class Ruleset {
     // properties (locked/concealed) preserved:
     locked = locked.map(set => {
       let winning = !!set[0].isWinningTile();
-      let newset = set.map(t => t.getTileFace()); // FIXME: this should be a create(t)'d tile!
+      let newset = set.map(t => t.getTileFace());
       newset.locked = 'locked';
       if (set.concealed) newset.concealed = set.concealed;
       if (winning) winset = newset;

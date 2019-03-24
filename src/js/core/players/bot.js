@@ -476,7 +476,7 @@ class BotPlayer extends Player {
     for (let tile=0, e=34, count; tile<e; tile++) {
       count = counts[tile];
       if (count===4) {
-        // TODO: check with this.personality to determine whether to kong orn ot.
+        // TODO: check with this.personality to determine whether to kong or not.
         let tiles = this.tiles.filter(t => t.getTileFace()==tile);
         this.lockClaim(tiles);
         return tiles;
