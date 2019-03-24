@@ -51,7 +51,9 @@ class Personality {
 
     if (config.PRNG.nextFloat() < this.chickenThreshold) {
       this.chicken = true;
-      console.log(`player ${this.player.id} will be going for chicken hands at ${tilesRemaining} tiles left!`);
+      let notice = `player ${this.player.id} will be going for chicken hands at ${tilesRemaining} tiles left!`;
+      console.log(notice);
+      config.log(notice);
     }
   }
 

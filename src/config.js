@@ -57,7 +57,7 @@ let SHOW_BOT_SUGGESTION = true;
 // Defaults to a roughly 1:72 chance to
 // chicken. Note that once panic mode sets in,
 // this value doubles with each check.
-let BOT_CHICKEN_THRESHOLD = 0.0008;
+let BOT_CHICKEN_THRESHOLD = 0.001;
 
 // The number of milliseconds the game
 // allows players to lay claim to a discard.
