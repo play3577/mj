@@ -12,11 +12,6 @@ class Personality {
   constructor(player) {
     this.player = player;
 
-    // These flags determine how we treat available
-    // discards and tiles we pick up for play.
-    this.chicken = (config.PRNG.nextFloat() > config.BOT_CHICKEN_THRESHOLD);
-    if (this.chicken) console.log(`player ${this.player.id} will be going for chicken hands!`);
-
     // This determines whether or not we consider
     // scoring an otherwise chicken hand, as long
     // as it has something that scores points, like
@@ -32,10 +27,32 @@ class Personality {
     // Should we lock into a chow hand?
     this.playChowHand = false
 
+    // probability of chickening at any check.
+    this.chickenThreshold = config.BOT_CHICKEN_THRESHOLD;
+    this.chicken = false;
+
     // For our panic threshold, we pick "4 turns"
     // (out of a possible 18 "turns" in a hand).
     this.basePanicThreshold = 16;
     this.panicThreshold = this.basePanicThreshold;
+  }
+
+  /**
+   * Check whether we should just start chickening.
+   */
+  checkChicken(tilesRemaining) {
+    // already going for chickens?
+    if (this.chicken) return;
+
+    // panic mode?
+    if (this.chickenThreshold < 1 && tilesRemaining < this.panicThreshold) {
+      this.chickenThreshold += this.chickenThreshold;
+    }
+
+    if (config.PRNG.nextFloat() < this.chickenThreshold) {
+      this.chicken = true;
+      console.log(`player ${this.player.id} will be going for chicken hands at ${tilesRemaining} tiles left!`);
+    }
   }
 
   // utility function
@@ -55,11 +72,16 @@ class Personality {
    * reasonable policy is going to be for these tiles.
    */
   determinePersonality() {
+    // reset our chicken probability
+    this.chickenThreshold = config.BOT_CHICKEN_THRESHOLD;
+    this.chicken = false;
+
+    // then check what we should do.
     this.analyse();
   }
 
   /**
-   * Decide whether or not a chowhand is acceptable
+   * Decide what an acceptable play policy is.
    */
   analyse() {
     let player = this.player;
@@ -86,7 +108,6 @@ class Personality {
       }
     }
 
-
     // if we haven't locked anything yet, is this gearing up to be a chow hand?
     if (!player.locked.length) {
       let chowScore = stats.cpairs/2 + stats.chows;
@@ -101,15 +122,11 @@ class Personality {
    * Do we want a particular tile?
    */
   want(tileNumber, reason, tilesRemaining) {
+    this.checkChicken(tilesRemaining);
+
     // Are we the fowlest of chickens?
     if (this.chicken) {
       console.debug(this.player.id,'is going for chickens');
-      return true;
-    }
-
-    // Are we in panic mode?
-    if (tilesRemaining < this.panicThreshold) {
-      console.debug(this.player.id,'PANIC MODE: claiming',tileNumber,'!','(',tilesRemaining,'left)');
       return true;
     }
 
@@ -195,15 +212,11 @@ class Personality {
    * Do we want to win on a particular tile?
    */
   determineWhetherToWin(tileNumber, reason, tilesRemaining) {
+    this.checkChicken(tilesRemaining);
+
     // Are we still the fowlest of chickens?
     if (this.chicken) {
       console.debug(this.player.id,'is going for chickens');
-      return true;
-    }
-
-    // Are we in panic mode?
-    if (tilesRemaining < this.panicThreshold) {
-      console.debug(this.player.id,'PANIC MODE: claiming',tileNumber,'!','(',tilesRemaining,'left)');
       return true;
     }
 
@@ -234,15 +247,11 @@ class Personality {
    * yet (e.g. winning on a chow when going for a pung hand).
    */
   isValidWin(tilesRemaining) {
+    this.checkChicken(tilesRemaining);
+
     // Are we continuing to be the fowlest of chickens?
     if (this.chicken) {
       console.debug(this.player.id,'is going for chickens');
-      return true;
-    }
-
-    // Are we in panic mode?
-    if (tilesRemaining < this.panicThreshold) {
-      console.debug(this.player.id,'PANIC MODE: just declaring a win!','(',tilesRemaining,'left)');
       return true;
     }
 
@@ -271,11 +280,10 @@ class Personality {
    * on the characters suit instead?
    */
   deadTile(tile, tilesRemaining) {
+    this.checkChicken(tilesRemaining);
+
     // all tiles are welcome in a chicken hand.
     if (this.chicken) return false;
-
-    // all tiles are welcome when we're desperate!
-    if (tilesRemaining < this.panicThreshold) return false;
 
     // is this in a suit we want to get rid of?
     if (this.playClean !== false && tile < 27) {

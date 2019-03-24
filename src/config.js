@@ -48,8 +48,16 @@ let SHOW_BOT_SUGGESTION = true;
 
 // How likely are bots to go for chicken
 // hands, rather than for hands worth points?
-// Set this to 0 to turn all bots into chickens!
-let BOT_CHICKEN_THRESHOLD = 0.8;
+//
+// Set this to 1 to turn all bots into chickens!
+//
+// Set this to 0 to turn off chicken hands
+// (except when a bot goes into panic mode).
+//
+// Defaults to a roughly 1:72 chance to
+// chicken. Note that once panic mode sets in,
+// this value doubles with each check.
+let BOT_CHICKEN_THRESHOLD = 0.0008;
 
 // The number of milliseconds the game
 // allows players to lay claim to a discard.
