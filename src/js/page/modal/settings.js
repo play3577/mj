@@ -23,34 +23,18 @@ class SettingsModal {
     form.setAttribute("action", "index.html");
     form.setAttribute("method", "GET");
     let table = document.createElement('table');
-    // table.innerHTML = `
-    //   <tr>
-    //     <th>setting</th>
-    //     <th>value</th>
-    //   </tr>
-    // `;
     form.appendChild(table);
     panel.appendChild(form);
 
     // add all config options here
-    const values = {
-      rules: RULES.toString(),
-      force_open_bot_play: FORCE_OPEN_BOT_PLAY.toString(),
-      show_claim_suggestion: SHOW_CLAIM_SUGGESTION.toString(),
-      show_bot_suggestion: SHOW_BOT_SUGGESTION.toString(),
-      bot_chicken_threshold: BOT_CHICKEN_THRESHOLD.toString(),
-      debug: DEBUG.toString(),
-      seed: SEED.toString(),
-      nosound: NO_SOUND.toString() ,
-      autoplay: PLAY_IMMEDIATELY.toString(),
-      pause_on_blur: PAUSE_ON_BLUR.toString(),
-      force_draw: FORCE_DRAW.toString(),
-      play: PLAY_INTERVAL.toString(),
-      hand: HAND_INTERVAL.toString(),
-      bot_delay: BOT_DELAY_BEFORE_DISCARD_ENDS.toString(),
-      wall_hack:  WALL_HACK.toString(),
-      write_game_log: WRITE_GAME_LOG.toString(),
-    };
+    const defaults = config.DEFAULTS;
+    const values = {};
+
+    const differs = key => defaults[key.toUpperCase()].toString() !== values[key];
+
+    Object.keys(defaults).forEach(key => {
+      values[key.toLowerCase()] = config[key].toString();
+    });
 
     const options = {
       'Rules': { key: 'rules', options: [...Ruleset.getRulesetNames()] },
@@ -61,8 +45,8 @@ class SettingsModal {
       '-1': {},
       // flags
       '💻 Turn on debug logging' : { key: 'debug', options: ['true','false'] },
-      '🎵 Play without sound': { key: 'nosound', options: ['true','false'] },
-      '♻️ Autostart bot play': { key: 'autoplay', options: ['true','false'] },
+      '🎵 Play without sound': { key: 'no_sound', options: ['true','false'] },
+      '♻️ Autostart bot play': { key: 'play_immediately', options: ['true','false'] },
       '🛑 Pause game unless focused': { key: 'pause_on_blur', options: ['true','false'] },
       '😐 Pretend hands start after a draw': { key: 'force_draw', options: ['true','false'] },
       '📃 Generate game log after play': { key: 'write_game_log', options: ['true','false'] },
@@ -70,9 +54,9 @@ class SettingsModal {
       // values
       'Set random number seed': { key: 'seed' },
       'Bot quick play threshold': { key: 'bot_chicken_threshold' },
-      'Delay (in ms) between player turns': { key: 'play' },
-      'Delay (in ms) before starting next hand': { key: 'hand' },
-      'Delay (in ms) for bots reacting to things': { key: 'bot_delay' },
+      'Delay (in ms) between player turns': { key: 'play_interval' },
+      'Delay (in ms) before starting next hand': { key: 'hand_interval' },
+      'Delay (in ms) for bots reacting to things': { key: 'bot_delay_before_discard_ends' },
       'Set up a specific wall': { key: 'wall_hack', options: ['', ...Object.keys(WallHack.hacks)], value: values.wall_hack },
     };
 
@@ -92,7 +76,7 @@ class SettingsModal {
       }
       row.innerHTML = `
         <td>${label}</td>
-        <td>${field}</td>
+        <td${differs(data.key) ? ` class='custom'` : ``}>${field}</td>
       `;
       table.appendChild(row);
       let element = row.querySelector('.field:last-child');
@@ -115,8 +99,13 @@ class SettingsModal {
 
     form.addEventListener("submit", evt => {
       evt.preventDefault();
-      let query = Object.keys(values).map(key => `${key}=${values[key]}`);
-      window.location.search = `?${query.join('&')}`;
+      let suffix = Object
+        .keys(values)
+        .filter(key => differs(key))
+        .map(key => `${key}=${values[key]}`)
+        .join('&');
+
+      window.location.search = suffix ? `?${suffix}` : ``;
     });
 
     let ok = table.querySelector('#ok');

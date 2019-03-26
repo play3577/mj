@@ -94,27 +94,46 @@ let WALL_HACK = '';
 // tab as a text file.
 let WRITE_GAME_LOG = false;
 
+const DEFAULTS = {
+    DEBUG,
+    NO_SOUND,
+    SEED,
+    RULES,
+    PLAY_IMMEDIATELY,
+    PAUSE_ON_BLUR,
+    FORCE_DRAW,
+    FORCE_OPEN_BOT_PLAY,
+    SHOW_CLAIM_SUGGESTION,
+    SHOW_BOT_SUGGESTION,
+    BOT_CHICKEN_THRESHOLD,
+    PLAY_INTERVAL,
+    HAND_INTERVAL,
+    BOT_DELAY_BEFORE_DISCARD_ENDS,
+    WALL_HACK,
+    WRITE_GAME_LOG,
+};
+
+
 // runtime overrides?
 if (typeof window !== "undefined") {
-    let params = new URLSearchParams(window.location.search);
+    let params = new URLSearchParams(window.location.search.replace(/(\w+)=/g, (a,b) => b.toUpperCase() + '='));
 
-    DEBUG = (params.get(`debug`)==='true') ? true : DEBUG;
-    NO_SOUND = (params.get(`nosound`)==='true') ? true : NO_SOUND;
-    SEED = params.get(`seed`) ? parseInt(params.get(`seed`)) : SEED;
-    RULES = params.get(`rules`) ? params.get(`rules`) : RULES;
-    PLAY_IMMEDIATELY = (params.get(`autoplay`)==='true') ? true : PLAY_IMMEDIATELY;
-    PAUSE_ON_BLUR = (params.get(`pause_on_blur`)==='false') ? false: PAUSE_ON_BLUR;
-    FORCE_DRAW = (params.get(`force_draw`)==='true') ? true : FORCE_DRAW;
-    FORCE_OPEN_BOT_PLAY = (params.get(`force_open_bot_play`)==='true') ? true : FORCE_OPEN_BOT_PLAY;
-    SHOW_CLAIM_SUGGESTION = (params.get(`show_claim_suggestion`)==='true') ? true : SHOW_CLAIM_SUGGESTION;
-    SHOW_BOT_SUGGESTION = (params.get(`show_bot_suggestion`)==='true') ? true : SHOW_BOT_SUGGESTION;
-    BOT_CHICKEN_THRESHOLD = params.get(`bot_chicken_threshold`) ? parseFloat(params.get(`bot_chicken_threshold`)) : BOT_CHICKEN_THRESHOLD;
-    CLAIM_INTERVAL = params.get(`claim`) ? parseInt(params.get(`claim`)) : CLAIM_INTERVAL;
-    PLAY_INTERVAL = params.get(`play`) ? parseInt(params.get(`play`)) : PLAY_INTERVAL;
-    HAND_INTERVAL = params.get(`hand`) ? parseInt(params.get(`hand`)) : HAND_INTERVAL;
-    BOT_DELAY_BEFORE_DISCARD_ENDS = params.get(`bot_delay`) ? parseInt(params.get(`bot_delay`)) : BOT_DELAY_BEFORE_DISCARD_ENDS;
-    WALL_HACK = params.get(`wall_hack`) ? params.get(`wall_hack`) : WALL_HACK;
-    WRITE_GAME_LOG = (params.get(`write_game_log`)==='true') ? true : WRITE_GAME_LOG;
+    DEBUG = (params.get(`DEBUG`)==='true') ? true : DEBUG;
+    NO_SOUND = (params.get(`NO_SOUND`)==='true') ? true : NO_SOUND;
+    SEED = params.get(`SEED`) ? parseInt(params.get(`SEED`)) : SEED;
+    RULES = params.get(`RULES`) ? params.get(`RULES`) : RULES;
+    PLAY_IMMEDIATELY = (params.get(`PLAY_IMMEDATELY`)==='true') ? true : PLAY_IMMEDIATELY;
+    PAUSE_ON_BLUR = (params.get(`PAUSE_ON_BLUR`)==='false') ? false: PAUSE_ON_BLUR;
+    FORCE_DRAW = (params.get(`FORCE_DRAW`)==='true') ? true : FORCE_DRAW;
+    FORCE_OPEN_BOT_PLAY = (params.get(`FORCE_OPEN_BOT_PLAY`)==='true') ? true : FORCE_OPEN_BOT_PLAY;
+    SHOW_CLAIM_SUGGESTION = (params.get(`SHOW_CLAIM_SUGGESTION`)==='true') ? true : SHOW_CLAIM_SUGGESTION;
+    SHOW_BOT_SUGGESTION = (params.get(`SHOW_BOT_SUGGESTION`)==='true') ? true : SHOW_BOT_SUGGESTION;
+    BOT_CHICKEN_THRESHOLD = params.get(`BOT_CHICKEN_THRESHOLD`) ? parseFloat(params.get(`BOT_CHICKEN_THRESHOLD`)) : BOT_CHICKEN_THRESHOLD;
+    PLAY_INTERVAL = params.get(`PLAY_INTERVAL`) ? parseInt(params.get(`PLAY_INTERVAL`)) : PLAY_INTERVAL;
+    HAND_INTERVAL = params.get(`HAND_INTERVAL`) ? parseInt(params.get(`HAND_INTERVAL`)) : HAND_INTERVAL;
+    BOT_DELAY_BEFORE_DISCARD_ENDS = params.get(`BOT_DELAY_BEFORE_DISCARD_ENDS`) ? parseInt(params.get(`BOT_DELAY`)) : BOT_DELAY_BEFORE_DISCARD_ENDS;
+    WALL_HACK = params.get(`WALL_HACK`) ? params.get(`WALL_HACK`) : WALL_HACK;
+    WRITE_GAME_LOG = (params.get(`WRITE_GAME_LOG`)==='true') ? true : WRITE_GAME_LOG;
 }
 
 console.log(`using bot threshold ${BOT_CHICKEN_THRESHOLD}`);
@@ -279,6 +298,8 @@ const config = {
             }
         })
     },
+
+    DEFAULTS,
 
     // The pseudo-random number generator used by
     // any code that needs to randomise data.

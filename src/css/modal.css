@@ -76,6 +76,13 @@
   width: 16 em;
 }
 
+.modal .panel.settings td.custom::after {
+  content: '★';
+  font-size: 75%;
+  color: #ecb01f;
+  padding-left: 1em;
+}
+
 .modal .panel button:active,
 .modal .panel button:focus {
   --light: rgb(130, 181, 238);
