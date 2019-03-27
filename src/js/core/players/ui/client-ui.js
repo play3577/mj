@@ -36,11 +36,14 @@ class ClientUI extends ClientUIMaster {
   }
 
   removeAllListeners() {
-    this.listeners.forEach(data => {
+    let removals = this.listeners;
+    removals.forEach(data => {
       let opts = {};
       if (data.event.indexOf('touch') !== -1) opts.passive = true;
       data.target.removeEventListener(data.event, data.handler, opts);
     });
+    this.listeners = [];
+    return () => removals.forEach(data => this.listen(data.target, data.event, data.handler));
   }
 
   pause(lock) {
@@ -105,12 +108,8 @@ class ClientUI extends ClientUIMaster {
   addMouseEventsToTile(tile, suggestion, resolve) {
     this.listen(tile, "mouseover", evt => this.highlightTile(tile));
     this.listen(tile, "click", evt => this.discardCurrentHighlightedTile(suggestion, resolve));
-    // Note that the cancel events are on the document, not the tile, because it's possible to move
-    // the mouse/touch origin such that the up/end events no longer originate "on" the tile itself.
     this.listen(tile, "mousedown", evt => this.initiateLongPress(evt, suggestion, resolve));
     this.listen(tile, "touchstart", evt => this.initiateLongPress(evt, suggestion, resolve));
-    this.listen(document, "mouseup", evt => this.cancelLongPress(evt));
-    this.listen(document, "touchend", evt => this.cancelLongPress(evt));
   }
 
   /**
@@ -175,19 +174,28 @@ class ClientUI extends ClientUIMaster {
    * the discard action, as well as by touch-up events.
    */
   initiateLongPress(evt, suggestion, resolve) {
+    let releaseEvents = ['mouseup', 'dragend', 'touchend'];
     if (evt.type === 'mousedown' && evt.which !== 1) return;
-    this.longPressTimeout = setTimeout(() => {
-      evt.stopPropagation();
-      let restore = this.removeListeners(evt.target, "click");
-      this.spawnDeclarationModal(suggestion, resolve, restore);
-    }, 1000);
+    if (!this.longPressTimeout) {
+      this.longPressTimeout = setTimeout(() => {
+        console.log('removing document mouseup/touchend');
+        releaseEvents.forEach(event => this.removeListeners(document, event));
+        this.cancelLongPress();
+        let restoreClickHandling = this.removeListeners(evt.target, "click");
+        this.spawnDeclarationModal(suggestion, resolve, restoreClickHandling);
+      }, 1000);
+    }
+    let cancelPress = evt => this.cancelLongPress(evt)
+    releaseEvents.forEach(event => this.listen(document, event, cancelPress));
   };
 
   /**
    * cancel a long-press timeout
    */
   cancelLongPress(evt) {
-    this.longPressTimeout = clearTimeout(this.longPressTimeout);
+    if (this.longPressTimeout) {
+      this.longPressTimeout = clearTimeout(this.longPressTimeout);
+    }
   }
 
   /**
@@ -232,7 +240,7 @@ class ClientUI extends ClientUIMaster {
    */
   discardCurrentHighlightedTile(suggestion, resolve) {
     let tiles = this.getAvailableTiles();
-    if (this.longPressTimeout) this.longPressTimeout = clearTimeout(this.longPressTimeout);
+    this.cancelLongPress();
     if (suggestion) {
       suggestion.unmark('suggestion');
       suggestion.setTitle('');
@@ -280,7 +288,7 @@ class ClientUI extends ClientUIMaster {
 
     modal.choiceInput("Declare a kong or win?", options, result => {
       if (result === CLAIM.IGNORE) {
-        if (restore) restore();
+        if (restore) return restore();
       }
       if (result === CLAIM.KONG) {
         currentTile.exception = CLAIM.KONG;
