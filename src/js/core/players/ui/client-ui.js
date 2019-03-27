@@ -105,8 +105,12 @@ class ClientUI extends ClientUIMaster {
   addMouseEventsToTile(tile, suggestion, resolve) {
     this.listen(tile, "mouseover", evt => this.highlightTile(tile));
     this.listen(tile, "click", evt => this.discardCurrentHighlightedTile(suggestion, resolve));
+    // Note that the cancel events are on the document, not the tile, because it's possible to move
+    // the mouse/touch origin such that the up/end events no longer originate "on" the tile itself.
     this.listen(tile, "mousedown", evt => this.initiateLongPress(evt, suggestion, resolve));
     this.listen(tile, "touchstart", evt => this.initiateLongPress(evt, suggestion, resolve));
+    this.listen(document, "mouseup", evt => this.cancelLongPress(evt));
+    this.listen(document, "touchend", evt => this.cancelLongPress(evt));
   }
 
   /**
@@ -167,7 +171,8 @@ class ClientUI extends ClientUIMaster {
 
 
   /**
-   * Initiate a longpress timeout. If it triggers after
+   * Initiate a longpress timeout. This will get cancelled by
+   * the discard action, as well as by touch-up events.
    */
   initiateLongPress(evt, suggestion, resolve) {
     if (evt.type === 'mousedown' && evt.which !== 1) return;
@@ -177,6 +182,13 @@ class ClientUI extends ClientUIMaster {
       this.spawnDeclarationModal(suggestion, resolve, restore);
     }, 1000);
   };
+
+  /**
+   * cancel a long-press timeout
+   */
+  cancelLongPress(evt) {
+    this.longPressTimeout = clearTimeout(this.longPressTimeout);
+  }
 
   /**
    * Highlight the tile that the superclass would discard if they were playing.
