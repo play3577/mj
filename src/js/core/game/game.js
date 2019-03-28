@@ -5,8 +5,6 @@ if (typeof process !== "undefined") {
   CLAIM = require('../../../config.js').CLAIM;
   modal = require('../../page/modal/modal.js');
   console = require('../utils/console-shim.js');
-  // TODO: game.js should not know anything about UI code...
-  rotateWinds = require('../players/ui/windicator.js');
 }
 
 
@@ -123,7 +121,6 @@ class Game {
             console.log(`\nfull game played: player ${gamewinner} is the winner!`);
             console.log(`(game took ${s}s. ${this.totalPlays} plays: ${this.hand} hands, ${this.totalDraws} draws)`);
             players.forEach(p => p.endOfGame(finalScores));
-            rotateWinds.reset();
             return this.finish(s);
           }
         }
@@ -140,9 +137,6 @@ class Game {
       this.totalDraws++;
     }
 
-    console.debug("Rotated winds:", this.wind, this.windOfTheRound);
-    rotateWinds(this.rules, this.wind, this.windOfTheRound, this.hand, this.draws);
-
     this.players.forEach((player,p) => {
       let playerwind = (this.wind + p) % 4;
 
@@ -152,7 +146,7 @@ class Game {
         playerwind = (4 + this.wind - p) % 4;
       }
 
-      player.reset(this.hand, playerwind, this.windOfTheRound, this.draws);
+      player.reset(playerwind, this.windOfTheRound, this.hand, this.draws);
     });
 
     // used for play debugging:

@@ -20,7 +20,7 @@ class PlayerMaster {
     this.reset();
   }
 
-  reset(hand, wind, windOfTheRound, draws) {
+  reset(wind, windOfTheRound, hand, draws) {
     this.wind = wind;
     this.windOfTheRound = windOfTheRound;
     this.draws = draws;
@@ -35,7 +35,7 @@ class PlayerMaster {
     this.tracker.reset();
     this.el.innerHTML = '';
     this.el.classList.add('winner');
-    if (this.ui) this.ui.reset(hand, wind, windOfTheRound, draws);
+    if (this.ui) this.ui.reset(wind, windOfTheRound, hand, draws);
   }
 
   /**

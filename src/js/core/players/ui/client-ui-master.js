@@ -1,6 +1,7 @@
 if (typeof process !== "undefined") {
   playClip = require('../../../page/audio.js');
   create = require('../../utils/utils.js').create;
+  rotateWinds = require('./windicator.js');
 }
 
 /**
@@ -19,7 +20,7 @@ class ClientUIMaster {
     this.playerbanks = document.querySelectorAll(".player");
     this.knowledge = document.querySelector(".knowledge");
     this.el = this.playerbanks[this.id];
-    this.reset();
+    this.reset(0,0);
 
     // Super debug setting: allows bots to tap directly
     // into the player's UI. This is super bad, but for
@@ -30,8 +31,10 @@ class ClientUIMaster {
     }
   }
 
-  // just a reset function
-  reset() {
+  /**
+   * ...docs go here...
+   */
+  reset(wind, windOfTheRound, hand, draws) {
     if(!this.el) return;
 
     this.el.setAttribute("class", "player");
@@ -51,6 +54,8 @@ class ClientUIMaster {
 
     if (this.countdownTimer) this.countdownTimer.cancel();
     this.countdownTimer = false;
+
+    rotateWinds(this.rules, wind, windOfTheRound, hand, draws)
   }
 
   /**
@@ -156,6 +161,7 @@ class ClientUIMaster {
    * than one game is played consecutively.
    */
   gameWillStart() {
+    rotateWinds.reset();
     playClip('start');
     this.playerbanks.forEach(b => {
       if (this.rules) b.dataset.score = this.rules.player_start_score;
@@ -332,6 +338,7 @@ class ClientUIMaster {
    * to the user.
    */
   endOfGame(scores) {
+    rotateWinds.done();
     playClip('end');
 
     let v=0, b=-1;

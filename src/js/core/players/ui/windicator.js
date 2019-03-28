@@ -18,12 +18,11 @@ const rotateWinds = (function generateRotateWindsFunction() {
    * the round when appropriate.
    */
   function rotateWinds(rules, wind=false, wotr=false, hand='', draws='') {
+    console.log('v', wind, wotr, hand, draws);
+
     // we mark which round, hand, and replay this is:
     handcount.innerHTML = `round ${1+wotr}<br>hand ${hand}`;
     if (draws) { handcount.innerHTML += `<br>rtr ${draws}`; }
-
-    // the end of the game is indicated by there being no hand number.
-    if (!hand) return (indicator.classList.add('done'));
 
     // determine what the hand wind would be, and if it's the
     // same as last round's we don't update anything, because
@@ -68,6 +67,10 @@ const rotateWinds = (function generateRotateWindsFunction() {
     winds[3].setAttribute('class', 'player-wind lc');
     indicator.classList.remove('done');
   };
+
+  rotateWinds.done = function() {
+    return (indicator.classList.add('done'));
+  }
 
   // and of course, make sure to remember to expose that function...
   return rotateWinds;
