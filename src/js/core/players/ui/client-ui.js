@@ -295,7 +295,10 @@ class ClientUI extends ClientUIMaster {
         currentTile.kong = [...allInHand];;
         return this.discardCurrentHighlightedTile(suggestion, resolve);
       }
-      if (result === CLAIM.WIN) return pickAsDiscard({ target: undefined });
+      if (result === CLAIM.WIN) {
+        this.currentTile = undefined;
+        return this.discardCurrentHighlightedTile(suggestion, resolve);
+      }
     });
   }
 
