@@ -18,8 +18,6 @@ const rotateWinds = (function generateRotateWindsFunction() {
    * the round when appropriate.
    */
   function rotateWinds(rules, wind=false, wotr=false, hand='', draws='') {
-    console.log('v', wind, wotr, hand, draws);
-
     // we mark which round, hand, and replay this is:
     handcount.innerHTML = `round ${1+wotr}<br>hand ${hand}`;
     if (draws) { handcount.innerHTML += `<br>rtr ${draws}`; }
