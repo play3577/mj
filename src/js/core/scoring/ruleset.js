@@ -230,7 +230,7 @@ class Ruleset {
     let names = config.TILE_NAMES;
     let result = this.aggregateScorePattern(scorePattern, windTile, windOfTheRoundTile);
     result.wind = windTile;
-    result.wotd = windOfTheRoundTile;
+    result.wotr = windOfTheRoundTile;
 
     this.checkBonusTilePoints(bonus, windTile, names, result);
     this.checkHandPatterns(scorePattern, windTile, windOfTheRoundTile, tilesLeft, result);
