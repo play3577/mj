@@ -39,8 +39,8 @@ class PatternSet {
   // String parity
   split(...args) { return this.toString().split(...args); }
   indexOf(...args) { return this.toString().indexOf(...args); }
-  valueOf() { return (this.tilenumber !== undefined) ? `${this.getSetID()}`: this.content.valueOf(); }
-  toString() { return this.content ? this.content.toString() : this.valueOf(); }
+  valueOf() { return this.content ? this.content.valueOf() : this.getSetID(); }
+  toString() { return this.content ? this.content.toString() : this.getSetID(); }
 }
 
 PatternSet.from = (hash) => { return new PatternSet(unhash(hash)); };

@@ -56,7 +56,44 @@ function tilesNeeded(tiles, locked=[]) {
   // Form all compositional paths that our unlocked tiles can take,
   // because someone might not want to immediately win! (I know, crazy!)
   paths = paths.map(path => unroll(path));
-  let composed = paths.map(path => path[0]);
+
+  // Remove duplicates
+  let composed = [];
+  paths.forEach(path => path.forEach(part => {
+    if (composed.some(e => e===p)) return;
+    composed.push(part);
+  }));
+  composed.sort((a,b) => a.length - b.length);
+
+  // And then reduce the 'graph' because something like this...
+  //
+  //   0: Array [ "2p-2", "2p-17" ]
+  //   1: Array(3) [ "2p-2", "3c-5", "2p-17" ]
+  //   2: Array [ "2p-17" ]
+  //   3: Array [ "3c-5", "2p-17"]
+  //
+  // ... is really just a single path (1) because all the
+  // others are sub-paths.
+  //
+  // The real solution to this whole filter/reduce business
+  // is a change to Pattern, of course, so that it generates
+  // only the maximum path, with splits only when needed.
+
+  let filtered = [];
+  for(let i=0, e=composed.length; i<e; i++) {
+    let allFound = false;
+    let list = composed[i];
+
+    for (let j=i+1; j<e; j++) {
+      let other = composed[j];
+      allFound = list.every(part => other.find(e => e.equals(part)));
+      if (allFound) break;
+    }
+
+    if (!allFound) filtered.push(list);
+  }
+
+  composed = filtered;
 
   // And that's all the work we need to do.
   return { lookout, waiting, composed, winner, winpaths};
