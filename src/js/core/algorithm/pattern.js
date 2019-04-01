@@ -3,6 +3,7 @@ if (typeof process !== "undefined") {
   hash = hp.hash;
   unhash = hp.unhash;
   Constants = require("../../../config.js").Constants;
+  PatternSet = require("./pattern-set.js");
 }
 
 /**
@@ -98,49 +99,52 @@ class Pattern {
    * winning combination (e.g. 4 sets and a pair is a winning path, but
    * seven singles and two pairs definitely isn't!)
    */
-  recurse(seen, chain, to_remove, results, single, pair, set) {
+  recurse(seen, chain, to_remove, results, singles, pairs, sets) {
     let downstream = this.copy();
     downstream.remove(to_remove);
 
     // Do we have tiles left that need analysis?
     if (downstream.keys.length > 0) {
-      return downstream.runExpand(seen, chain, results, single, pair, set);
+      return downstream.runExpand(seen, chain, results, singles, pairs, sets);
     }
 
     // We do not. What's the conclusion for this chain?
 
     // four sets and a pair is totally a winning path.
-    if (set.length===4 && pair.length===1 && single.length===0) {
+    if (sets.length===4 && pairs.length===1 && singles.length===0) {
       if (!results.win) results.win = [];
-      results.win.push({pair, set});
+      results.win.push({
+        pair: pairs,
+        sets
+      });
     }
 
     // four sets and a single is one tile away from winning.
-    else if (set.length===4 && pair.length===0 && single.length===1) {
-      this.markWin(results, single[0], Constants.PAIR);
+    else if (sets.length===4 && pairs.length===0 && singles.length===1) {
+      this.markWin(results, singles[0], Constants.PAIR);
     }
 
     // three sets and two pairs are one tile away from winning.
-    else if (set.length===3 && pair.length===2) {
-      this.markWin(results, pair[0], Constants.PUNG);
-      this.markWin(results, pair[1], Constants.PUNG);
+    else if (sets.length===3 && pairs.length===2) {
+      this.markWin(results, pairs[0], Constants.PUNG);
+      this.markWin(results, pairs[1], Constants.PUNG);
     }
 
     // three sets, a pair, and two singles MIGHT be one tile away from winning.
-    else if (set.length===3 && pair.length===1 && single.length===2) {
-      if (single[1] < 27 && single[0] + 1 === single[1]) {
-        let t1 = single[0]-1, s1 = this.getSuit(t1),
-            b0 = single[0],   s2 = this.getSuit(b0),
-            b1 = single[1],   s3 = this.getSuit(b1),
-            t2 = single[1]+1, s4 = this.getSuit(t2);
+    else if (sets.length===3 && pairs.length===1 && singles.length===2) {
+      if (singles[1] < 27 && singles[0] + 1 === singles[1]) {
+        let t1 = singles[0]-1, s1 = this.getSuit(t1),
+            b0 = singles[0],   s2 = this.getSuit(b0),
+            b1 = singles[1],   s3 = this.getSuit(b1),
+            t2 = singles[1]+1, s4 = this.getSuit(t2);
         if(s1 === s2 && s1 === s3) this.markWin(results, t1, Constants.CHOW1);
         if(s4 === s2 && s4 === s3) this.markWin(results, t2, Constants.CHOW3);
       }
-      else if (single[1] < 27 && single[1] === single[0]+2) {
-        let middle = single[0] + 1;
-        let s1 = this.getSuit(single[0]);
+      else if (singles[1] < 27 && singles[1] === singles[0]+2) {
+        let middle = singles[0] + 1;
+        let s1 = this.getSuit(singles[0]);
         let s2 = this.getSuit(middle);
-        let s3 = this.getSuit(single[1]);
+        let s3 = this.getSuit(singles[1]);
         if (s1===s3 && s1===s2) this.markWin(results, middle, Constants.CHOW2);
       }
     }
@@ -155,15 +159,18 @@ class Pattern {
    * list of tiles. Specifically, which count combination of singles,
    * pairs, and sets can we make with these tiles?
    */
-  runExpand(seen=[], paths=[], results=[], single=[], pair=[], set=[]) {
+  runExpand(seen=[], paths=[], results=[], singles=[], pairs=[], sets=[]) {
     //console.log(`called with:`, seen, '- aggregated', pair, set, `- local tiles:`, this.tiles);
 
     if (!this.keys.length) {
       // It's possible the very first call is already for a complete,
       // and entirely locked, hand. In that case, return early:
-      if (set.length===4 && pair.length===1 && single.length===0) {
+      if (sets.length===4 && pairs.length===1 && singles.length===0) {
         if (!results.win) results.win = [];
-        results.win.push({pair, set});
+        results.win.push({
+          pair: pairs,
+          sets
+        });
       }
       return { results, paths };
     }
@@ -183,32 +190,32 @@ class Pattern {
     // If we're holding a kong, recurse with the set count increased by one,
     // which we do by adding this kong's hash print to the list of known sets.
     if (count>3) {
-      head=[`4k-${tile}`];
+      head=[new PatternSet(`kong`, tile)];
       paths.push(head);
       toRemove = [tile, tile, tile, tile];
-      this.recurse(seen, head, toRemove, results, single, pair, set.concat(head));
+      this.recurse(seen, head, toRemove, results, singles, pairs, sets.concat(head));
     }
 
     // If we're (implied or only) holding a pung, also recurse with the set count increased by one.
     if (count>2) {
-      head=[`3p-${tile}`];
+      head=[new PatternSet(`pung`, tile)];
       paths.push(head);
       toRemove = [tile, tile, tile];
       this.markNeeded(results, tile, Constants.KONG);
-      this.recurse(seen, head, toRemove, results, single, pair, set.concat(head));
+      this.recurse(seen, head, toRemove, results, singles, pairs, sets.concat(head));
     }
 
     // If we're (implied or only) holding a pair, also recurse with the pair count increased by one.
     if (count>1) {
-      head=[`2p-${tile}`];
+      head=[new PatternSet(`pair`, tile)];
       paths.push(head);
       toRemove = [tile, tile];
       this.markNeeded(results, tile, Constants.PUNG);
-      this.recurse(seen, head, toRemove, results, single, pair.concat([tile]), set);
+      this.recurse(seen, head, toRemove, results, singles, pairs.concat([tile]), sets); // FIXME: why is this not concat(head)-able?
     }
 
-    // And of course, the final recursion is for treating the tile as "just a single".
-    this.recurse(seen, paths, [tile], results, single.concat([tile]), pair, set);
+    // And of course, the final recursion is for treating the tile as "just a singles".
+    this.recurse(seen, paths, [tile], results, singles.concat([tile]), pairs, sets);
 
     // Now, if we're dealing with honour tiles, this is all we need to do.
     if (tile > 26) return { results, paths };
@@ -220,7 +227,7 @@ class Pattern {
       let suit = this.getSuit(tile);
       if (t1 && t2) {
         // we are holding a chow!
-        head=[`3c-${tile}`];
+        head=[new PatternSet(`chow`, tile)];
         paths.push(head);
         toRemove = [tile, tile+1, tile+2];
         if (t3) {
@@ -228,12 +235,12 @@ class Pattern {
           // 6 and 7 are both potentially useful tiles.
           this.markNeeded(results, tile+1, Constants.CHOW1);
           this.markNeeded(results, tile+2, Constants.CHOW3);
-        }    
+        }
         if (seen.indexOf(tile-1) === -1) {
           // We might also be one tile away from having a chow(1), if -1 is in the same suit.
           if (this.matchSuit(tile-1,suit)) this.markNeeded(results, tile-1, Constants.CHOW1);
         }
-        this.recurse(seen, head, toRemove, results, single, pair, set.concat(head));
+        this.recurse(seen, head, toRemove, results, singles, pairs, sets.concat(head));
       }
       else if (t1) {
         // We might be one tile away from having a chow(3), if +2 is in the same suit.
@@ -243,13 +250,13 @@ class Pattern {
           // We might also be one tile away from having a chow(1), if -1 is in the same suit.
           if (this.matchSuit(tile-1,suit)) this.markNeeded(results, tile-1, Constants.CHOW1);
         }
-        this.recurse(seen, paths, [tile, tile+1], results, single, pair, set);
+        this.recurse(seen, paths, [tile, tile+1], results, singles, pairs, sets);
       }
       else {
         // One tile away from having a chow, and because it's the
         // middle tile, we know that it's the correct suit already.
         this.markNeeded(results, tile+1, Constants.CHOW2);
-        this.recurse(seen, paths, [tile, tile+2], results, single, pair, set);
+        this.recurse(seen, paths, [tile, tile+2], results, singles, pairs, sets);
       }
     }
 

@@ -110,7 +110,7 @@ class Cantonese extends Ruleset {
       scoreObject.log.push(`1 faan for robbing a kong (${names[winset[0]]})`);
     }
 
-    if (state.allchow && !state.majorPair) {
+    if (state.chowhand && !state.majorPair) {
       scoreObject.score += 1;
       scoreObject.log.push(`1 faan for chow hand`);
     }

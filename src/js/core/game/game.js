@@ -512,8 +512,6 @@ class Game {
 
     let scores = fullDisclosure.map((d,id) => this.rules.scoreTiles(d, id, windOfTheRound, this.wall.remaining));
 
-    config.flushLog();
-
     // In order to make sure payment is calculated correctly,
     // check which player is currently playing east, and then
     // ask the current ruleset to settle the score differences.

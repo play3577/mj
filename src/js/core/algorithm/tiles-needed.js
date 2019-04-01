@@ -8,23 +8,11 @@ if (typeof process !== "undefined") {
 /**
  * A helper function for summary prints
  */
-function summarise(set) {
+function summariseLockset(set) {
   if (!set.map && !set.forEach) return set;
   set = set.map(t => t.getTileFace ? t.getTileFace() : t).sort();
-
-  // pairs
-  let t = set[0];
-  t = t.getTileFace ? t.getTileFace() : t;
-  if (set.length===2) return `pair${t}`; // special notation for easy extraction
-  // chows
-  let u = set[1];
-  u = u.getTileFace ? u.getTileFace() : u;
-  if (t !== u) return `3c-${t}-!`;
-  // pung and kong
-  if (set.length===3) return `3p-${t}-!`;
-  if (set.length===4) return `4k-${t}-${set.concealed ? set.concealed : `!`}`;
+  return pset = PatternSet.fromTiles(set, true, set.concealed);
 }
-
 
 /**
  * This function uses the Pattern class to determine which tiles
@@ -38,26 +26,26 @@ function tilesNeeded(tiles, locked=[]) {
 
   // Transform the "locked tiles" listing to
   // a form that the rest of the code understands.
-  locked = locked.map(summarise).filter(v => v);
+  locked = locked.map(summariseLockset).filter(v => v);
 
   // Extract the pair, if there is one.
   let pair = [];
   locked.some((set,pos) => {
-    if (set.indexOf('pair')===0) {
-      let tile = parseInt(set.substring(4));
-      pair.push(tile)
-      locked.splice(pos,1);
-      return true;
+    if (set.type === 'pair') {
+      pair.push(set);
+      return locked.splice(pos,1);
     }
   });
 
-  // FIXME: we lose the "locked" state for the pair here.
-
   // Then run a pattern expansion!
-  let {results, paths} = p.expand(pair, locked);
+  let {results, paths} = p.expand(pair.map(s => s.tilenumber), locked); // TODO: this should not need mapping
 
   // Is this a winning hand?
-  let winpaths = (results.win || []).map(path => ['2p-' + path.pair[0] + (path.pair[0]===pair[0]?'-!':''), ...path.set]);
+  let winpaths = (results.win || []).map(result => {
+    let p = pair[0];
+    let rpair = new PatternSet('pair', result.pair[0]);
+    return [ (p && p.equals(rpair)) ? p : rpair, ...result.sets ];
+  });
   let winner = (winpaths.length > 0);
 
   // Is this a waiting hand?

@@ -209,7 +209,7 @@ class ChineseClassical extends Ruleset {
       scoreObject.log.push(`2 for winning on a major pair`);
     }
 
-    if (state.allchow && !state.majorPair) {
+    if (state.chowhand && !state.majorPair) {
       scoreObject.doubles += 1;
       scoreObject.log.push(`1 double for chow hand`);
     }

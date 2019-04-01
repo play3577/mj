@@ -193,15 +193,16 @@ class Ruleset {
   _tile_score(set, windTile, windOfTheRoundTile) {
     let locked = set.locked;
     let concealed = set.concealed;
-    let tile = set[0];
+    let tiles = set.tiles();
+    let tile = tiles[0];
     let names = config.TILE_NAMES;
 
-    if (set.length === 2) return this.getPairValue(tile, locked, concealed, names, windTile, windOfTheRoundTile);
-    if (set.length === 3) {
-      if (set[0] !== set[1]) return this.getChowValue(tile, locked, concealed, names, windTile, windOfTheRoundTile);
+    if (tiles.length === 2) return this.getPairValue(tile, locked, concealed, names, windTile, windOfTheRoundTile);
+    if (tiles.length === 3) {
+      if (tile !== tiles[1]) return this.getChowValue(tile, locked, concealed, names, windTile, windOfTheRoundTile);
       else return this.getPungValue(tile, locked, concealed, names, windTile, windOfTheRoundTile);
     }
-    if (set.length === 4) return this.getKongValue(tile, locked, concealed, names, windTile, windOfTheRoundTile);
+    if (tiles.length === 4) return this.getKongValue(tile, locked, concealed, names, windTile, windOfTheRoundTile);
   }
 
   // implemented by subclasses
@@ -271,13 +272,15 @@ class Ruleset {
   getState(scorePattern, winset, selfdraw, selftile, robbed, windTile, windOfTheRoundTile, tilesLeft) {
     // We start with some assumptions, and we'll invalidate them as we see more sets.
     let state = {
-      allchow: true,
+      chowhand: true,
+      punghand: true,
+
       onesuit: true,
       honours: false,
       allhonours: true,
       terminals: true,
       allterminals: true,
-      punghand: true,
+
       outonPair: true,
       pairTile: -1,
       majorPair: false,
@@ -285,10 +288,12 @@ class Ruleset {
       windPair: false,
       ownWindPair: false,
       wotrPair: false,
+
       ownWindPung: false,
       wotrPung: false,
       ownWindKong: false,
       wotrKong: false,
+
       chowCount: 0,
       windPungCount: 0,
       windKongCount: 0,
@@ -303,17 +308,20 @@ class Ruleset {
     };
 
     // classic limit hands
-    state.allGreen = scorePattern.every(set => set.every(t => [1,2,3,5,7,31].indexOf(t) > -1));
+    state.allGreen = scorePattern.every(set => set.tiles().every(t => [1,2,3,5,7,31].indexOf(t) > -1));
 
-    let tile, tilesuit;
+    let tiles, tile, tilesuit;
     scorePattern.forEach(set => {
-      tile = set[0];
+      if (!set.locked || set.concealed) state.concealedCount++;
+
+      tiles = set.tiles();
+      tile = tiles[0];
       tilesuit = (tile / 9) | 0;
 
       if (tile < 27) {
         if (state.suit === false) state.suit = tilesuit;
         else if (state.suit !== tilesuit) state.onesuit = false;
-        if (set.some(t => (t%9) !== 0 && (t%9) !== 8)) {
+        if (tiles.some(t => (t%9) !== 0 && (t%9) !== 8)) {
           state.terminals = false;
           state.allterminals = false;
         }
@@ -323,12 +331,13 @@ class Ruleset {
         state.allterminals = false;
       }
 
-      if (set.length === 2) {
+      if (tiles.length === 2) {
         if (winset) {
-          state.outonPair = (winset.length===2 && winset[0]===set[0]);
-          state.pairTile = winset[0];
+          let wintiles = winset.tiles();
+          state.outonPair = (wintiles.length===2 && wintiles[0]===tiles[0]);
+          state.pairTile = wintiles[0];
         }
-        else if (!winset && selfdraw && set[0] === selftile) {
+        else if (!winset && selfdraw && tiles[0] === selftile) {
           state.outonPair = true;
           state.pairTile = selftile;
         }
@@ -354,22 +363,22 @@ class Ruleset {
         }
       }
 
-      if (set.length === 3) {
-        if (tile === set[1]) {
+      if (tiles.length === 3) {
+        if (tile === tiles[1]) {
           if (tile > 26 && tile < 31) {
             state.windPungCount++;
             if (tile === windTile) state.ownWindPung = true;
             if (tile === windOfTheRoundTile) state.wotrPung = true;
           }
           if (tile > 30) state.dragonPungCount++;
-          state.allchow = false;
+          state.chowhand = false;
         } else {
           state.chowCount++;
           state.punghand = false;
         }
       }
 
-      if (set.length === 4) {
+      if (tiles.length === 4) {
         state.kongCount++;
         if (tile > 26 && tile < 31) {
           state.windKongCount++; // implies pung
@@ -377,10 +386,8 @@ class Ruleset {
           if (tile === windOfTheRoundTile) state.wotrKong = true; // implies wotrKong
         }
         if (tile > 30) state.dragonKongCount++; // implies pung
-        state.allchow = false;
+        state.chowhand = false;
       }
-
-      if (!set.locked || set.concealed) state.concealedCount++;
     });
 
     return state;
@@ -421,6 +428,8 @@ class Ruleset {
       return set;
     });
 
+    // TODO: SWITCH OVER THE ABOVE CODE TO PatternSet RATHER THAN PLAIN ARRAYS
+
     // And then let's see what our tile-examining
     // algorithm has to say about the tiles we have.
     let tileInformation = tilesNeeded(tiles, locked);
@@ -430,12 +439,9 @@ class Ruleset {
     // to simple numerical arrays, but with the set
     // properties (locked/concealed) preserved:
     locked = locked.map(set => {
-      let winning = !!set[0].isWinningTile();
-      let newset = set.map(t => t.getTileFace());
-      newset.locked = 'locked';
-      if (set.concealed) newset.concealed = set.concealed;
-      if (winning) winset = newset;
-      allTiles.push(...newset);
+      let newset = PatternSet.fromTiles(set, true, set.concealed);
+      allTiles.push(...set);
+      if (!!set[0].isWinningTile()) winset = newset;
       return newset;
     });
 
@@ -468,30 +474,17 @@ class Ruleset {
     // tiles, and see how much they would score, based on
     // the getTileScore() function up above.
     let possibleScores = openCompositions.map(chain => {
-
-      // turn the winpath string representations for sets
-      // back into actual sets of tile face numbers, tagged
-      // with the appropriate locked/concealed information:
-      let scorePattern = chain.map(s => {
-        let terms = s.split('-');
-        let c = terms[0];
-        let count = parseInt(c);
-        let tile = parseInt(terms[1]);
-
-        let set;
-        if (s.indexOf('c') > -1) set = [tile, tile+1, tile+2];
-        else set = [tile, tile, tile, tile].slice(0,count);
-
-        if (terms[2]) {
-          let cl = terms[2];
-          if (cl === '!') set.locked = locked;
-          else set.concealed = (cl|0);
-        }
-
-        return set;
-      }).concat(winner ? [] : locked);
-
-      return this.getTileScore(scorePattern, windTile, windOfTheRoundTile, bonus, winset, winner, selfdraw, selftile, robbed, tilesLeft);
+      return this.getTileScore(
+        chain.concat(winner ? [] : locked),
+        windTile,
+        windOfTheRoundTile,
+        bonus,
+        winset,
+        winner,
+        selfdraw,
+        selftile,
+        robbed,
+        tilesLeft);
     });
 
     config.log('possible scores:', possibleScores);
