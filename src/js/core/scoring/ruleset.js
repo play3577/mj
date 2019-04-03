@@ -495,6 +495,32 @@ class Ruleset {
 
     return finalScore;
   }
+
+   /**
+   * Determine how this hand could be improved
+   */
+  _determineImprovement(concealed, locked, composed, to_complete, tiletracker) {
+    return [];
+  }
+
+  /**
+   * ...docs go here...
+   */
+  determineImprovement(player, tilesLeft, winner=false) {
+    let concealed = player.getTileFaces();
+    let locked = player.locked;
+    let data = this.scoreTiles({
+      winner,
+      wind: player.wind,
+      concealed,
+      locked,
+      bonus: player.bonus
+    }, player.id, player.windOfTheRound, tilesLeft);
+
+    let { composed, to_complete } = player.tilesNeeded();
+    data.improvement = this._determineImprovement(concealed, locked, composed, to_complete, player.tracker);
+    return data;
+  }
 }
 
 Ruleset.FAAN_LAAK = Symbol();

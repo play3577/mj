@@ -18,8 +18,11 @@ class GameManager {
       new BotPlayer(3, config.WALL_HACK),
     ];
 
-    if (config.FORCE_OPEN_BOT_PLAY || config.DEBUG) {
-      window.players = this.players;
+    if (typeof window !== "undefined") {
+      // make it easy to inspect the players array if debug is on.
+      if (config.FORCE_OPEN_BOT_PLAY || config.DEBUG) { window.players = this.players; }
+      // but even without debug on, we want access to that array.
+      else { window.麻雀者 = this.players; }
     }
   }
 

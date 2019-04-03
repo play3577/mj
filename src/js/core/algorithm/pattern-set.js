@@ -22,7 +22,8 @@ class PatternSet {
     if (t === `pung`) return `3p-${this.tilenumber}-${asLocked ? `!` : ``}`;
     if (t === `chow`) return `3c-${this.tilenumber}-${asLocked ? `!` : ``}`;
     if (t === `pair`) return `2p-${this.tilenumber}-${asLocked ? `!` : ``}`;
-    return '1s';
+    if (t === `single`) return `1s-${this.tilenumber}`;
+    return '0n';
   }
 
   tiles() {
@@ -31,7 +32,18 @@ class PatternSet {
     if (t === 'pung') return [n,n,n];
     if (t === 'chow') return [n,n+1,n+2];
     if (t === 'pair') return [n,n];
-    return [n];
+    if (t === 'single') return [n];
+    return [];
+  }
+
+  size() {
+    let t = this.type;
+    if (t === 'kong') return 4;
+    if (t === 'pung') return 3;
+    if (t === 'chow') return 3;
+    if (t === 'pair') return 2;
+    if (t === 'single') return 1;
+    return 0;
   }
 
   equals(other) { return (this.type === other.type) && (this.tilenumber === other.tilenumber); }
@@ -52,6 +64,7 @@ PatternSet.fromTiles = (tiles, locked, concealed) => {
   if (tiles.length === 4) type = 'kong';
   if (tiles.length === 3) { if (tiles[1] === tile) type = 'pung'; else type = 'chow'; }
   if (tiles.length === 2) type = 'pair';
+  if (tiles.length === 1) type = 'single';
   return new PatternSet(type, tile, locked, concealed);
 }
 

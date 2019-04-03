@@ -117,6 +117,14 @@ class Personality {
       // note that this is a fluid check until we claim something, when it locks.
     }
 
+    /**
+     * THIS CODE HAS BEEN COMMENTED OFF BECAUSE IT IS SUPER SLOW.
+     *
+     * // Also have a look at possible score improvements
+     * let scoring = this.player.rules.determineImprovement(this.player);
+     *
+     **/
+
     return stats;
   }
 

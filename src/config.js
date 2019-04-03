@@ -160,7 +160,8 @@ const CLAIM = {
     CHOW3: 6, // last time in pattern: **X
     PUNG: 8,
     KONG: 16,
-    WIN: 32
+    SET: 30, // masks 0b.0001.1110
+    WIN: 32,
 };
 
 
@@ -175,6 +176,7 @@ const Constants = {
     CHOW3: CLAIM.CHOW3,
     PUNG: CLAIM.PUNG,
     KONG: CLAIM.KONG,
+    SET: CLAIM.SET,
     WIN: CLAIM.WIN
 };
 
