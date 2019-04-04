@@ -24,10 +24,12 @@ class HumanPlayer extends BotPlayer {
    * they come with as a play suggestion.
    */
   determineDiscard(tilesRemaining, resolve) {
+    const giveAllSuggestions = true;
     // Let's ask our "bot" assistant for what
     // it would suggest we throw away:
     super.determineDiscard(tilesRemaining, suggestion => {
-      if (config.BOT_PLAY) return resolve(suggestion);
+      if (config.BOT_PLAY) return resolve((suggestion && suggestion.length) ? suggestion[0] : suggestion);
+      if (!suggestion.length) suggestion = [suggestion];
       this.ui.listenForDiscard(discard => {
 
         // If we're discarding, even if our bot superclass
@@ -49,7 +51,7 @@ class HumanPlayer extends BotPlayer {
         // And then fall through to the original resolution function
         resolve(discard);
       }, suggestion, this.lastClaim);
-    });
+    }, giveAllSuggestions);
   }
 
   /**

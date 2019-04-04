@@ -60,7 +60,7 @@ class ClientUI extends ClientUIMaster {
    * Called by `determineDiscard` in human.js, this function
    * lets the user pick a tile to discard through the GUI.
    */
-  listenForDiscard(resolve, suggestion, lastClaim, winbypass) {
+  listenForDiscard(resolve, suggestions, lastClaim, winbypass) {
     // Figure out the initial tile to highlight
     let tiles = this.getAvailableTiles();
     let currentTile = this.currentTile = this.player.latest;
@@ -69,7 +69,7 @@ class ClientUI extends ClientUIMaster {
     this.markCurrentTile(curid);
 
     // highlight the discard suggestion
-    this.highlightBotSuggestion(suggestion);
+    this.highlightBotSuggestions(suggestions);
 
     // If we have no tiles left to discard, that's
     // an automatic win declaration.
@@ -90,32 +90,32 @@ class ClientUI extends ClientUIMaster {
 
     // Add keyboard and mouse event listening for navigating
     // the selectable tiles and picking a discard.
-    this.listen(document, "keydown", evt => this.listenForDiscardFromKeys(evt, tiles, suggestion, resolve));
-    this.listenForDiscardFromMouse(tiles, suggestion, resolve);
+    this.listen(document, "keydown", evt => this.listenForDiscardFromKeys(evt, tiles, suggestions, resolve));
+    this.listenForDiscardFromMouse(tiles, suggestions, resolve);
   }
 
   /**
    * Mouse/touch interaction for discard selection.
    */
-  listenForDiscardFromMouse(tiles, suggestion, resolve) {
-    tiles.forEach(tile => this.addMouseEventsToTile(tile, suggestion, resolve));
+  listenForDiscardFromMouse(tiles, suggestions, resolve) {
+    tiles.forEach(tile => this.addMouseEventsToTile(tile, suggestions, resolve));
   }
 
   /**
    * Add both mouse and touch event handling to all
    * (discardable) tiles in the player's tilebank.
    */
-  addMouseEventsToTile(tile, suggestion, resolve) {
+  addMouseEventsToTile(tile, suggestions, resolve) {
     this.listen(tile, "mouseover", evt => this.highlightTile(tile));
-    this.listen(tile, "click", evt => this.discardCurrentHighlightedTile(suggestion, resolve));
-    this.listen(tile, "mousedown", evt => this.initiateLongPress(evt, suggestion, resolve));
-    this.listen(tile, "touchstart", evt => this.initiateLongPress(evt, suggestion, resolve));
+    this.listen(tile, "click", evt => this.discardCurrentHighlightedTile(suggestions, resolve));
+    this.listen(tile, "mousedown", evt => this.initiateLongPress(evt, suggestions, resolve));
+    this.listen(tile, "touchstart", evt => this.initiateLongPress(evt, suggestions, resolve));
   }
 
   /**
    * Keyboard interaction for discard selection.
    */
-  listenForDiscardFromKeys(evt, tiles, suggestion, resolve) {
+  listenForDiscardFromKeys(evt, tiles, suggestions, resolve) {
     let code = evt.keyCode;
     let willBeHandled = [VK_LEFT, VK_RIGHT, VK_UP, VK_DOWN, VK_SIGNAL, VK_START, VK_END].some(supported => supported[code]);
     if (!willBeHandled) return;
@@ -138,12 +138,12 @@ class ClientUI extends ClientUIMaster {
       if (!vk_signal_lock) {
         lock_vk_signal();
         this.currentTile.unmark('highlight');
-        this.discardCurrentHighlightedTile(suggestion, resolve);
+        this.discardCurrentHighlightedTile(suggestions, resolve);
       }
     }
 
     // "down" is used to declared self-drawn kongs and self-drawn wins.
-    if (VK_DOWN[code]) this.spawnDeclarationModal(suggestion, resolve);
+    if (VK_DOWN[code]) this.spawnDeclarationModal(suggestions, resolve);
   }
 
   /**
@@ -173,7 +173,7 @@ class ClientUI extends ClientUIMaster {
    * Initiate a longpress timeout. This will get cancelled by
    * the discard action, as well as by touch-up events.
    */
-  initiateLongPress(evt, suggestion, resolve) {
+  initiateLongPress(evt, suggestions, resolve) {
     let releaseEvents = ['mouseup', 'dragend', 'touchend'];
     if (evt.type === 'mousedown' && evt.which !== 1) return;
     if (!this.longPressTimeout) {
@@ -182,7 +182,7 @@ class ClientUI extends ClientUIMaster {
         releaseEvents.forEach(event => this.removeListeners(document, event));
         this.cancelLongPress();
         let restoreClickHandling = this.removeListeners(evt.target, "click");
-        this.spawnDeclarationModal(suggestion, resolve, restoreClickHandling);
+        this.spawnDeclarationModal(suggestions, resolve, restoreClickHandling);
       }, 1000);
     }
     let cancelPress = evt => this.cancelLongPress(evt)
@@ -201,15 +201,18 @@ class ClientUI extends ClientUIMaster {
   /**
    * Highlight the tile that the superclass would discard if they were playing.
    */
-  highlightBotSuggestion(suggestion) {
-    if (config.SHOW_BOT_SUGGESTION && suggestion) {
-      let suggestedTile = this.getSingleTileFromHand(suggestion.getTileFace());
-      if (suggestedTile) {
-        suggestedTile.mark('suggestion');
-        suggestedTile.setTitle('Bot-recommended discard.');
-      } else {
-        console.log(`The bot got confused and wanted you to throw out something that's not in your hand...!`);
-      }
+  highlightBotSuggestions(suggestions) {
+    if (config.SHOW_BOT_SUGGESTION && suggestions) {
+      suggestions.forEach(suggestion => {
+        if (!suggestion) return;
+        let suggestedTile = this.getSingleTileFromHand(suggestion.getTileFace());
+        if (suggestedTile) {
+          suggestedTile.mark('suggestion');
+          suggestedTile.setTitle('Bot-recommended discard.');
+        } else {
+          console.log(`The bot got confused and wanted you to throw out something that's not in your hand...!`);
+        };
+      });
     }
   }
 
@@ -238,13 +241,15 @@ class ClientUI extends ClientUIMaster {
   /**
    * Discard a selected tile from the player's hand
    */
-  discardCurrentHighlightedTile(suggestion, resolve) {
+  discardCurrentHighlightedTile(suggestions=[], resolve) {
     let tiles = this.getAvailableTiles();
     this.cancelLongPress();
-    if (suggestion) {
-      suggestion.unmark('suggestion');
-      suggestion.setTitle('');
-    }
+    suggestions.forEach(suggestion => {
+      if (suggestion) {
+        suggestion.unmark('suggestion');
+        suggestion.setTitle('');
+      }
+    })
     let latest = this.player.latestTile;
     if (latest) latest.unmark('latest');
     tiles.forEach(tile => tile.unmark('selectable','highlight','suggestion'));
@@ -257,7 +262,7 @@ class ClientUI extends ClientUIMaster {
    * spawns a modal that allows the user to declaring they can
    * form a kong or that they have won on their own turn.
    */
-  spawnDeclarationModal(suggestion, resolve, restore) {
+  spawnDeclarationModal(suggestions, resolve, restore) {
     let currentTile = this.currentTile;
     let face = currentTile.getTileFace();
     let allInHand = this.getAllTilesInHand(face);
@@ -293,11 +298,11 @@ class ClientUI extends ClientUIMaster {
       if (result === CLAIM.KONG) {
         currentTile.exception = CLAIM.KONG;
         currentTile.kong = [...allInHand];;
-        return this.discardCurrentHighlightedTile(suggestion, resolve);
+        return this.discardCurrentHighlightedTile(suggestions, resolve);
       }
       if (result === CLAIM.WIN) {
         this.currentTile = undefined;
-        return this.discardCurrentHighlightedTile(suggestion, resolve);
+        return this.discardCurrentHighlightedTile(suggestions, resolve);
       }
     });
   }
@@ -321,8 +326,10 @@ class ClientUI extends ClientUIMaster {
     }
 
     // show the bot's play suggestions
-    if (config.SHOW_BOT_SUGGESTION && suggestion && suggestion.claimtype) {
-      tile.mark('suggestion');
+    if (config.SHOW_BOT_SUGGESTION && suggestion) {
+      if (suggestion && suggestion.claimtype) {
+        tile.mark('suggestion');
+      }
     }
 
     // an unpause protection, so that a mousedown/touchstart that
@@ -493,11 +500,11 @@ class ClientUI extends ClientUIMaster {
   /**
    * Do we want to rob a kong to win?
    */
-  spawnKongRobDialog(pid, tiles, tilesRemaining, suggestion, resolve) {
+  spawnKongRobDialog(pid, tiles, tilesRemaining, suggestions, resolve) {
     let tile = tiles[0].getTileFace();
     let claim = false;
 
-    if (suggestion) claim = suggestion;
+    if (suggestions && suggestions[0]) claim = suggestions[0];
     else {
       (() => {
         let { lookout, waiting } = this.player.tilesNeeded();

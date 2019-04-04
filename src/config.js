@@ -122,7 +122,7 @@ if (typeof window !== "undefined") {
     NO_SOUND = (params.get(`NO_SOUND`)==='true') ? true : NO_SOUND;
     SEED = params.get(`SEED`) ? parseInt(params.get(`SEED`)) : SEED;
     RULES = params.get(`RULES`) ? params.get(`RULES`) : RULES;
-    PLAY_IMMEDIATELY = (params.get(`PLAY_IMMEDATELY`)==='true') ? true : PLAY_IMMEDIATELY;
+    PLAY_IMMEDIATELY = (params.get(`PLAY_IMMEDIATELY`)==='true') ? true : PLAY_IMMEDIATELY;
     PAUSE_ON_BLUR = (params.get(`PAUSE_ON_BLUR`)==='false') ? false: PAUSE_ON_BLUR;
     FORCE_DRAW = (params.get(`FORCE_DRAW`)==='true') ? true : FORCE_DRAW;
     FORCE_OPEN_BOT_PLAY = (params.get(`FORCE_OPEN_BOT_PLAY`)==='true') ? true : FORCE_OPEN_BOT_PLAY;

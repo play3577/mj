@@ -101,7 +101,7 @@ class BotPlayer extends Player {
    * Note: returning an falsey value leads to the game understanding that
    * as meaning this play has won.
    */
-  determineDiscard(tilesRemaining, resolve) {
+  determineDiscard(tilesRemaining, resolve, showAllSuggestions) {
     // If we were awarded a winning claim, then by the
     // time we are asked to discard, we will already be
     // marked as having won:
@@ -159,7 +159,7 @@ class BotPlayer extends Player {
 
     // Now then. We haven't won, let's figure out which tiles are worth keeping,
     // and which tiles are worth throwing away.
-    this.determineDiscardCarefully(tilesRemaining, resolve);
+    this.determineDiscardCarefully(tilesRemaining, resolve, showAllSuggestions);
   }
 
   /**
@@ -259,7 +259,7 @@ class BotPlayer extends Player {
    * This is the second part of determineDiscard, which handles all
    * the "we didn't just win" cases.
    */
-  determineDiscardCarefully(tilesRemaining, resolve) {
+  determineDiscardCarefully(tilesRemaining, resolve, showAllSuggestions) {
     let tiles = this.getAvailableTiles();
     let tileCount = [];
     let immediateValue = [];
@@ -317,12 +317,16 @@ class BotPlayer extends Player {
       return (a.tile - b.tile);
     });
 
-    // "randomly" pick one of the lowest scoring tiles to discard
     let lowest = sorted[0];
     let candidates = sorted.filter(v => v.score===lowest.score);
+
+    // did we need to generate all, or just one, discard?
+    if (showAllSuggestions) {
+      return resolve(candidates.map(candidate => this.getSingleTileFromHand(candidate.tile)));
+    }
+
     let idx = Math.floor(config.PRNG.nextFloat() * candidates.length);
     let candidate = candidates[idx].tile;
-
     resolve(this.getSingleTileFromHand(candidate));
   }
 
@@ -364,12 +368,14 @@ class BotPlayer extends Player {
 
     if (value===0) {
       // if this tile is not involved in a chow, connected pair,
-      // or gapped pai, then its sequential score is some low
+      // or gapped pair, then its sequential score is some low
       // value, inversely related to how close it is to its
       // nearest in-suit neighbour. And if there are none, then
-      // its value stays zero.
-      for (let i=3; i<=8; i++) {
-        if (tileCount[tile-i] || tileCount[tile + i]) return 8 - i;
+      // its value in the hand is zero.
+      for (let i=3, c1, c2; i<=8; i++) {
+        c1 = tileCount[tile-i] && ((tile-i)%9 < face);
+        c2 = tileCount[tile+i] && ((tile+i)%9 > face);
+        if (c1 || c2) return 8 - i;
       }
     }
 
