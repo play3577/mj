@@ -113,7 +113,6 @@ const DEFAULTS = {
     WRITE_GAME_LOG,
 };
 
-
 // runtime overrides?
 if (typeof window !== "undefined") {
     let params = new URLSearchParams(window.location.search.replace(/(\w+)=/g, (a,b) => b.toUpperCase() + '='));
