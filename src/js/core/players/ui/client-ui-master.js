@@ -1,7 +1,7 @@
-if (typeof process !== "undefined") {
-  playClip = require('../../../page/audio.js');
-  create = require('../../utils/utils.js').create;
-  rotateWinds = require('./windicator.js');
+if (typeof process !== `undefined`) {
+  playClip = require(`../../../page/audio.js`);
+  create = require(`../../utils/utils.js`).create;
+  rotateWinds = require(`./windicator.js`);
 }
 
 /**
@@ -16,14 +16,14 @@ class ClientUIMaster {
     this.tracker = tracker;
     this.tracker.setUI(this);
     this.id = player.id;
-    this.discards = document.querySelector(".discards");
-    this.playerbanks = document.querySelectorAll(".player");
-    this.knowledge = document.querySelector(".knowledge");
+    this.discards = document.querySelector(`.discards`);
+    this.playerbanks = document.querySelectorAll(`.player`);
+    this.knowledge = document.querySelector(`.knowledge`);
     this.el = this.playerbanks[this.id];
     this.reset(0,0);
 
     // Super debug setting: allows bots to tap directly
-    // into the player's UI. This is super bad, but for
+    // into the player`s UI. This is super bad, but for
     // development purposes, rather required.
     if (config.FORCE_OPEN_BOT_PLAY) {
       window.PLAYER_BANKS = this.playerbanks;
@@ -37,19 +37,19 @@ class ClientUIMaster {
   reset(wind, windOfTheRound, hand, draws) {
     if(!this.el) return;
 
-    this.el.setAttribute("class", "player");
+    this.el.setAttribute(`class`, `player`);
     this.playerbanks.forEach(b => {
-      b.innerHTML = '';
-      b.setAttribute("class", "player");
+      b.innerHTML = ``;
+      b.setAttribute(`class`, `player`);
     });
-    this.el.innerHTML = '';
+    this.el.innerHTML = ``;
 
     let discards = this.discards;
-    discards.innerHTML = '';
-    discards.setAttribute('class', 'discards');
+    discards.innerHTML = ``;
+    discards.setAttribute(`class`, `discards`);
 
-    this.bar = document.createElement('div');
-    this.bar.classList.add('countdown-bar');
+    this.bar = document.createElement(`div`);
+    this.bar.classList.add(`countdown-bar`);
     this.discards.appendChild(this.bar);
 
     if (this.countdownTimer) this.countdownTimer.cancel();
@@ -59,17 +59,17 @@ class ClientUIMaster {
   }
 
   /**
-   * Reset the player's tile tracker panel
+   * Reset the player`s tile tracker panel
    */
   resetTracker(tiles) {
     if (!this.knowledge) return; // happens when initialised before the DOM
 
-    this.knowledge.innerHTML = '';
+    this.knowledge.innerHTML = ``;
 
     Object.keys(tiles).forEach(tile => {
-      let div = document.createElement('div');
-      div.classList.add('tile-count');
-      if (tile>33) div.classList.add('hidden');
+      let div = document.createElement(`div`);
+      div.classList.add(`tile-count`);
+      if (tile>33) div.classList.add(`hidden`);
       for(let i=0; i<4; i++) {
         let e = create(tile);
         div.appendChild(e);
@@ -82,8 +82,8 @@ class ClientUIMaster {
    * Remove a tile from the tile tracker panel.
    */
   reduceTracker(tileNumber) {
-    if (tileNumber > 33) return; // don't track bonus tiles explicitly
-    let tile = this.knowledge.querySelector(`.tile[data-tile="${tileNumber}"]`);
+    if (tileNumber > 33) return; // don`t track bonus tiles explicitly
+    let tile = this.knowledge.querySelector(`game-tile[tile='${tileNumber}']`);
     tile.remove();
   }
 
@@ -102,9 +102,9 @@ class ClientUIMaster {
   pause(lock) {
     this.paused = lock;
     if (this.countdownTimer) { this.countdownTimer.pause(); }
-    // don't mark as paused if the modal dialogs are open
+    // don`t mark as paused if the modal dialogs are open
     if (modal.isHidden()) {
-      this.discards.classList.add("paused");
+      this.discards.classList.add(`paused`);
     }
   }
 
@@ -112,7 +112,7 @@ class ClientUIMaster {
    * Release the lock on the UI.
    */
   resume() {
-    this.discards.classList.remove("paused");
+    this.discards.classList.remove(`paused`);
     if (this.countdownTimer) { this.countdownTimer.resume(); }
     this.paused = false;
   }
@@ -127,7 +127,7 @@ class ClientUIMaster {
 
   /**
    * Start a count-down bar that signals to the user
-   * that there is "some time remaining" without
+   * that there is `some time remaining` without
    * giving them (milli)second accurate numbers.
    */
   startCountDown(ms) {
@@ -143,7 +143,7 @@ class ClientUIMaster {
         let fraction = count===10 ? 1 : count/10;
         this.bar.style.width = `${100 - 100 * fraction}%`;
         if (fraction === 1) {
-          this.bar.classList.remove('active');
+          this.bar.classList.remove(`active`);
           this.countdownTimer = false;
           if (this.claimCleanup) this.claimCleanup();
           this.claimCleanup = false;
@@ -152,7 +152,7 @@ class ClientUIMaster {
       10
     );
 
-    this.bar.classList.add('active');
+    this.bar.classList.add(`active`);
   }
 
   /**
@@ -162,7 +162,7 @@ class ClientUIMaster {
    */
   gameWillStart() {
     rotateWinds.reset();
-    playClip('start');
+    playClip(`start`);
     this.playerbanks.forEach(b => {
       if (this.rules) b.dataset.score = this.rules.player_start_score;
       b.dataset.wins = 0;
@@ -175,9 +175,9 @@ class ClientUIMaster {
    */
   handWillStart(redraw, resolve) {
     if (config.BOT_PLAY) return resolve();
-    let heading = "Ready to start playing?";
-    if (redraw) heading = "Ready to replay hand?";
-    modal.choiceInput(heading, [{label: "ready!",value: false}], resolve);
+    let heading = `Ready to start playing?`;
+    if (redraw) heading = `Ready to replay hand?`;
+    modal.choiceInput(heading, [{label: `ready!`,value: false}], resolve);
   }
 
   /**
@@ -186,14 +186,14 @@ class ClientUIMaster {
    * first player tile, to set up the first discard.
    */
   playWillStart() {
-    // we don't actually have any UI that needs to kick in at this point.
+    // we don`t actually have any UI that needs to kick in at this point.
   }
 
   /**
    * Note how many tiles are left to be played with in the current hand.
    */
   markTilesLeft(remaining) {
-    let ui = document.querySelector('.wall.data');
+    let ui = document.querySelector(`.wall.data`);
     ui.textContent = `${remaining} tiles left`;
   }
 
@@ -206,10 +206,10 @@ class ClientUIMaster {
 
     let cancel = () => resolve(false);
     modal.choiceInput(`Declare kong (${config.TILE_NAMES[tile]})?`, [
-      { label: 'Absolutely', value: 'yes' },
-      { label: 'No, I have plans for those tiles', value: 'no' },
+      { label: `Absolutely`, value: `yes` },
+      { label: `No, I have plans for those tiles`, value: `no` },
     ], result => {
-      if (result==='yes') resolve(true);
+      if (result === `yes`) resolve(true);
       else resolve(false);
     }, cancel);
   }
@@ -228,7 +228,7 @@ class ClientUIMaster {
    * Triggered when play moves from one player to another.
    */
   nextPlayer() {
-    this.discards.lastChild.unmark('selectable');
+    this.discards.lastChild.unmark(`selectable`);
   }
 
   /**
@@ -289,18 +289,18 @@ class ClientUIMaster {
    */
   endOfHand(disclosure, force_reveal_player=false) {
     if (!disclosure) {
-      playClip('draw');
-      this.discards.classList.add('exhausted');
+      playClip(`draw`);
+      this.discards.classList.add(`exhausted`);
       return;
     }
 
-    if (!force_reveal_player) playClip('win');
+    if (!force_reveal_player) playClip(`win`);
 
     disclosure.forEach( (res,id) => {
       if (id == this.id && !force_reveal_player) return;
       let bank = this.playerbanks[id];
-      bank.innerHTML = '';
-      bank.setAttribute('class', 'player');
+      bank.innerHTML = ``;
+      bank.setAttribute(`class`, `player`);
 
       res.bonus.forEach(t => {
         t = create(t);
@@ -323,8 +323,8 @@ class ClientUIMaster {
       res.concealed.sort((a,b)=>(a-b)).forEach(t => bank.appendChild(create(t)));
 
       if (res.winner) {
-        this.discards.classList.add('winner');
-        bank.classList.add('winner');
+        this.discards.classList.add(`winner`);
+        bank.classList.add(`winner`);
       }
 
       bank.dataset.wincount = res.wincount;
@@ -339,22 +339,22 @@ class ClientUIMaster {
    */
   endOfGame(scores) {
     rotateWinds.done();
-    playClip('end');
+    playClip(`end`);
 
     let v=0, b=-1;
     scores.forEach( (score,id) => { if (score>v) { v = score; b = id; }});
     this.playerbanks.forEach( (bank,id) => {
-      bank.classList.remove('waiting');
-      bank.classList.remove('winner');
-      if (id===b) bank.classList.add('game-winner');
+      bank.classList.remove(`waiting`);
+      bank.classList.remove(`winner`);
+      if (id===b) bank.classList.add(`game-winner`);
     });
 
     // clear out the player banks, discards, and tile tracker.
     let remove = [];
     this.playerbanks.forEach(bank => {
-      remove = [...remove, ...bank.querySelectorAll('.tile')];
+      remove = [...remove, ...bank.querySelectorAll(`game-tile`)];
     });
-    remove = [...remove, ...this.discards.querySelectorAll('.tile')];
+    remove = [...remove, ...this.discards.querySelectorAll(`game-tile`)];
     remove.forEach(t => t.parentNode.removeChild(t));
 
     // and then for aesthetic purposes, fill the player banks and tracker
@@ -389,18 +389,18 @@ class ClientUIMaster {
    * hand this is, and what its wind of the round is.
    */
   markHand(hand, wind) {
-    this.el.dataset.wind = ['東','南','西','北'][wind];
+    this.el.dataset.wind = [`東`,`南`,`西`,`北`][wind];
   }
 
   /**
    * Mark the player with `id` as the currently active player.
    */
   activate(id) {
-    this.playerbanks.forEach(bank => bank.classList.remove('active'));
-    this.playerbanks[id].classList.add('active');
+    this.playerbanks.forEach(bank => bank.classList.remove(`active`));
+    this.playerbanks[id].classList.add(`active`);
     if (id != this.id) {
-      let latest = this.el.querySelector('.tile.latest');
-      if (latest) latest.unmark('latest');
+      let latest = this.el.querySelector(`game-tile.latest`);
+      if (latest) latest.unmark(`latest`);
     }
   }
 
@@ -409,15 +409,15 @@ class ClientUIMaster {
    * called specifically on whoever is currently activ)
    */
   disable() {
-    this.el.classList.remove('active');
+    this.el.classList.remove(`active`);
   }
 
   /**
    * Visually mark this player as waiting to win.
    */
   markWaiting(val) {
-    if (val) this.el.classList.add('waiting');
-    else this.el.classList.remove('waiting');
+    if (val) this.el.classList.add(`waiting`);
+    else this.el.classList.remove(`waiting`);
   }
 
   /**
@@ -425,29 +425,29 @@ class ClientUIMaster {
    */
   markWinner(wincount) {
     this.el.dataset.wincount = wincount;
-    this.el.classList.add('winner');
-    this.el.classList.remove('active');
+    this.el.classList.add(`winner`);
+    this.el.classList.remove(`active`);
   }
 
   /**
-   * Add a tile to this player's tilebank.
+   * Add a tile to this player`s tilebank.
    */
   append(t) {
-    let old = this.el.querySelector('.tile.latest');
+    let old = this.el.querySelector(`game-tile.latest`);
     if (old) {
-      old.unmark('latest');
-      old.setTitle('');
+      old.unmark(`latest`);
+      old.setTitle(``);
     }
     if (!t.isLocked()) {
-      t.mark('latest');
-      t.setTitle('latest tile');
+      t.mark(`latest`);
+      t.setTitle(`latest tile`);
     }
     this.el.appendChild(t);
     this.sortTiles();
   }
 
   /**
-   * Remove a tile from this player's tile bank
+   * Remove a tile from this player`s tile bank
    */
   remove(tile) {
     this.el.removeChild(tile);
@@ -458,7 +458,7 @@ class ClientUIMaster {
    * from tiles in their hand, and the current discard
    */
   lockClaim(tiles) {
-    playClip(tiles.length===4 ? 'kong' : 'multi');
+    playClip(tiles.length===4 ? `kong` : `multi`);
 
     this.removeLastDiscard();
     let locknum = 1 + this.getLockedTiles().length;
@@ -471,11 +471,11 @@ class ClientUIMaster {
 
   /**
    * Move the fourth tile in a locked set of three from the
-   * player's hand to that locked set.
+   * player`s hand to that locked set.
    */
   meldKong(tile) {
     // find another tile like this, but locked, which can only be a pung.
-    let other = this.el.querySelector(`.tile[data-locked][data-tile='${tile.getTileFace()}']`);
+    let other = this.el.querySelector(`game-tile[locked][tile='${tile.getTileFace()}']`);
     tile.lock(other.getLockNumber());
     this.el.appendChild(tile);
     this.sortTiles();
@@ -485,19 +485,19 @@ class ClientUIMaster {
    * Triggered when a player discards a tile from their hand.
    */
   playerDiscarded(player, tile, playcounter) {
-    playClip(playcounter===1 ? 'thud' : 'click');
+    playClip(playcounter===1 ? `thud` : `click`);
 
     let bank = this.playerbanks[player.id];
 
     console.debug(`${this.id} sees discard ${tile} from ${player.id}`);
 
     if (player.id != this.id) {
-      let blank = bank.querySelector(`[data-tile="-1"]`);
+      let blank = bank.querySelector(`[tile='-1']`);
       if (blank) bank.removeChild(blank);
     }
 
     let discard = create(tile);
-    discard.mark('discard');
+    discard.mark(`discard`);
     discard.setFrom(player.id);
     this.discards.appendChild(discard);
 
@@ -517,13 +517,13 @@ class ClientUIMaster {
     let bank = this.playerbanks[player.id];
 
     // create a new locked set
-    let locknum = 1 + bank.querySelectorAll(`[data-locked]`).length;
+    let locknum = 1 + bank.querySelectorAll(`[locked]`).length;
     tiles.forEach(tile => {
       let face = (tile.dataset ? tile.getTileFace() : tile);
 
       if (player.id != this.id) {
-        // remove a "blank" tile to replace with the one we're seeing.
-        let blank = bank.querySelector(`[data-tile="-1"]`);
+        // remove a `blank` tile to replace with the one we`re seeing.
+        let blank = bank.querySelector(`[tile='-1']`);
         if (blank) bank.removeChild(blank);
       }
 
@@ -543,10 +543,10 @@ class ClientUIMaster {
    * This function falls through to `see()`
    */
   seeClaim(tiles, player, claim) {
-    playClip(tiles.length===4 ? 'kong' : 'multi');
+    playClip(tiles.length===4 ? `kong` : `multi`);
 
     // this differs from see() in that we know we need to remove one
-    // "blank" tile fewer than are being revealed. So we add one, and
+    // `blank` tile fewer than are being revealed. So we add one, and
     // then call see() to offset the otherwise superfluous removal.
     let bank = this.playerbanks[player.id];
     let blank = create(-1);
@@ -566,7 +566,7 @@ class ClientUIMaster {
    */
   playerGaveUpKongTile(pid, tilenumber) {
     let bank = this.playerbanks[pid];
-    let tile = bank.querySelector(`.tile[data-locked][data-tile="${tilenumber}"]`);
+    let tile = bank.querySelector(`game-tile[locked][tile='${tilenumber}']`);
     tile.remove();
   }
 
@@ -575,23 +575,23 @@ class ClientUIMaster {
    * other player claimed the discard for some purpose.
    */
   renderClaimAnnouncement(pid, claimtype) {
-    let label = 'win';
-    if (claimtype === 16) label = 'kong';
-    if (claimtype === 8) label = 'pung';
-    if (claimtype < 8) label = 'chow';
-    let ann = document.createElement('div');
-    ann.classList.add('announcement');
+    let label = `win`;
+    if (claimtype === 16) label = `kong`;
+    if (claimtype === 8) label = `pung`;
+    if (claimtype < 8) label = `chow`;
+    let ann = document.createElement(`div`);
+    ann.classList.add(`announcement`);
     ann.textContent = `${label}!`;
     ann.dataset.player = pid;
-    document.querySelector('.board').appendChild(ann);
-    ann.addEventListener('transitionend ', () => {
-      ann.parentNode.removeChild(ann);
-    });
+    let parent = document.querySelector(`.board`);
+    parent.appendChild(ann);
+    // transitionend seems to do all of nothing.
+    setTimeout(() => ann.parentNode.removeChild(ann), 2300);
   }
 
   /**
-   * Mark the fact that a player received "a tile",
-   * but we don't know specifically which tile.
+   * Mark the fact that a player received `a tile`,
+   * but we don`t know specifically which tile.
    */
   receivedTile(player) {
     if (player.id === this.id) return;
@@ -601,55 +601,55 @@ class ClientUIMaster {
   }
 
   /**
-   * Sort all the tiles in a player's tile bank
+   * Sort all the tiles in a player`s tile bank
    * (either the user, or one of the bot players).
    */
   sortTiles(bank) {
     bank = (bank||this.el);
     Array
-    .from(bank.querySelectorAll('.tile'))
+    .from(bank.querySelectorAll(`game-tile`))
     .sort(this.tilebank_sort_function)
     .forEach(tile => bank.appendChild(tile));
   }
 
   /**
-   * Get all `data-locked=locked` tiles in a player's tile bank.
+   * Get all `locked=locked` tiles in a player`s tile bank.
    */
   getLockedTiles(bank) {
-    return (bank||this.el).querySelectorAll('.tile[data-locked]');
+    return (bank||this.el).querySelectorAll(`game-tile[locked]`);
   }
 
   /**
-   * Get all tiles in a player's tile bank that are not locked, and not bonus tiles
+   * Get all tiles in a player`s tile bank that are not locked, and not bonus tiles
    */
   getAvailableTiles() {
-    return this.el.querySelectorAll('.tile:not([data-bonus]):not([data-locked])');
+    return this.el.querySelectorAll(`game-tile:not([bonus]):not([locked])`);
   }
 
   /**
    * Find a single instance of a tile with the specified tile number,
-   * or undefined if no such tile exists in the player's hand.
+   * or undefined if no such tile exists in the player`s hand.
    */
   getSingleTileFromHand(tileNumber) {
-    return this.el.querySelector(`.tile[data-tile='${tileNumber}']:not([data-locked])`);
+    return this.el.querySelector(`game-tile[tile='${tileNumber}']:not([locked])`);
   }
 
   /**
-   * Get every instance of a specific tile in the player's hand.
+   * Get every instance of a specific tile in the player`s hand.
    */
   getAllTilesInHand(tileNumber) {
-    return this.el.querySelectorAll(`.tile[data-tile='${tileNumber}']:not([data-locked])`);
+    return this.el.querySelectorAll(`game-tile[tile='${tileNumber}']:not([locked])`);
   }
 
   /**
-   * Get either all tiles, or all "not locked" tiles.
+   * Get either all tiles, or all `not locked` tiles.
    */
   getTiles(allTiles) {
-    return this.el.querySelectorAll(`.tile${allTiles ? ``: `:not([data-locked])`}`);
+    return this.el.querySelectorAll(`game-tile${allTiles ? ``: `:not([locked])`}`);
   }
 
   /**
-   * Get the list of tiles as tile numbers, or all "not locked" tiles as tile numbers.
+   * Get the list of tiles as tile numbers, or all `not locked` tiles as tile numbers.
    */
   getTileFaces(allTiles) {
     return Array.from(this.getTiles(allTiles)).map(t => t.getTileFace());
@@ -663,35 +663,42 @@ class ClientUIMaster {
    * 4: concealed tiles
    */
   tilebank_sort_function(a,b) {
-    let la = a.getLockNumber();
-    let lb = b.getLockNumber();
+    try {
+      let la = a.getLockNumber();
+      let lb = b.getLockNumber();
 
-    a = a.getTileFace();
-    b = b.getTileFace();
+      a = a.getTileFace();
+      b = b.getTileFace();
 
-    // 1: bonus tiles always go on the far left
-    if (a>33 || b>33) {
-      if (a>33 && b>33) return a-b;
-      if (a>33) return -1;
-      return 1;
+      // 1: bonus tiles always go on the far left
+      if (a>33 || b>33) {
+        if (a>33 && b>33) return a-b;
+        if (a>33) return -1;
+        return 1;
+      }
+
+      // 2: locked tiles
+      if (la || lb) {
+        if (la && lb) return (la===lb) ? a - b : la - lb;
+        if (la) return -1;
+        return 1;
+      }
+
+      // 4 (out of order): for concealed tiles to the right
+      if (a===-1) return 1;
+      if (b===-1) return -1;
+
+      // 3: plain compare for regular tiles
+      return a - b;
     }
-
-    // 2: locked tiles
-    if (la || lb) {
-      if (la && lb) return (la===lb) ? a - b : la - lb;
-      if (la) return -1;
-      return 1;
+    catch (e) {
+      console.log(a, b);
+      console.log(a.constructor.name, b.constructor.name);
+      throw (e);
     }
-
-    // 4 (out of order): for concealed tiles to the right
-    if (a===-1) return 1;
-    if (b===-1) return -1;
-
-    // 3: plain compare for regular tiles
-    return a - b;
   }
 }
 
-if (typeof process !== "undefined") {
+if (typeof process !== `undefined`) {
   module.exports = ClientUIMaster;
 }

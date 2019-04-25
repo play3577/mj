@@ -2,7 +2,7 @@
  * Tile discard animations
  */
 
- .tile.discard[data-from] {
+game-tile.discard[from] {
   position: relative;
   top: 0;
   left: 0;
@@ -14,10 +14,10 @@
 @keyframes p2-discard { 0% { top: -20em; } 100% { top: 0; } }
 @keyframes p3-discard { 0% { left: 20em; } 100% { left: 0; } }
 
-.tile.discard[data-from="0"] { animation: p0-discard 0.5s; }
-.tile.discard[data-from="1"] { animation: p1-discard 0.5s; }
-.tile.discard[data-from="2"] { animation: p2-discard 0.5s; }
-.tile.discard[data-from="3"] { animation: p3-discard 0.5s; }
+game-tile.discard[from="0"] { animation: p0-discard 0.5s; }
+game-tile.discard[from="1"] { animation: p1-discard 0.5s; }
+game-tile.discard[from="2"] { animation: p2-discard 0.5s; }
+game-tile.discard[from="3"] { animation: p3-discard 0.5s; }
 
 @keyframes fade-out { 0% { opacity: 1; } 66% { opacity: 1; } 100% { opacity: 0; } }
 

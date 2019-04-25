@@ -34,6 +34,7 @@ class Element {
     this.events = {};
     this.parentNode = false;
     this.style = new Style();
+    this.innerHTML = ``;
   }
 
   focus() { /* irrelevant */ }
@@ -92,6 +93,7 @@ class Document {
 if (typeof process !== "undefined") {
   module.exports = {
     document: new Document(),
+    Element,
     Classlist
   };
 }

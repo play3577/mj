@@ -10,7 +10,19 @@ const consoleProxy = {
 
     log(...args) {
         __console.log(...args);
-    }
+    },
+
+    warn(...args) {
+        __console.warn(...args);
+    },
+
+    error(...args) {
+        __console.error(...args);
+    },
+
+    trace(...args) {
+        __console.trace(...args);
+    },
 }
 
 if (typeof process !== "undefined") {

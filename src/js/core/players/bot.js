@@ -47,7 +47,6 @@ class BotPlayer extends Player {
         this.getTileFaces().forEach(t => { t = create(t); bank.appendChild(t); });
         this.locked.forEach((s,sid) => {
           s.forEach(t => {
-            t = t.copy();
             t.lock(1 + sid);
             bank.appendChild(t);
           });

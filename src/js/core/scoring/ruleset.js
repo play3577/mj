@@ -493,6 +493,13 @@ class Ruleset {
     let finalScore = possibleScores.sort( (a,b) => { a = a.total; b = b.total; return a - b; }).slice(-1)[0];
     config.log('final score:', finalScore);
 
+    if (!finalScore) {
+      disclosure.locked = disclosure.locked.map(set => set.map(tile => tile.values ? tile.values.tile : tile));
+      console.log(disclosure);
+      console.log(possibleScores);
+      throw new Error("no score could be computed");
+    }
+
     return finalScore;
   }
 

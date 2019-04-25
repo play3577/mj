@@ -461,8 +461,8 @@ class Game {
     do {
       let tile = wall.get();
       this.players.forEach(p => p.receivedTile(player));
-      console.debug(`${player.id} receives ${tile}`);
-      config.log(`${player.id} <  ${tile}`);
+      console.debug(`${player.id} receives ${tile} - ${player.getTileFaces()}`);
+      config.log(`${player.id} <  ${tile} - ${player.getTileFaces()} - PRNG: ${config.PRNG.seed()}`);
       revealed = player.append(tile);
       if (revealed) { this.players.forEach(p => p.see(revealed, player)); }
       else {

@@ -203,25 +203,37 @@ class PlayerMaster {
    * Add a tile to this player's hand.
    */
   append(tile, claimed, supplement) {
+    let face;
     let revealed = false;
+
     if (typeof tile !== 'object') {
-      if (tile > 33) {
-        revealed = tile;
-        this.bonus.push(tile);
-      }
+      face = tile;
       tile = create(tile);
+    } else {
+      face = tile.getTileFace();
     }
+
+    // if (typeof window !== "undefined") {
+    //   console.log(`${this.id} received tile ${face} (isbonus? ${tile.isBonus()})`);
+    // } else {
+    //   config.log(`${this.id} received tile ${face} (isbonus? ${tile.isBonus()})`);
+    // }
+
     this.latest = tile;
-    if (!tile.isBonus()) {
+
+    if (tile.isBonus()) {
+      revealed = face
+      this.bonus.push(face);
+    } else {
       this.tiles.push(tile);
     }
+
     if (!claimed) {
       this.tracker.seen(tile.getTileFace());
       this.lastClaim = false;
     }
-    if (supplement) {
-      tile.supplement();
-    }
+
+    if (supplement) tile.supplement();
     if (this.ui) this.ui.append(tile);
     return revealed;
   }

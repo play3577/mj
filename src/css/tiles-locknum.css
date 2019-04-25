@@ -8,10 +8,10 @@
  * generate the rest of the stylesheet.
  */
 
- .tile { --mr: 5px; }
- .tile:not([data-locknum]) + .tile[data-locknum] { margin-left: var(--mr); }
- .tile[data-locknum] + .tile:not([data-locknum]) { margin-left: var(--mr); }
- .tile[data-bonus] + .tile:not([data-locked]) { margin-left: var(--mr); }
+ game-tile { --mr: 5px; }
+ game-tile:not([locknum]) + game-tile[locknum] { margin-left: var(--mr); }
+ game-tile[locknum] + game-tile:not([locknum]) { margin-left: var(--mr); }
+ game-tile[bonus] + game-tile:not([locked]) { margin-left: var(--mr); }
 
 
  /* continued in src/js/page/tiles-locknum.js */

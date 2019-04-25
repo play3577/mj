@@ -29,7 +29,7 @@ class HumanPlayer extends BotPlayer {
     // it would suggest we throw away:
     super.determineDiscard(tilesRemaining, suggestion => {
       if (config.BOT_PLAY) return resolve((suggestion && suggestion.length) ? suggestion[0] : suggestion);
-      if (!suggestion.length) suggestion = [suggestion];
+      if (suggestion && !suggestion.length) suggestion = [suggestion];
       this.ui.listenForDiscard(discard => {
 
         // If we're discarding, even if our bot superclass

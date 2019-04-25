@@ -211,6 +211,7 @@ class ClientUI extends ClientUIMaster {
           suggestedTile.setTitle('Bot-recommended discard.');
         } else {
           console.log(`The bot got confused and wanted you to throw out something that's not in your hand...!`);
+          console.log(suggestion);
         };
       });
     }

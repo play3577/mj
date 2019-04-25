@@ -35,7 +35,6 @@ class Wall {
     this.deadSize = 16;
     this.dead = false;
     this.remaining = this.tiles.length - this.dead;
-    console.debug(`using wall:\n[${this.tiles}]`);
 
     // if there's a wall hack active, throw away what
     // we just did and use the hacked wall instead.

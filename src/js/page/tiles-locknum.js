@@ -14,7 +14,7 @@
   for (let i=1; i<max; i++) {
     for (let j=i+1; j<=i+max_dist; j++) {
       // NOTE: This relies on the --mr variable that is declared in tiles-locknum.css
-      rules.push(`.tile[data-locknum="${i}"] + .tile[data-locknum="${j}"] { margin-left: var(--mr); }`);
+      rules.push(`game-tile[locknum="${i}"] + game-tile[locknum="${j}"] { margin-left: var(--mr); }`);
     }
   }
 

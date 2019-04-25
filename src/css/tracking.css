@@ -25,7 +25,7 @@
   padding-left: 1px;
 }
 
-.tile-count .tile[data-tile] {
+.tile-count game-tile[tile] {
   display: inline-block;
   background-size: auto 100%;
   background-repeat: no-repeat;

@@ -2,16 +2,14 @@ if (typeof process !== "undefined") {
   random = require('./math').random;
 }
 
-
-/**
- * https://gist.github.com/blixt/f17b47c62508be59987b
- */
-
 /**
  * Creates a pseudo-random value generator. The seed must be an integer.
  *
  * Uses an optimized version of the Park-Miller PRNG.
  * http://www.firstpr.com.au/dsp/rand31/
+ *
+ *
+ * See https://gist.github.com/blixt/f17b47c62508be59987b
  */
 
  /**
@@ -29,11 +27,25 @@ Random.prototype.seed = function (v) {
   return this._seed;
 }
 
+let rollCount = 0;
+
 /**
  * Returns a pseudo-random value between 1 and 2^32 - 2.
  */
 Random.prototype.next = function () {
-  return this._seed = this._seed * 16807 % 2147483647;
+  rollCount++;
+
+//  if (!config) config = require('../../config.js')
+//  console.log(`PRNG ROLLOVER ${rollCount}`);
+//  if (typeof window !== "undefined") {
+//    console.log(`PRNG ROLLOVER ${rollCount}`);
+//  }
+//  if (rollCount>144 * 2 + 10) {
+//    console.trace();
+//    process.exit(-1);
+//  }
+
+  return this.seed(this._seed * 16807 % 2147483647);
 };
 
 /**
