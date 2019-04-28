@@ -81,10 +81,10 @@ class Game {
 
   /**
    * A utility function that works together with
-   * the pause lock to ensure that is we're paused,
+   * the pause lock to ensure that when we're paused,
    * execution is suspended until the lock is released.
    */
-  async continue(where='continue') {
+  async continue(where='unknown') {
     if (this._playLock) {
       console.debug(`paused at ${where}`);
       await this._playLock;

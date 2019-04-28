@@ -19,6 +19,23 @@ class ClientUIMaster {
     this.discards = document.querySelector(`.discards`);
     this.playerbanks = document.querySelectorAll(`.player`);
     this.knowledge = document.querySelector(`.knowledge`);
+
+    this.gameBoard = document.querySelector('.board');
+    if (config.PAUSE_ON_BLUR) {
+      this.gameBoard.addEventListener('blur', evt => {
+        let resume = this.player.game.pause();
+
+        let handleResume = () => {
+          this.gameBoard.removeEventListener('focus', handleResume);
+          resume();
+          this.pause_protection = true;
+        };
+
+        this.gameBoard.addEventListener('focus', handleResume);
+      });
+    }
+
+
     this.el = this.playerbanks[this.id];
     this.reset(0,0);
 

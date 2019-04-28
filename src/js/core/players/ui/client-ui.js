@@ -351,8 +351,8 @@ class ClientUI extends ClientUIMaster {
     let discards = this.discards;
     this.listen(tile, "click",  evt => this.triggerClaimDialog(tile, mayChow, interrupt, resolve));
     this.listen(discards, "click", evt => this.safelyIgnoreDicard(evt, tile, mayChow, interrupt, resolve));
-    this.listen(discards, "mousedown", evt => this.verifyPauseProtection);
-    this.listen(discards, "touchstart", evt => this.verifyPauseProtection);
+    this.listen(discards, "mousedown", evt => this.verifyPauseProtection());
+    this.listen(discards, "touchstart", evt => this.verifyPauseProtection());
     this.listen(document, "keydown", evt => this.handleKeyDuringClaim(evt, tile, mayChow, interrupt, resolve));
   }
 

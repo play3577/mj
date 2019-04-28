@@ -10,20 +10,12 @@ if (typeof process !== "undefined") {
  */
 class GameManager {
   constructor(players) {
-    this.gameBoard = document.querySelector('.board');
     this.players = players || [
       new HumanPlayer(0, config.WALL_HACK),
       new BotPlayer(1, config.WALL_HACK),
       new BotPlayer(2, config.WALL_HACK),
       new BotPlayer(3, config.WALL_HACK),
     ];
-
-    if (typeof window !== "undefined") {
-      // make it easy to inspect the players array if debug is on.
-      if (config.FORCE_OPEN_BOT_PLAY || config.DEBUG) { window.players = this.players; }
-      // but even without debug on, we want access to that array.
-      else { window.麻雀者 = this.players; }
-    }
   }
 
   /**
@@ -32,19 +24,17 @@ class GameManager {
    */
   newGame() {
     let game = new Game(this.players);
-    if (config.PAUSE_ON_BLUR) {
 
-      this.gameBoard.addEventListener('blur', evt => {
-        let resume = game.pause();
-        let handleResume = () => {
-          this.gameBoard.removeEventListener('focus', handleResume);
-          resume();
-        };
-        this.gameBoard.addEventListener('focus', handleResume);
-      });
-
+    if (typeof window !== "undefined") {
+      window.currentGame = {
+        game: game,
+        players: this.players
+      };
     }
-    this.gameBoard.focus();
+
+    let gameBoard = document.querySelector('.board');
+    gameBoard.focus();
+    
     return game;
   }
 }

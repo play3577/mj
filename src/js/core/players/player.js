@@ -12,10 +12,6 @@ class Player extends PlayerMaster {
     super(id);
   }
 
-  setActiveGame(game) {
-    this.game = game;
-  }
-
   async getDiscard(tilesRemaining, resolve) {
     let resolveProxy = (discard) => {
       this.discards.push(discard);

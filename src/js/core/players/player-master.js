@@ -55,6 +55,13 @@ class PlayerMaster {
   }
 
   /**
+   * Set the game this player is now playing in.
+   */
+  setActiveGame(game) {
+    this.game = game;
+  }
+
+  /**
    * Bind the ruleset that this player should "follow"
    * during the game they are currently in.
    */
