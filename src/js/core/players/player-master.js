@@ -55,6 +55,15 @@ class PlayerMaster {
   }
 
   /**
+   * Signal that the game will start
+   */
+  gameWillStart(game, rules) {
+    if (this.ui) this.ui.gameWillStart();
+    this.setActiveGame(game);
+    this.setRules(rules);
+  }
+
+  /**
    * Set the game this player is now playing in.
    */
   setActiveGame(game) {
@@ -69,13 +78,6 @@ class PlayerMaster {
     this.rules = rules;
     this._score = this.rules.player_start_score;
     if (this.ui) this.ui.setRules(rules);
-  }
-
-  /**
-   * Signal that the game will start
-   */
-  gameWillStart() {
-    if (this.ui) this.ui.gameWillStart();
   }
 
   /**

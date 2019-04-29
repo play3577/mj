@@ -22,8 +22,8 @@ class ClientUIMaster {
 
     this.gameBoard = document.querySelector('.board');
     if (config.PAUSE_ON_BLUR) {
-      this.gameBoard.addEventListener('blur', evt => {
-        let resume = this.player.game.pause();
+      this.gameBoard.addEventListener('blur', async (evt) => {
+        let resume = await this.player.game.pause();
 
         let handleResume = () => {
           this.gameBoard.removeEventListener('focus', handleResume);

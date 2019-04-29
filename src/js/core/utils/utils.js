@@ -1,3 +1,13 @@
+/**
+ * Add this to the array prototype, but this is an array function
+ * and I don't want to see some bs 'dothis(array, fn)' anywhere.
+ */
+Array.prototype.asyncAll = async function asyncAll(fn) {
+  return await Promise.all(
+    this.map(e => new Promise((resolve, reject) => fn(e,resolve,reject)))
+  );
+}
+
 const __roll_sort =  (a,b) => a < b ? -1 : b > a ? 1 : 0;
 
 /**
