@@ -4,7 +4,10 @@
  */
 Array.prototype.asyncAll = async function asyncAll(fn) {
   return await Promise.all(
-    this.map(e => new Promise((resolve, reject) => fn(e,resolve,reject)))
+    this.map(e => new Promise(resolve => {
+      fn(e);
+      resolve();
+    }))
   );
 }
 

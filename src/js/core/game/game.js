@@ -42,10 +42,7 @@ class Game {
 
     let players = this.players;
 
-    await players.asyncAll((player, resolve, reject) => {
-      player.gameWillStart(this, this.rules);
-      resolve();
-    });
+    await players.asyncAll(p => p.gameWillStart(this, this.rules));
 
     this.fixValues = () => {
       // drop in term fixes (hand/draw/seed/wind/wotr) here.
@@ -78,18 +75,12 @@ class Game {
       this.resume = async () => {
         console.debug('resuming game');
         this._playLock = false;
-        await players.asyncAll((p, resolve, reject) => {
-          p.resume();
-          resolve();
-        });
+        await players.asyncAll(p => p.resume());
         resolve();
       }
     });
 
-    await players.asyncAll((p, resolve, reject) => {
-      p.pause(this._playLock);
-      resolve();
-    });
+    await players.asyncAll(p => p.pause(this._playLock));
 
     return this.resume;
   }
@@ -136,10 +127,7 @@ class Game {
             console.log(`\nfull game played: player ${gamewinner} is the winner!`);
             console.log(`(game took ${s}s. ${this.totalPlays} plays: ${this.hand} hands, ${this.totalDraws} draws)`);
             
-            await players.asyncAll((p, resolve, reject) => {
-              p.endOfGame(finalScores);
-              resolve();
-            });
+            await players.asyncAll(p => p.endOfGame(finalScores));
 
             return this.finish(s);
           }
@@ -157,17 +145,17 @@ class Game {
       this.totalDraws++;
     }
 
-    await players.asyncAll((p, resolve, reject) => {
-      let playerwind = (this.wind + p) % 4;
+    await players.asyncAll(p => {
+      let offset = parseInt(p.id);
+      let playerwind = (this.wind + offset) % 4;
 
       // Do we need to rotate player winds in the
       // opposite direction of the round winds?
       if (this.rules.reverse_wind_direction) {
-        playerwind = (4 + this.wind - p) % 4;
+        playerwind = (4 + this.wind - offset) % 4;
       }
 
       p.reset(playerwind, this.windOfTheRound, this.hand, this.draws);
-      resolve();
     });
 
     // used for play debugging:
@@ -211,10 +199,7 @@ class Game {
       config.log(message);
     });
 
-    await players.asyncAll((p, resolve, reject) => {
-      p.playWillStart();
-      resolve();
-    })
+    await players.asyncAll(p => p.playWillStart());
 
     this.PLAY_START = Date.now();
     this.play();
@@ -237,17 +222,13 @@ class Game {
       let bank = wall.get(13);
       for (let t=0, tile; t<bank.length; t++) {
         tile = bank[t];
-        await players.asyncAll((p,resolve,reject) => {
-          p.receivedTile(player);
-          resolve();
-        });
+
+        await players.asyncAll(p => p.receivedTile(player));
+        
         let revealed = player.append(tile);
         if (revealed) {
           // bonus tile are shown to all other players.
-          await players.asyncAll((p, resolve, reject) => {
-            p.see(revealed, player);
-            resolve();
-          });
+          await players.asyncAll(p => p.see(revealed, player));
           bank.push(wall.get());
         }
       }
@@ -340,10 +321,7 @@ class Game {
       config.log(`${player.id} <  ${tile} (supplement)`);
       revealed = player.append(tile);
       if (revealed) {
-        await players.asyncAll((p,resolve,reject) => {
-          p.see(revealed, player);
-          resolve();
-        });
+        await players.asyncAll(p => p.see(revealed, player));
       }
     } while (revealed);
   }
@@ -353,14 +331,12 @@ class Game {
    */
   async processKongRob(claim) {
     let pid = claim.from;
-    let tile = this.players[pid].giveUpKongTile(claim.tile);
+    let players = this.players;
+    let tile = players[pid].giveUpKongTile(claim.tile);
 
-    await players.asyncAll((p,resolve,reject) => {
-      p.playerGaveUpKongTile(pid, claim.tile);
-      resolve();
-    });
+    await players.asyncAll(p => p.playerGaveUpKongTile(pid, claim.tile));
 
-    let winner = this.players[claim.by];
+    let winner = players[claim.by];
     winner.robbed = true;
     this.currentPlayerId = winner.id;
     let robbed = true;
@@ -391,10 +367,7 @@ class Game {
     this.playDelay = (hand===config.PAUSE_ON_HAND && this.counter===config.PAUSE_ON_PLAY) ? 60*60*1000 : config.PLAY_INTERVAL;
     let player = players[currentPlayerId];
 
-    await players.asyncAll((p,resolve,reject) => {
-      p.activate(currentPlayerId);
-      resolve();
-    });
+    await players.asyncAll(p => p.activate(currentPlayerId));
 
     // increase the play counter for debugging purposes:
     this.counter++;
@@ -421,10 +394,7 @@ class Game {
       let tiles = player.receiveDiscardForClaim(claim, discard);
       config.log(`${player.id} has [${player.getTileFaces()}], [${player.getLockedTileFaces()}]`);
 
-      await players.asyncAll((p,resolve,reject) => {
-        p.seeClaim(tiles, player, discard, claim);
-        resolve();
-      });
+      await players.asyncAll(p => p.seeClaim(tiles, player, discard, claim));
 
       // If this was a kong, can someone rob it to win?
       if (tiles.length === 4) {
@@ -488,10 +458,7 @@ class Game {
     if (wall.dead) {
       console.log(`Hand ${hand} is a draw.`);
 
-      await players.asyncAll((p,resolve,reject) => {
-        p.endOfHand();
-        resolve();
-      });
+      await players.asyncAll(p => p.endOfHand());
       
       let nextHand = () => this.startHand({ draw: true });
       if (!config.BOT_PLAY) {
@@ -502,10 +469,7 @@ class Game {
     // If we get here, nothing of note happened, and we just move on to the next player.
     await this.continue("just before scheduling the next play() call");
 
-    await players.asyncAll((p,resolve,reject) => {
-      p.nextPlayer();
-      resolve();
-    });
+    await players.asyncAll(p => p.nextPlayer());
 
     this.currentPlayerId = (this.currentPlayerId + 1) % 4;
 
@@ -522,21 +486,16 @@ class Game {
     let revealed = false;
     do {
       let tile = wall.get();
+      let players = this.players;
 
-      await this.players.asyncAll((p,resolve,reject) => {
-        p.receivedTile(player);
-        resolve();
-      });
+      await players.asyncAll(p => p.receivedTile(player));
       
       console.debug(`${player.id} receives ${tile} - ${player.getTileFaces()}`);
       config.log(`${player.id} <  ${tile} - ${player.getTileFaces()} - PRNG: ${config.PRNG.seed()}`);
       revealed = player.append(tile);
       
       if (revealed) {
-        await this.players.asyncAll((p,resolve,reject) => {
-          p.see(revealed, player);
-          resolve();
-        });
+        await players.asyncAll(p => p.see(revealed, player));
       }
 
       else {
@@ -580,10 +539,7 @@ class Game {
     let fullDisclosure = players.map(p => p.getDisclosure());
     console.debug('disclosure array:', fullDisclosure);
 
-    await players.asyncAll((p,resolve,reject) => {
-      p.endOfHand(fullDisclosure);
-      resolve();
-    });
+    await players.asyncAll(p => p.endOfHand(fullDisclosure));
 
     // And od course, calculate the scores.
     console.debug("SCORING TILES");
@@ -600,10 +556,9 @@ class Game {
     
     let adjustments = this.rules.settleScores(scores, player.id, eastid, discardpid);
 
-    await players.asyncAll((p,resolve,reject) => {
+    await players.asyncAll(p => {
       config.log(`${p.id}: ${adjustments[p.id]}, hand: ${p.getTileFaces()}, [${p.getLockedTileFaces()}], (${p.bonus}), discards: ${fullDisclosure[p.id].discards}`);
       p.recordScores(adjustments);
-      resolve();
     });
 
     // Before we move on, record this step in the game,
@@ -635,10 +590,7 @@ class Game {
     discard.setFrom(player.id);
     discard.reveal();
 
-    await this.players.asyncAll((p,resolve,reject) => {
-      p.playerDiscarded(player, discard, this.counter);
-      resolve();
-    });
+    await this.players.asyncAll(p => p.playerDiscarded(player, discard, this.counter));
   }
 
   /**
