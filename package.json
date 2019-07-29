@@ -1,0 +1,30 @@
+{
+  "name": "mj",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo no tests",
+    "start": "npm run pack-for-browser && npm run game",
+    "pack-for-browser": "browserify src/game/rules/utils/find-tiles-needed.js -o src/utils/find-tiles-needed.js --standalone findTilesNeeded",
+    "game": "node index.js",
+    "game:bot": "node start-bot.js",
+    "game:client": "node start-web-client.js",
+    "prettier": "prettier --write ./{src,public}/**/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pomax/mj.git"
+  },
+  "author": "",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "bugs": {
+    "url": "https://github.com/Pomax/mj/issues"
+  },
+  "homepage": "https://github.com/Pomax/mj#readme",
+  "dependencies": {
+    "browserify": "^16.3.0",
+    "prettier": "^1.18.2",
+    "socketless": "^0.10.1"
+  }
+}

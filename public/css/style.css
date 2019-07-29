@@ -1,0 +1,250 @@
+:root {
+  --ph: 4em;
+  --sep: 3px;
+  --p1: 180deg;
+  --p2: 270deg;
+  --p3: 0deg;
+  --p4: 90deg;
+  --tilegap: 10px;
+}
+
+h1 s {
+  display: inline-block;
+  text-decoration: none;
+  font-family: Verdana;
+  width: 0;
+  position: relative;
+  top: 4px;
+  left: -18px;
+  color: red;
+  font-weight: 100;
+  opacity: 0.6;
+}
+
+button {
+  margin: 1em;
+  padding: 0;
+  display: inline-block;
+  background: white;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-family: Verdana;
+  color: black;
+  background: #f0f0f0;
+}
+
+button + button {
+  margin-left: 0 !important;
+}
+
+button[disabled] {
+  background: transparent;
+  color: #999;
+  border: 1px dashed;
+  margin: calc(1em + 2px);
+}
+
+label {
+  user-select: none;
+}
+
+label > * {
+  margin-left: 1em;
+}
+
+#game-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  min-height: 2.5em;
+}
+
+#game-header * {
+  flex: 0 0 auto;
+  margin: 0;
+  text-transform: capitalize;
+}
+
+#game-header h1 {
+  font-size: 1.5em;
+  margin-top: -0.5em;
+}
+
+#game-header h1 a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px dotted blue;
+}
+
+.next-button, .leave-button {
+  float: right;
+  background: gold;
+  border: 1px solid black;
+}
+
+#discard .tile {
+  vertical-align: middle;
+}
+
+.btn {
+  display: inline-block;
+  margin-left: 10px;
+}
+
+footer {
+  padding: 10px;
+  background: #ccc;
+}
+
+footer p {
+  display: inline-block;
+  margin: 0 1em;
+}
+
+.tiles, .locked, .bonus {
+  margin: 0.5em;
+  padding: 0;
+  text-indent: 0;
+  display: inline-block;
+  vertical-align: top;
+}
+
+.locked ul {
+  display: inline-block;
+  padding: 0;
+}
+
+.locked ul + ul {
+  margin-left: 10px;
+}
+
+#active-game {
+  display: inline-block;
+  padding: 1em;
+  padding-top: 1.5em;
+  background: #ffeac1;
+  min-width: 47em;
+}
+
+.score-dialog {
+  border: 1px solid black;
+  background: rgba(255,255,255,0.7);
+}
+
+.mini-tiles ul {
+  display: inline-block;
+  margin: 0;
+  text-indent: 0;
+  padding: 0;
+}
+
+.mini-tiles ul + ul {
+  margin-left: var(--tilegap);
+}
+
+.mini-tiles .tile {
+  width: 1.4em;
+  min-width: inherit;
+  height: 2em;
+  min-height: inherit;
+}
+
+.player {
+  position: relative;
+  background: #ffeac1;
+  margin: 2px;
+  padding-left: 2em;
+}
+
+.player + .player {
+  margin-top: 1em;
+}
+
+.player:before {
+  content: attr(data-glyph);
+  vertical-align: -1em;
+  display: inline-block;
+  position: absolute;
+  top: 1em;
+  left: 0.25em;
+  background: rgb(70, 150, 16);
+  color: white;
+  text-shadow: 0 0 1px black;
+  padding: 2px 5px;
+  border-radius: 3px;
+  border: 1px solid black;
+}
+
+.player:after {
+  position: absolute;
+  content: attr(data-name) "    current score: " attr(data-score);
+  white-space: pre;
+  left: -1em;
+  top: -1em;
+  font-family: Helvetica;
+  font-weight: bold;
+  color: #834828;
+  font-variant: small-caps;
+  text-transform: lowercase;
+}
+
+.player.active {
+  background: linear-gradient(to left, transparent, #fbb479);
+  border-radius: 10px;
+}
+
+.player.winner:before {
+  background: gold;
+  color: gold;
+  text-shadow: -1px -1px 2px purple, 1px 1px 2px purple;
+}
+
+.player.left {
+  opacity: 0.4;
+}
+
+button.rename {
+  margin: 0;
+  display: inline-block;
+}
+
+#discard-buttons button:focus {
+  --bc: rgb(200, 218, 206);
+  background:  var(--bc);
+  border-color: blue;
+}
+
+button.claim-button.win-button {
+  background: #b7f0d0;
+}
+
+.timer {
+  display: inline-block;
+  position: relative;
+  width: 10em;
+  height: 5px;
+  background: lightyellow;
+  vertical-align: middle;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  margin-left: 1em;
+}
+
+.timer .timer-bar {
+  display: inline-block;
+  position: absolute;
+  height: 100%;
+  width: 0;
+  background: #ffb166;
+  transition: width 0.1s ease-in-out;
+}
+
+.mini-tiles {
+  padding: 0;
+}
+
+.mini-tiles span {
+  display: inline-table;
+  margin-right: 0.4em;
+  vertical-align: -6px;
+  font-weight: 600;
+}

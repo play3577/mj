@@ -1,6 +1,3 @@
-play-log-*.log
-!logs
-docs/*.aux
-docs/*.log
-docs/*.synctex.gz
-docs/*.pdf
+_old
+node_modules
+package-lock.json
