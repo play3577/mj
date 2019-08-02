@@ -44,6 +44,11 @@ module.exports = function findTilesNeeded(tiles, locked, ignoreChowPairs = true)
 
   // TODO: compact the evaluations into a global unique claims set?
   //       For instance, [1,2,2,2,3,3,3,4,4,5,6,7] does _amazing_ things.
+
+  // FIXME: it would appear that when holding [...,2,3,4,4,...] there is
+  //        no conclusion that 3 would be good to get, which would allow
+  //        [2,3,4] to be played, with [3,4] left in hand.
+
   return { root, paths, evaluations };
 }
 
