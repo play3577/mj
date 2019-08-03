@@ -220,7 +220,7 @@ export default class WebClientClass {
    * Basic game information like name, round, and wind.
    */
   renderGameHeader(state) {
-    const game = state.currentGame;n
+    const game = state.currentGame;
     const [adjective, ...animal] = game.name.split(" ");
 
     const heading = h1(
