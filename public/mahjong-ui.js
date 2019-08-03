@@ -251,7 +251,7 @@ export default class WebClientClass {
   renderWall(state) {
     return Object.keys(state.wall).map(tilenumber => {
       return div(
-        makearray(state.wall[tilenumber]).map(() =>
+        makearray(state.wall[tilenumber]).map(() => // FIXME: when we run out of tiles, this goes wrong.
           TileBuilders.buildTile(tilenumber)
         )
       );

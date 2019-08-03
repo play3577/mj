@@ -58,7 +58,6 @@ const Interaction = (function() {
 
   function enableDiscardKeys(cur) {
     if (!cur_focus) {
-      console.log("enabling key interactions");
       document.addEventListener("keydown", refocus);
     }
     cur_focus = cur;
@@ -67,7 +66,6 @@ const Interaction = (function() {
 
   function disableDiscardKeys() {
     if (cur_focus) {
-      console.log("disabling key interactions");
       document.removeEventListener("keydown", refocus);
     }
     cur_focus = false;
