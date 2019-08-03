@@ -2,7 +2,7 @@ const { legalClaim } = require("../utils/claims.js");
 
 const Wall = require("./wall/wall.js");
 
-const LOG = true;
+const LOG = false;
 
 const CLAIM_VALUES = {
   pair: 1,
