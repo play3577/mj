@@ -1,7 +1,10 @@
 const { FAAN_LAAK } = require("../utils/types.js");
 const PointComputer = require("../computers/point-computer.js");
 
-const { TILE_NAMES, SUIT_NAMES } = require("../utils/../../../utils/mj-names.js");
+const {
+  TILE_NAMES,
+  SUIT_NAMES
+} = require("../utils/../../../utils/mj-names.js");
 const names = TILE_NAMES;
 const suits = SUIT_NAMES;
 
@@ -147,7 +150,6 @@ class Cantonese extends PointComputer {
     }
 
     return scoreObject;
-
   }
 
   /**

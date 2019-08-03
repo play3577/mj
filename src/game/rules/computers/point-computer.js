@@ -29,7 +29,6 @@ class PointComputer {
     if (limit) return limit;
   }
 
-
   /**
    *  ...
    */
@@ -37,7 +36,8 @@ class PointComputer {
     return sets.map(tiles => {
       let tile = tiles[0];
       let pointScoringFn = () => ({ score: 0, double: 0, log: [] });
-      if (tiles.length === 2 && tile === tiles[1]) pointScoringFn = this.getPairValue;
+      if (tiles.length === 2 && tile === tiles[1])
+        pointScoringFn = this.getPairValue;
       if (tiles.length === 3)
         if (tile !== tiles[1]) pointScoringFn = this.getChowValue;
         else pointScoringFn = this.getPungValue;
@@ -46,12 +46,12 @@ class PointComputer {
     });
   }
 
-
   /**
    *  ...
    */
   getPairValue(tile, playerWind, windOfTheRound, locked) {
-    let score = (tile === playerWind || tile === windOfTheRound || tile >= 31) ? 2 : 0;
+    let score =
+      tile === playerWind || tile === windOfTheRound || tile >= 31 ? 2 : 0;
     return {
       score,
       doubles: 0,
@@ -67,7 +67,7 @@ class PointComputer {
     return {
       score,
       doubles: 0,
-      log: [`${score} for a chow ${tile},${tile+1},${tile+2}`]
+      log: [`${score} for a chow ${tile},${tile + 1},${tile + 2}`]
     };
   }
 
@@ -76,7 +76,8 @@ class PointComputer {
    */
   getPungValue(tile, playerWind, windOfTheRound, locked) {
     let score = locked ? 2 : 4;
-    let doubles = (tile === playerWind || tile === windOfTheRound || tile > 30) ? 1 : 0;
+    let doubles =
+      tile === playerWind || tile === windOfTheRound || tile > 30 ? 1 : 0;
     return {
       score,
       doubles,
@@ -89,7 +90,8 @@ class PointComputer {
    */
   getKongValue(tile, playerWind, windOfTheRound, locked) {
     let score = locked ? 4 : 8;
-    let doubles = (tile === playerWind || tile === windOfTheRound || tile > 30) ? 1 : 0;
+    let doubles =
+      tile === playerWind || tile === windOfTheRound || tile > 30 ? 1 : 0;
     return {
       score,
       doubles,
@@ -131,7 +133,7 @@ class PointComputer {
   }
 }
 
-Object.defineProperty(PointComputer, 'NO_SCORE', {
+Object.defineProperty(PointComputer, "NO_SCORE", {
   get: () => ({ score: 0, doubles: 0, total: 0, log: [] })
 });
 

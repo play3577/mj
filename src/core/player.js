@@ -81,11 +81,11 @@ class Player {
       windGlyph: this.windGlyph,
       score: this.score,
       locked: this.locked,
-      bonus: this.bonus.sort((a,b) => a - b),
+      bonus: this.bonus.sort((a, b) => a - b)
     };
 
     if (this.reveal) {
-      ret.tiles = this.tiles.sort((a,b) => a - b);
+      ret.tiles = this.tiles.sort((a, b) => a - b);
     }
 
     return ret;

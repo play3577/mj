@@ -35,8 +35,8 @@ module.exports = class Game {
     const { spawn } = require("child_process");
     const npm = `npm${process.platform === "win32" ? `.cmd` : ``}`;
     const bot = spawn(npm, [`run`, `game:bot`, this.name]);
-    bot.stderr.on('data', data => console.error(data.toString()));
-    bot.stdout.on('data', data => console.log(data.toString()));
+    bot.stderr.on("data", data => console.error(data.toString()));
+    bot.stdout.on("data", data => console.log(data.toString()));
     owner.addBot(bot);
   }
 
@@ -48,7 +48,6 @@ module.exports = class Game {
     let pos = this.players.findIndex(p => p.id === player.id);
     if (pos > -1) this.players.splice(pos, 1);
   }
-
 
   /**
    * change a game's config

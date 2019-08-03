@@ -12,7 +12,12 @@ function entailed(target, paths) {
  * from the root to the end of the graph (signalled by not having
  * any outbound links).
  */
-module.exports = function expand(root, ignoreChowPairs, paths = [], sofar = []) {
+module.exports = function expand(
+  root,
+  ignoreChowPairs,
+  paths = [],
+  sofar = []
+) {
   let outbound = root.outbound;
 
   if (outbound.length === 0 && sofar.length && !entailed(sofar, paths)) {
@@ -25,8 +30,8 @@ module.exports = function expand(root, ignoreChowPairs, paths = [], sofar = []) 
       let next = sofar.slice();
       let tiles = link.tiles;
       if (tiles.length > 1) {
-        if (ignoreChowPairs && tiles.length===2 && tiles[0] !== tiles[1]) {}
-        else next.push(tiles);
+        if (ignoreChowPairs && tiles.length === 2 && tiles[0] !== tiles[1]) {
+        } else next.push(tiles);
       }
       expand(link.targetNode, ignoreChowPairs, paths, next);
     });

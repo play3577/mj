@@ -61,19 +61,19 @@ class Node {
   heap=[${this.tiles}]
   depth=${this.tiles.length}
 ${
-      this.inbound.length === 0
-        ? ``
-        : `  inbound links=[
+  this.inbound.length === 0
+    ? ``
+    : `  inbound links=[
     ${this.inbound.join(`\n    `)}
   ]
 `
-      }${
+}${
       this.outbound.length === 0
         ? ``
         : `  outbound links=[
     ${this.outbound.join(`\n    `)}
   ]`
-      }`;
+    }`;
   }
 
   toFullString() {
@@ -82,11 +82,10 @@ ${
 }
 
 Node.toString = function toString(node) {
-  return Object
-    .keys(node.nodelist)
+  return Object.keys(node.nodelist)
     .sort((a, b) => (a | 0) - (b | 0))
-    .map(depth => node.nodelist[depth].map(n => n.toString()).join('\n'))
-    .join('\n');
+    .map(depth => node.nodelist[depth].map(n => n.toString()).join("\n"))
+    .join("\n");
 };
 
 module.exports = Node;

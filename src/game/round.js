@@ -14,7 +14,7 @@ const CLAIM_VALUES = {
   win: 3
 };
 
-const getWindGlyphs = function (pcount) {
+const getWindGlyphs = function(pcount) {
   if (pcount === 2) return [`上`, `下`];
   if (pcount === 3) return [`発`, `中`, `白`];
   if (pcount === 4) return [`東`, `南`, `西`, `北`];
@@ -94,7 +94,9 @@ class Round {
     }
 
     if (LOG)
-      console.log(`round> startPlay from ${id}, ready length: ${this.waitingForReady.length}`);
+      console.log(
+        `round> startPlay from ${id}, ready length: ${this.waitingForReady.length}`
+      );
 
     if (this.waitingForReady.length >= this.players.length) {
       this.waitingForReady = false;
@@ -156,8 +158,7 @@ class Round {
    * Deal a tile to the currently active player.
    */
   dealTile() {
-    if (LOG)
-      console.log(`round> dealTile`);
+    if (LOG) console.log(`round> dealTile`);
 
     this.currentDiscard = false;
     let tilenumber = this.wall.get();
@@ -214,8 +215,7 @@ class Round {
     if (player.seat !== this.currentPlayer)
       return `out-of-turn discard attempt`;
 
-    if (this.waitingForReady)
-      return `prior-to-play discard attempt`;
+    if (this.waitingForReady) return `prior-to-play discard attempt`;
 
     if (this.currentDiscard) return `another discard is already active`;
 
@@ -225,8 +225,7 @@ class Round {
     this.currentDiscard = tilenumber;
     this.claims = [];
 
-    if (LOG)
-      console.log(`round> player ${player.id} discarded ${tilenumber}`);
+    if (LOG) console.log(`round> player ${player.id} discarded ${tilenumber}`);
 
     // inform all clients of this discard
     const claim_timeout = this.config.claim_timeout.value;
@@ -237,9 +236,8 @@ class Round {
     // have been made. Otherwise, honour the
     // highest ranking claim.
     this.claimTimer = setTimeout(() => {
-      if (LOG)
-        console.log(`round> claim timer ran out`);
-      this.handleClaims()
+      if (LOG) console.log(`round> claim timer ran out`);
+      this.handleClaims();
     }, claim_timeout + 500);
   }
 
@@ -251,7 +249,8 @@ class Round {
   undoDiscard(player) {
     if (player.seat !== this.currentPlayer) return `not discarding player`;
 
-    if (this.claims.filter(v => v.claimtype).length) return `discard is already claimed`;
+    if (this.claims.filter(v => v.claimtype).length)
+      return `discard is already claimed`;
 
     clearTimeout(this.claimTimer);
     this.players.forEach(p => p.undoDiscard(player, this.currentDiscard));
@@ -262,8 +261,7 @@ class Round {
    * Notify all players that a player passed on the current discard.
    */
   playerPasses(player) {
-    if (LOG)
-      console.log(`round> player ${player.id} passes on this discard`);
+    if (LOG) console.log(`round> player ${player.id} passes on this discard`);
     let seat = player.seat;
     if (this.claims[seat] === undefined) {
       this.claims[seat] = {};
@@ -278,7 +276,9 @@ class Round {
   playerClaim(player, claimtype, wintype) {
     let seat = player.seat;
     if (LOG)
-      console.log(`round> player ${player.id} wants to claim this discard for a ${claimtype}.`);
+      console.log(
+        `round> player ${player.id} wants to claim this discard for a ${claimtype}.`
+      );
     const maychow = seat === (this.currentPlayer + 1) % this.players.length;
 
     // if this is not a legal claim, pass the player over.
@@ -306,7 +306,9 @@ class Round {
     const required = this.players.length - 1;
 
     if (LOG)
-      console.log(`round> received ${count} claim/passes, ${required} required`);
+      console.log(
+        `round> received ${count} claim/passes, ${required} required`
+      );
 
     if (count === required) {
       this.handleClaims();
@@ -317,8 +319,7 @@ class Round {
    * Process all received claims, awarding the highest "bidder".
    */
   handleClaims() {
-    if (LOG)
-      console.log(`round> handling pending claims.`);
+    if (LOG) console.log(`round> handling pending claims.`);
 
     clearTimeout(this.claimTimer);
 
@@ -360,7 +361,9 @@ class Round {
     this.players.forEach(p => p.claimAwarded(award));
 
     if (LOG)
-      console.log(`round> a ${award.claimtype} claim was awarded to ${award.id}.`);
+      console.log(
+        `round> a ${award.claimtype} claim was awarded to ${award.id}.`
+      );
 
     // if a kong was declared, make sure that player receives a supplement tile.
     if (claim.claimtype === `kong`) {
@@ -385,9 +388,17 @@ class Round {
     // figure out how the scores change
 
     const eastSeat = 0; // TODO: figure out real east player
-    const discardSeat = (this.id === this.currentPlayer) ? false : this.currentPlayer;
-    const points = this.players.map(p => this.rules.score(p, this.wind, this.wotr, p.id === id));
-    const scores = this.rules.pointsToScores(points, seat, eastSeat, discardSeat);
+    const discardSeat =
+      this.id === this.currentPlayer ? false : this.currentPlayer;
+    const points = this.players.map(p =>
+      this.rules.score(p, this.wind, this.wotr, p.id === id)
+    );
+    const scores = this.rules.pointsToScores(
+      points,
+      seat,
+      eastSeat,
+      discardSeat
+    );
     this.players.forEach(p => p.processScore(scores));
 
     // then communicate the updated game and win information
@@ -405,7 +416,7 @@ class Round {
   }
 }
 
-Round.getDetails = function () {
+Round.getDetails = function() {
   return {
     round: "",
     wind: "",

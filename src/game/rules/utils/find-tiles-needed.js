@@ -36,10 +36,16 @@ const expand = require("./graph/expand.js");
  *     ]
  *   }
  */
-module.exports = function findTilesNeeded(tiles, locked, ignoreChowPairs = true) {
+module.exports = function findTilesNeeded(
+  tiles,
+  locked,
+  ignoreChowPairs = true
+) {
   let root = buildGraph(tiles, ignoreChowPairs);
   let paths = expand(root, ignoreChowPairs);
-  let evaluations = paths.map(path => findPathRequirements(tiles, locked, path));
+  let evaluations = paths.map(path =>
+    findPathRequirements(tiles, locked, path)
+  );
 
   // TODO: compact the evaluations into a global unique claims set?
   //       For instance, [1,2,2,2,3,3,3,4,4,5,6,7] does _amazing_ things.
@@ -49,7 +55,7 @@ module.exports = function findTilesNeeded(tiles, locked, ignoreChowPairs = true)
   //        [2,3,4] to be played, with [3,4] left in hand.
 
   return { root, paths, evaluations };
-}
+};
 
 /**
  * Determine which tile claims will turn this path into a winning path.
@@ -61,7 +67,7 @@ function findPathRequirements(tiles, locked, path) {
 
   // How many sets/pairs do we have, and what can we claim to form more sets?
   const pathlength = path.length;
-  const lockedSets = locked.map(l => l.tiles ? l.tiles : l);
+  const lockedSets = locked.map(l => (l.tiles ? l.tiles : l));
   const allSets = path.concat(lockedSets);
   allSets.forEach((set, pos) => {
     // true pair?
@@ -103,9 +109,7 @@ function findSingleTilewinClaims(tiles, path, pairs, sets, allSets, claimable) {
     if (whittled.length === 2) {
       claimable.push(claim(whittled[1], "win", "pair"));
     }
-  }
-
-  else if (pairs === 1 && sets === 3) {
+  } else if (pairs === 1 && sets === 3) {
     // we need to turn our remaining singles into a chow to win
     if (whittled.length === 2) {
       const t1 = whittled[0];
@@ -122,9 +126,7 @@ function findSingleTilewinClaims(tiles, path, pairs, sets, allSets, claimable) {
         claimable.push(claim(t1 + 1, "win", "chow2"));
       }
     }
-  }
-
-  else if (pairs === 2 && sets === 3) {
+  } else if (pairs === 2 && sets === 3) {
     // We need to turn one of our pairs into a pung to win
     allSets.forEach((set, pos) => {
       if (set.length !== 2) return;
@@ -153,14 +155,12 @@ function findClaims(set) {
 
     if (set[1] === t + 2) return claim(t + 1, "chow2");
     if (set[1] === t + 1) {
-      let claims = []
-      if (suit(t) === suit(t+2)) claims.push(claim(t + 2, "chow3"));
-      if (suit(t) === suit(t-1)) claims.push(claim(t - 1, "chow1"));
+      let claims = [];
+      if (suit(t) === suit(t + 2)) claims.push(claim(t + 2, "chow3"));
+      if (suit(t) === suit(t - 1)) claims.push(claim(t - 1, "chow1"));
       return claims.filter(v => v);
     }
   }
-
-
 }
 
 /**
@@ -170,8 +170,8 @@ function remove(tiles, sets) {
   tiles = tiles.slice();
   sets.forEach(set => {
     set.forEach(t => {
-      tiles.splice(tiles.indexOf(t), 1)
-    })
+      tiles.splice(tiles.indexOf(t), 1);
+    });
   });
   return tiles;
 }
@@ -180,8 +180,7 @@ function remove(tiles, sets) {
  * claim generator
  */
 function claim(tilenumber, claimtype, wintype = undefined) {
-  if(claimtype.indexOf('chow') === 0 && tilenumber > 26)
-    return false; // can't chow honours
+  if (claimtype.indexOf("chow") === 0 && tilenumber > 26) return false; // can't chow honours
 
   let claim = { tilenumber, claimtype };
   if (wintype) claim.wintype = wintype;

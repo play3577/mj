@@ -22,14 +22,24 @@ function legalClaim(claimtype, wintype, tilenumber, tiles, locked, maychow) {
   // slightly-more-work checks.
   if (maychow && claimtype.indexOf("chow") > -1) {
     const suit = (tilenumber / 9) | 0;
-    const t = tilenumber, p2 = t - 2, p1 = t - 1, n1 = t + 1, n2 = t + 2;
+    const t = tilenumber,
+      p2 = t - 2,
+      p1 = t - 1,
+      n1 = t + 1,
+      n2 = t + 2;
 
     const samesuit = t => t < 27 && ((t / 9) | 0) === suit;
 
     if (claimtype === "chow3" && count[p2] && samesuit(p2) && count[p1])
       return true;
 
-    if (claimtype === "chow2" && count[p1] && samesuit(p1) && count[n1] && samesuit(n1))
+    if (
+      claimtype === "chow2" &&
+      count[p1] &&
+      samesuit(p1) &&
+      count[n1] &&
+      samesuit(n1)
+    )
       return true;
 
     if (claimtype === "chow1" && count[n2] && samesuit(n2) && count[n1])

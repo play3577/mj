@@ -4,7 +4,6 @@
  * be parsed as four sets and a pair.
  */
 class LimitHands {
-
   // Test to see if any of the known limit hands apply
   test(singles, sets, lockedSets) {
     const tiles = singles.concat(sets.flat());

@@ -1,8 +1,21 @@
-const getConfig = (function () {
+const getConfig = (function() {
   const TIMEOUTS = [
-    0, 100, 200, 300, 400, 500,
-    1000, 2000, 3000, 4000, 5000,
-    10000, 15000, 30000, 60000, 3600000,
+    0,
+    100,
+    200,
+    300,
+    400,
+    500,
+    1000,
+    2000,
+    3000,
+    4000,
+    5000,
+    10000,
+    15000,
+    30000,
+    60000,
+    3600000
   ];
 
   const CONFIG = {
@@ -16,10 +29,7 @@ const getConfig = (function () {
     // The ruleset to use to score a game.
     ruleset: {
       value: `Chinese Classical`,
-      type: [
-        `Cantonese`,
-        `Chinese Classical`
-      ]
+      type: [`Cantonese`, `Chinese Classical`]
     },
 
     // Set this to one of the kesy in wall-hack.js in order
@@ -46,7 +56,7 @@ const getConfig = (function () {
         `'5_6_7_plus_7'`,
         `'5_6_7_8_plus_6'`,
         `pung_chow_conflict`,
-        `cantonese_chicken_hand`,
+        `cantonese_chicken_hand`
       ]
     },
 
@@ -94,7 +104,7 @@ const getConfig = (function () {
       bindings[game.name] = JSON.parse(JSON.stringify(CONFIG));
     }
     return bindings[game.name];
-  }
+  };
 })();
 
 if (typeof module !== "undefined" && module.exports) {

@@ -12,14 +12,19 @@ const Interaction = (function() {
   const refocus = evt => {
     cur_focus.classList.remove("highlight");
 
-    if (evt.keyCode === 36) { // home
+    if (evt.keyCode === 36) {
+      // home
       evt.preventDefault();
       cur_focus = cur_focus.parentElement.children[0];
     }
 
-    if (evt.keyCode === 35) { // end
+    if (evt.keyCode === 35) {
+      // end
       evt.preventDefault();
-      cur_focus = cur_focus.parentElement.children[cur_focus.parentElement.children.length - 1];
+      cur_focus =
+        cur_focus.parentElement.children[
+          cur_focus.parentElement.children.length - 1
+        ];
     }
 
     if (evt.keyCode === 37) {
@@ -47,7 +52,7 @@ const Interaction = (function() {
 
     if (evt.keyCode === 40) {
       evt.preventDefault();
-      console.log('declare kong somehow');
+      console.log("declare kong somehow");
     }
   };
 
@@ -87,7 +92,9 @@ const Interaction = (function() {
     if (keyCode === 37) {
       evt.preventDefault();
       if (!claim_button) {
-        claim_button = document.querySelector("#discard-buttons button:last-child");
+        claim_button = document.querySelector(
+          "#discard-buttons button:last-child"
+        );
       } else {
         claim_button =
           claim_button.previousSibling ||
@@ -122,7 +129,7 @@ const Interaction = (function() {
 
   // General document-based keydown handler.
   function on(evtname, handler) {
-    const fn = (evt) => {
+    const fn = evt => {
       document.removeEventListener(evtname, fn);
       handler(evt);
     };

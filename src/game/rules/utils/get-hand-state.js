@@ -3,21 +3,20 @@
  */
 function getHandState(
   // tiles:
-  sets,       // sets in hand
+  sets, // sets in hand
   lockedSets, // locked sets on the table
 
   // if player won:
-  winset,     // the set that this player won on
-  selfdraw,   // was it a self-dawn win?
-  selftile,   // if so, on which tile?
-  robbed,     // did the win occur by robbing a kong?
+  winset, // the set that this player won on
+  selfdraw, // was it a self-dawn win?
+  selftile, // if so, on which tile?
+  robbed, // did the win occur by robbing a kong?
 
   // round information:
-  windTile,   // player wind
+  windTile, // player wind
   windOfTheRoundTile,
-  tilesLeft   // used to determine whether bonuses apply
+  tilesLeft // used to determine whether bonuses apply
 ) {
-
   // We start with assumptions that will get invalidated as we examine sets.
   const state = {
     chowhand: true,
@@ -54,7 +53,7 @@ function getHandState(
     suit: false,
     selfdraw: selfdraw,
     robbed: robbed,
-    lastTile: (tilesLeft <= 0)
+    lastTile: tilesLeft <= 0
   };
 
   // red/green/white dragon counters
@@ -65,16 +64,14 @@ function getHandState(
 
   let tilesuit;
   scorePattern.forEach(set => {
-
     tilenumber = set[0];
     tilesuit = (tilenumber / 9) | 0;
 
     if (tilenumber < 27) {
-
       if (state.suit === false) state.suit = tilesuit;
       else if (state.suit !== tilesuit) state.onesuit = false;
 
-      if (set.some(t => (t % 9) !== 0 && (t % 9) !== 8)) {
+      if (set.some(t => t % 9 !== 0 && t % 9 !== 8)) {
         state.terminals = false;
         state.allterminals = false;
       }
@@ -105,12 +102,10 @@ function getHandState(
       if (winset) {
         state.outonPair = winset.equals(set);
         if (state.outonPair) state.pairTile = winset[0];
-      }
-      else if (!winset && selfdraw && set[0] === selftile) {
+      } else if (!winset && selfdraw && set[0] === selftile) {
         state.outonPair = true;
         state.pairTile = selftile;
-      }
-      else {
+      } else {
         state.outonPair = false;
       }
     }

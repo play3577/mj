@@ -9,7 +9,7 @@ class Ruleset {
    *  ...
    */
   constructor(name) {
-    this.computer = Computer.get(name) || Computer.ChineseClassical
+    this.computer = Computer.get(name) || Computer.ChineseClassical;
   }
 
   /**
@@ -29,50 +29,62 @@ class Ruleset {
     // console.log(`Found ${evaluations.length} solutions`);
 
     const winningPaths = evaluations.some(e => e.winner) ? true : false;
-    let points = evaluations.map(path => {
-      const { tiles, composition, winner } = path;
+    let points = evaluations
+      .map(path => {
+        const { tiles, composition, winner } = path;
 
-      // Shortcut based on whether we know we should be
-      // scoring winning hands or not.
-      if (winningPaths && !winner) return;
+        // Shortcut based on whether we know we should be
+        // scoring winning hands or not.
+        if (winningPaths && !winner) return;
 
-      const points = this.determinePoints(
-        tiles,
-        composition,
-        locked,
-        bonus,
-        wind,
-        windOfTheRoundTile,
-        winner,
-        false // selfdrawn win
-        // TODO: add in selfdrawn winning awareness
-      );
+        const points = this.determinePoints(
+          tiles,
+          composition,
+          locked,
+          bonus,
+          wind,
+          windOfTheRoundTile,
+          winner,
+          false // selfdrawn win
+          // TODO: add in selfdrawn winning awareness
+        );
 
-      // TODO: is there a way that we can short circuit "hard to compute"
-      //       hands? Like concealed 222,333,444,555,66 etc.?
+        // TODO: is there a way that we can short circuit "hard to compute"
+        //       hands? Like concealed 222,333,444,555,66 etc.?
 
-      points.path = { tiles, composition };
+        points.path = { tiles, composition };
 
-      return points;
-    }).filter(e => e);
+        return points;
+      })
+      .filter(e => e);
 
     const noscore = PointComuter.NO_SCORE;
-    return points.sort((a,b) => b.total - a.total)[0] || noscore;
+    return points.sort((a, b) => b.total - a.total)[0] || noscore;
   }
 
   /**
    *  ...
    */
-  determinePoints(tiles, sets, lockedSets, bonusTiles, windTile, windOfTheRoundTile, winner = false, selfdraw = false) {
+  determinePoints(
+    tiles,
+    sets,
+    lockedSets,
+    bonusTiles,
+    windTile,
+    windOfTheRoundTile,
+    winner = false,
+    selfdraw = false
+  ) {
     // limit hand shortcut
     let limit = this.computer.compute.hasLimit(tiles, sets, lockedSets);
-    if (limit) return {
-      limit: 1000,
-      score: 0,
-      doubles: 0,
-      total: 1000,
-      log: [`${limit} limit hand`]
-    };
+    if (limit)
+      return {
+        limit: 1000,
+        score: 0,
+        doubles: 0,
+        total: 1000,
+        log: [`${limit} limit hand`]
+      };
 
     // determine all the properties of this hand as a whole
     const state = getHandState(
@@ -91,7 +103,12 @@ class Ruleset {
 
     // if (winner) console.log(state);
 
-    const tilepoints = this.computer.compute.tilePoints(sets, lockedSets, windTile, windOfTheRoundTile);
+    const tilepoints = this.computer.compute.tilePoints(
+      sets,
+      lockedSets,
+      windTile,
+      windOfTheRoundTile
+    );
 
     // then perform non-limit scoring
     return this.reduce(
@@ -107,15 +124,18 @@ class Ruleset {
    *  ...
    */
   reduce(selfdraw, ...pointentries) {
-    const result = pointentries.flat().filter(v=>v).reduce(
-      (tally, entry) => {
-        tally.score += entry.score;
-        tally.doubles += entry.doubles || 0;
-        tally.log = tally.log.concat(entry.log);
-        return tally;
-      },
-      { score: 0, doubles: 0, log: [] }
-    );
+    const result = pointentries
+      .flat()
+      .filter(v => v)
+      .reduce(
+        (tally, entry) => {
+          tally.score += entry.score;
+          tally.doubles += entry.doubles || 0;
+          tally.log = tally.log.concat(entry.log);
+          return tally;
+        },
+        { score: 0, doubles: 0, log: [] }
+      );
 
     if (this.computer.scoretype === POINTS_DOUBLES) {
       result.total = this.computer.convertPoints(result.score, result.doubles);
@@ -136,7 +156,12 @@ class Ruleset {
    * ...
    */
   pointsToScores(points, winningSeat, eastSeat, discardingSeat) {
-    return this.computer.pointsToScores(points, winningSeat, eastSeat, discardingSeat)
+    return this.computer.pointsToScores(
+      points,
+      winningSeat,
+      eastSeat,
+      discardingSeat
+    );
   }
 }
 

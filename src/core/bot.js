@@ -132,11 +132,11 @@ class Bot extends GameClient {
       e.tiles.forEach(tilenumber => {
         if (!counts[tilenumber]) counts[tilenumber] = 0;
         counts[tilenumber]++;
-      })
+      });
     });
 
     // for now, immediately win on a self-drawn win
-    if (winner) return this.server.game.declareWin()
+    if (winner) return this.server.game.declareWin();
 
     // TODO: we may not want to win if there's a much higher
     //       scoring hand that we can reasonably still play for.
@@ -151,7 +151,9 @@ class Bot extends GameClient {
     //       there should at least be SOME tiles that are not useful in all
     //       possible play paths?
     const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-    const tilenumber = sorted.length ? parseInt(sorted[0][0]) : this.state.tiles[0];
+    const tilenumber = sorted.length
+      ? parseInt(sorted[0][0])
+      : this.state.tiles[0];
 
     this.discardTile(tilenumber);
   }
@@ -161,7 +163,10 @@ class Bot extends GameClient {
    */
   discardTile(tilenumber) {
     const discard = () => this.server.game.discardTile({ tilenumber });
-    setTimeout(discard, this.state.currentGame.config.bot_humanizing_delay.value);
+    setTimeout(
+      discard,
+      this.state.currentGame.config.bot_humanizing_delay.value
+    );
   }
 
   /**
@@ -183,15 +188,13 @@ class Bot extends GameClient {
     }
 
     // otherwise pass (with possible delay) to speed up the game.
-    else setTimeout(
-      () => {
+    else
+      setTimeout(() => {
         if (this.canClaim) {
           this.server.game.pass();
         }
-      },
-      this.state.currentGame.config.bot_humanizing_delay.value
-    );
+      }, this.state.currentGame.config.bot_humanizing_delay.value);
   }
-};
+}
 
 module.exports = Bot;

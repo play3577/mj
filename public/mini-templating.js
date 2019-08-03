@@ -24,7 +24,7 @@
   // Create functions for each tag. Will this pollute window?
   // Hell yes it will. Does that matter? Not even slightly.
   tags.forEach(tag => {
-    global[tag] = function (options, ...content) {
+    global[tag] = function(options, ...content) {
       // The first argument may not be an options object, but just
       // child content for this particular element.
       if (
@@ -76,8 +76,14 @@
       content.forEach(process);
 
       // Just enough chainable API to do what needs to be done.
-      e.on = function on(evt, fn) { e.addEventListener(evt, fn); return e; };
-      e.off = function off(evt, fn) { e.removeEventListener(evt, fn); return e; };
+      e.on = function on(evt, fn) {
+        e.addEventListener(evt, fn);
+        return e;
+      };
+      e.off = function off(evt, fn) {
+        e.removeEventListener(evt, fn);
+        return e;
+      };
 
       return e;
     };
@@ -85,7 +91,7 @@
 
   // And this one exists mostly because sometimes you need
   // an array.map based on an empty, but sized, array.
-  global.makearray = function (n = 0) {
+  global.makearray = function(n = 0) {
     return new Array(n).fill(undefined);
   };
 

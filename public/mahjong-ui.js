@@ -12,7 +12,6 @@ const removeClaimOptions = () => {
     .forEach(b => b.parentNode.removeChild(b));
 };
 
-
 /**
  * The web client is effectively a thin client around
  * the real client - it receives state updates that ensure
@@ -79,7 +78,6 @@ export default class WebClientClass {
     this.bindDocumentEvents(state);
   }
 
-
   /**
    * This has to run after morphdom's changed "all the things", as we
    * cannot tack document-level event listening to elements that aren't
@@ -88,7 +86,9 @@ export default class WebClientClass {
   bindDocumentEvents(state) {
     // Key bindings for letting the player select a discard.
     if (state.inGameLoop && state.currentPlayer === state.seat) {
-      let cur = this.getLatest(state) || document.querySelector(`#seat-${state.seat} .tiles .tile`);
+      let cur =
+        this.getLatest(state) ||
+        document.querySelector(`#seat-${state.seat} .tiles .tile`);
       Interaction.enableDiscardKeys(cur);
     } else Interaction.disableDiscardKeys();
 
@@ -99,7 +99,7 @@ export default class WebClientClass {
 
     // Key bindings for letting the player indicate "ready for play".
     if (this.removeReady) this.removeReady = this.removeReady();
-    if (document.querySelector('.ready-for-deal-button')) {
+    if (document.querySelector(".ready-for-deal-button")) {
       this.removeReady = Interaction.on(`keydown`, evt => {
         if (evt.keyCode === 38) {
           this.server.round.ready();
@@ -118,7 +118,6 @@ export default class WebClientClass {
     }
   }
 
-
   /**
    * This function renders the game that we're currently playing,
    * provided, of course, that we're involved in an active game.
@@ -127,10 +126,7 @@ export default class WebClientClass {
     if (!state.currentGame) return;
     return section(
       { id: `active-game` },
-      div(
-        { id: `game-header` },
-        this.renderGameHeader(state)
-      ),
+      div({ id: `game-header` }, this.renderGameHeader(state)),
       this.renderGamePanel(state)
     );
   }
@@ -141,13 +137,15 @@ export default class WebClientClass {
    * the score breakdown.
    */
   renderGamePanel(state) {
-    if (state.wininfo) return this.renderScoreBreakdown(state)
-    const wall = state.wall ? div({ id: `wall` }, this.renderWall(state)) : false;
+    if (state.wininfo) return this.renderScoreBreakdown(state);
+    const wall = state.wall
+      ? div({ id: `wall` }, this.renderWall(state))
+      : false;
     return [
       wall,
       div({ id: `players` }, this.renderPlayers(state)),
       div({ id: `discard` }, this.renderDiscard(state)),
-      div({ id: `prompt` }), // preallocate this element: we may fill it with play buttons
+      div({ id: `prompt` }) // preallocate this element: we may fill it with play buttons
     ];
   }
 
@@ -194,9 +192,15 @@ export default class WebClientClass {
     return points.map((breakdown, p) => {
       const player = state.currentGame.players[p];
 
-      breakdown.log.push(`summary: ${breakdown.score} tilepoints, ${breakdown.doubles} doubles, ${breakdown.total} total points`);
-      breakdown.log.push(`old score: ${player.score - scores[p]}, adjustment: ${scores[p]}`);
-      breakdown.log.push(`${state.currentGame.finished ? `final` : `new`} score: ${player.score}`);
+      breakdown.log.push(
+        `summary: ${breakdown.score} tilepoints, ${breakdown.doubles} doubles, ${breakdown.total} total points`
+      );
+      breakdown.log.push(
+        `old score: ${player.score - scores[p]}, adjustment: ${scores[p]}`
+      );
+      breakdown.log.push(
+        `${state.currentGame.finished ? `final` : `new`} score: ${player.score}`
+      );
 
       return ul(
         ul(
@@ -204,11 +208,11 @@ export default class WebClientClass {
           span(player.name, ` (${player.windGlyph}) `),
           ul(player.tiles.map(TileBuilders.buildTile)),
           ul(player.locked.map(TileBuilders.buildLockedSet)),
-          ul(player.bonus.map(TileBuilders.buildTile)),
+          ul(player.bonus.map(TileBuilders.buildTile))
         ),
 
         breakdown.log.map(line => li(line))
-      )
+      );
     });
   }
 
@@ -217,12 +221,18 @@ export default class WebClientClass {
    */
   renderGameHeader(state) {
     const game = state.currentGame;
-    const [adjective, ...animal] = game.name.split(' ');
+    const [adjective, ...animal] = game.name.split(" ");
 
-    const heading = h1(`${adjective} `, a({
-      href: `https://wikipedia.org/wiki/${animal.join(' ')}`,
-      target: `_blank`
-    }, animal.join(' ')));
+    const heading = h1(
+      `${adjective} `,
+      a(
+        {
+          href: `https://wikipedia.org/wiki/${animal.join(" ")}`,
+          target: `_blank`
+        },
+        animal.join(" ")
+      )
+    );
 
     if (game.finished) return heading;
 
@@ -241,7 +251,9 @@ export default class WebClientClass {
   renderWall(state) {
     return Object.keys(state.wall).map(tilenumber => {
       return div(
-        makearray(state.wall[tilenumber]).map(() => TileBuilders.buildTile(tilenumber))
+        makearray(state.wall[tilenumber]).map(() =>
+          TileBuilders.buildTile(tilenumber)
+        )
       );
     });
   }
@@ -303,10 +315,7 @@ export default class WebClientClass {
     const tiles = [
       this.renderHandTiles(state),
       this.renderLockedTiles(state),
-      ul(
-        { className: `bonus` },
-        state.bonus.map(TileBuilders.buildTile)
-      ),
+      ul({ className: `bonus` }, state.bonus.map(TileBuilders.buildTile)),
       this.renderPlayButtons(state)
     ];
     this.highlightLatest(state, tiles[0]);
@@ -326,7 +335,7 @@ export default class WebClientClass {
             let tilenumber = parseInt(evt.target.dataset.tile);
             this.server.game.discardTile({ tilenumber });
           }
-        })
+        });
         return tile;
       })
     );
@@ -380,7 +389,8 @@ export default class WebClientClass {
 
     let winButton;
     if (!state.waitingForDeal && state.seat === state.currentPlayer) {
-      const declareWin = () => confirm("Declare win?") ? this.server.game.declareWin() : undefined;
+      const declareWin = () =>
+        confirm("Declare win?") ? this.server.game.declareWin() : undefined;
       winButton = button(
         { className: `declare-win-button`, "on-click": declareWin },
         `declare win`
@@ -496,7 +506,10 @@ export default class WebClientClass {
     }
 
     const tilenumber = state.currentDiscard.tilenumber;
-    const discardTile = TileBuilders.buildTile(tilenumber).on(`click`, undoDiscard);
+    const discardTile = TileBuilders.buildTile(tilenumber).on(
+      `click`,
+      undoDiscard
+    );
 
     let claimOptions;
     if (state.currentDiscard.id !== state.id) {
@@ -537,16 +550,16 @@ export default class WebClientClass {
       this.server.game.pass();
     };
 
-    const passButton = button({
-      className: `btn pass-button`,
-      "on-click": pass,
-      disabled: state.passed
-    }, "pass");
+    const passButton = button(
+      {
+        className: `btn pass-button`,
+        "on-click": pass,
+        disabled: state.passed
+      },
+      "pass"
+    );
 
-    return [
-      passButton,
-      this.generateClaimButtons(state)
-    ];
+    return [passButton, this.generateClaimButtons(state)];
   }
 
   /**
@@ -558,9 +571,10 @@ export default class WebClientClass {
   generateClaimButtons(state) {
     if (state.passed) return;
 
-    const disableButtons = () => document
-      .querySelectorAll(`.claim-button, .pass-button`)
-      .forEach(b => (b.disabled = true));
+    const disableButtons = () =>
+      document
+        .querySelectorAll(`.claim-button, .pass-button`)
+        .forEach(b => (b.disabled = true));
 
     // Any claim that isn't a win leads to that claim getting
     // sent to the server for the current discard. There are
@@ -578,29 +592,38 @@ export default class WebClientClass {
       removeClaimOptions();
       const buttonRow = document.querySelector(`.pass-button`).parentNode;
 
-      claims.filter(claim => claim.claimtype === `win`).forEach(claim => {
-        const opt = {
-          className: `btn claim-button win-button`,
-          "on-click": () => {
-            disableButtons();
-            this.server.game.claim(claim);
-          }
-        };
-        buttonRow.appendChild(button(opt, claim.wintype));
-      });
+      claims
+        .filter(claim => claim.claimtype === `win`)
+        .forEach(claim => {
+          const opt = {
+            className: `btn claim-button win-button`,
+            "on-click": () => {
+              disableButtons();
+              this.server.game.claim(claim);
+            }
+          };
+          buttonRow.appendChild(button(opt, claim.wintype));
+        });
     };
 
     const claims = [];
     let includeWinButton = false;
     // console.log(state.seat, state.currentDiscard.seat, this.mayChow(state));
-    const possiblePlays = findTilesNeeded(state.tiles, state.locked.map(c => c.tiles), !this.mayChow(state)).evaluations;
+    const possiblePlays = findTilesNeeded(
+      state.tiles,
+      state.locked.map(c => c.tiles),
+      !this.mayChow(state)
+    ).evaluations;
     // console.log(possiblePlays);
     possiblePlays.forEach(play =>
       play.claimable.forEach(claim => {
         const { tilenumber, claimtype, wintype } = claim;
         if (claimtype === `win`) includeWinButton = true;
         if (tilenumber === state.currentDiscard.tilenumber) {
-          if (claims.find(c => c.claimtype === claimtype && c.wintype === wintype)) return;
+          if (
+            claims.find(c => c.claimtype === claimtype && c.wintype === wintype)
+          )
+            return;
           claims.push(claim);
         }
       })
@@ -609,16 +632,24 @@ export default class WebClientClass {
     const makeClaimButton = claim => {
       const { claimtype, wintype } = claim;
       let label = claimtype;
-      let makeClaim =  () => processClaim(claimtype);
-      return button({ className: `btn claim-button`, "on-click": makeClaim }, label);
+      let makeClaim = () => processClaim(claimtype);
+      return button(
+        { className: `btn claim-button`, "on-click": makeClaim },
+        label
+      );
     };
 
     return [
       claims.filter(claim => claim.claimtype !== `win`).map(makeClaimButton),
-      !includeWinButton ? false : button({
-        className: `btn claim-button`,
-        "on-click": () => generateWinButtons(claims)
-      }, `win` )
+      !includeWinButton
+        ? false
+        : button(
+            {
+              className: `btn claim-button`,
+              "on-click": () => generateWinButtons(claims)
+            },
+            `win`
+          )
     ];
   }
 
@@ -648,7 +679,7 @@ export default class WebClientClass {
 
       let joinStartButton = button(
         { disabled: !!state.currentGame },
-        (g.id === state.id) ? `start` : `join`
+        g.id === state.id ? `start` : `join`
       );
 
       let addBotButton;
@@ -656,21 +687,27 @@ export default class WebClientClass {
       let configurationPanel;
 
       if (g.id === state.id) {
-        addBotButton = button({
-          className: 'add-bot',
-          'on-click': () => this.server.game.addBot(g.name)
-        }, `add bot`);
+        addBotButton = button(
+          {
+            className: "add-bot",
+            "on-click": () => this.server.game.addBot(g.name)
+          },
+          `add bot`
+        );
 
         if (state.configure) {
           configurationPanel = this.renderConfigurationPanel(state, g);
         } else {
-          configButton = button({
-            className: 'change-config',
-            'on-click': () => {
-              state.configure = true;
-              this.update(state);
-            }
-          }, `configure`);
+          configButton = button(
+            {
+              className: "change-config",
+              "on-click": () => {
+                state.configure = true;
+                this.update(state);
+              }
+            },
+            `configure`
+          );
         }
       }
       let item = li(
@@ -684,7 +721,7 @@ export default class WebClientClass {
           .join(", "),
         addBotButton,
         configButton,
-        configurationPanel,
+        configurationPanel
       );
 
       if (g.inProgress) joinStartButton.disabled = true;
@@ -714,9 +751,7 @@ export default class WebClientClass {
     // get a COPY of the config, so we can mess with it but discard the
     // changes in case the user selects "cancel" instead of "done".
     const config = JSON.parse(
-      JSON.stringify(
-        game.config ? game.config : getConfig(game.name)
-      )
+      JSON.stringify(game.config ? game.config : getConfig(game.name))
     );
 
     const options = Object.keys(config).map(key => {
@@ -732,8 +767,8 @@ export default class WebClientClass {
           input({
             type: `checkbox`,
             value,
-            checked: value===true,
-            'on-input': evt => {
+            checked: value === true,
+            "on-input": evt => {
               entry.value = evt.target.checked;
               this.update(state);
             }
@@ -748,7 +783,7 @@ export default class WebClientClass {
           input({
             type,
             value,
-            'on-input': evt => {
+            "on-input": evt => {
               entry.value = parseInt(evt.target.value);
               this.update(state);
             }
@@ -760,38 +795,45 @@ export default class WebClientClass {
       if (type.forEach) {
         control = label(
           key,
-          select({
-            'on-change': evt => {
-              entry.value = evt.target.value
-              if (typeof value === `number`) {
-                entry.value = parseInt(entry.value);
+          select(
+            {
+              "on-change": evt => {
+                entry.value = evt.target.value;
+                if (typeof value === `number`) {
+                  entry.value = parseInt(entry.value);
+                }
+                this.update(state);
               }
-              this.update(state);
-            }
-          },
-          option(),
-          type.map(v => option({ value: v, selected: v===value }, v)))
+            },
+            option(),
+            type.map(v => option({ value: v, selected: v === value }, v))
+          )
         );
       }
       return li(control);
     });
 
-    const commitButton = button({ 'on-click': () => {
-      state.configure = false;
-      this.server.game.config(config);
-    }}, `done`);
-
-    const cancelButton = button({ 'on-click': () => {
-      state.configure = false;
-      this.update(state);
-    }}, `cancel`);
-
-    return div(
-      h2('configuration'),
-      ul(options),
-      commitButton,
-      cancelButton
+    const commitButton = button(
+      {
+        "on-click": () => {
+          state.configure = false;
+          this.server.game.config(config);
+        }
+      },
+      `done`
     );
+
+    const cancelButton = button(
+      {
+        "on-click": () => {
+          state.configure = false;
+          this.update(state);
+        }
+      },
+      `cancel`
+    );
+
+    return div(h2("configuration"), ul(options), commitButton, cancelButton);
   }
 
   /**
@@ -809,27 +851,24 @@ export default class WebClientClass {
         if (name && name.trim()) this.server.user.setName(name);
       };
 
-      return [` ←`, button(
-        { className: `rename`, "on-click": changeName },
-        `change name`
-      )];
+      return [
+        ` ←`,
+        button({ className: `rename`, "on-click": changeName }, `change name`)
+      ];
     };
 
     // If we know a user's name, render them by name. Otherwise, by id.
     const renderUser = user => {
       // filter bots from the name list, they are only relevant to games.
-      if (user.name && user.name.indexOf('Bot') === 0) return false;
+      if (user.name && user.name.indexOf("Bot") === 0) return false;
 
       // anyone else gets listed as expected
       return li(
         { className: `user` },
-        span(
-          { className: `name` },
-          user.name || `unknown user ${user.id}`
-        ),
+        span({ className: `name` }, user.name || `unknown user ${user.id}`),
         renderChangeButton(user)
       );
-    }
+    };
 
     return state.users.map(renderUser);
   }
@@ -842,7 +881,10 @@ export default class WebClientClass {
     if (!state.currentGame) {
       createGame = p(
         `Create a game: `,
-        button({ id: `create`, "on-click": () => this.server.game.create() }, `create`)
+        button(
+          { id: `create`, "on-click": () => this.server.game.create() },
+          `create`
+        )
       );
     }
 
@@ -887,7 +929,7 @@ export default class WebClientClass {
   startTimer(name, timeout) {
     const timer = this.getTimer(name);
     const startTime = Date.now();
-    const tick = (name) => {
+    const tick = name => {
       const passed = Date.now() - startTime;
       const timeoutProgress = passed / timeout;
       this.updateTimer(name, timeoutProgress);

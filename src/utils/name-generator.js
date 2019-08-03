@@ -466,7 +466,7 @@ const animals = [
   `yellow perch`,
   `yellowjacket`,
   `zebra`,
-  'zebra finch'
+  "zebra finch"
 ];
 
 module.exports = function generateName() {

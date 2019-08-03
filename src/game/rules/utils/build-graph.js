@@ -56,7 +56,6 @@ function build(tiles, currentNode, ignoreChowPairs) {
   return currentNode;
 }
 
-
 // TODO: rewrite this to a straight iteration?
 function extract(tiles, targets) {
   let extracted = [];

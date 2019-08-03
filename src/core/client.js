@@ -3,20 +3,19 @@ require("../utils/array-updates.js");
 const lockTiles = require("../utils/lock-tiles.js");
 const sortTiles = (a, b) => a - b;
 
-
 function getClaimTiles(claim) {
   let { tilenumber, claimtype, wintype } = claim;
   if (claimtype === `win`) claimtype = wintype;
   let count = claimtype === `kong` ? 4 : claimtype === `pair` ? 2 : 3;
 
   if (claimtype.startsWith(`chow`)) {
-    let t = tilenumber, offset = parseInt(claimtype.replace(`chow`, ``)) - 1;
+    let t = tilenumber,
+      offset = parseInt(claimtype.replace(`chow`, ``)) - 1;
     return [t - offset, t - offset + 1, t - offset + 2];
   }
 
   return new Array(count).fill(tilenumber);
 }
-
 
 class GameClient {
   constructor() {
@@ -25,7 +24,7 @@ class GameClient {
       chat: [],
       users: [],
       games: [],
-      players: [],
+      players: []
     };
   }
 
@@ -197,7 +196,7 @@ class GameClient {
       draw: false,
       waiting: false,
       waitingForDeal: false,
-      inGameLoop: false,
+      inGameLoop: false
     });
 
     return { ready: true };
@@ -443,6 +442,6 @@ class GameClient {
       player.left = true;
     }
   }
-};
+}
 
 module.exports = GameClient;

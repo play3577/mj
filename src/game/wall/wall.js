@@ -40,10 +40,9 @@ class Wall {
   reset() {
     this.prng = new Random(this.config.prng_seed.value);
     this.seed = this.prng.seed();
-    this.tiles = this.hacked ?
-      WallHack.getTiles(this, this.hacked)
-      :
-      this.shuffle(this.getBase());
+    this.tiles = this.hacked
+      ? WallHack.getTiles(this, this.hacked)
+      : this.shuffle(this.getBase());
   }
 
   /**

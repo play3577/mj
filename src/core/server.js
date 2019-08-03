@@ -221,8 +221,7 @@ class GameServer {
   async "round:ready"(from) {
     const player = this.getPlayer(from);
     const game = player.game;
-    if (game)
-      game.round.startPlay(player);
+    if (game) game.round.startPlay(player);
   }
 
   /**
@@ -302,9 +301,8 @@ class GameServer {
   async "game:reveal"(from) {
     const player = this.getPlayer(from);
     const game = player.game;
-    if (game)
-      game.reveal(player);
+    if (game) game.reveal(player);
   }
-};
+}
 
 module.exports = GameServer;

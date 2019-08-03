@@ -1,11 +1,15 @@
 require("../utils/array-updates.js");
 
-const Ruleset = require('./rules/ruleset.js');
+const Ruleset = require("./rules/ruleset.js");
 const rules = new Ruleset();
-const findTilesNeeded = require('./rules/utils/find-tiles-needed.js');
-const { legalClaims } = require('../utils/claims.js');
+const findTilesNeeded = require("./rules/utils/find-tiles-needed.js");
+const { legalClaims } = require("../utils/claims.js");
 
-let tiles, locked = [], bonus = [], start, end;
+let tiles,
+  locked = [],
+  bonus = [],
+  start,
+  end;
 
 // tiles = [1, 2, 3, 10, 11, 20, 21, 22, 33, 33];
 // locked = [[15, 15, 15]];
@@ -37,8 +41,8 @@ let tiles, locked = [], bonus = [], start, end;
 // tiles = [4,5,5,6,8,16,16,18,18,29,32]
 // locked = [[33,33,33]]
 
-tiles = [1,1,1, 2,2,2, 3,3, 4,4, 5]
-locked = [[3,4,5]]
+tiles = [1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5];
+locked = [[3, 4, 5]];
 
 const includeChows = true;
 findTilesNeeded(tiles, locked, includeChows).evaluations.forEach(e => {
@@ -52,37 +56,36 @@ const windOfTheRound = 0;
 const othertiles = [1, 4, 7, 10, 11, 15, 19, 21, 24, 27, 30, 31, 33];
 
 const players = [
-  { seat: 0, wind: 0, tiles, locked, bonus},
+  { seat: 0, wind: 0, tiles, locked, bonus },
   { seat: 1, wind: 1, tiles: othertiles.slice(), locked: [], bonus: [] },
   { seat: 2, wind: 2, tiles: othertiles.slice(), locked: [], bonus: [] },
-  { seat: 3, wind: 3, tiles: othertiles.slice(), locked: [], bonus: [] },
-]
+  { seat: 3, wind: 3, tiles: othertiles.slice(), locked: [], bonus: [] }
+];
 
 start = Date.now();
-const points = players.map(p => rules.score(p, windOfTheRound, p.wind===0));
+const points = players.map(p => rules.score(p, windOfTheRound, p.wind === 0));
 end = Date.now();
 console.log(`run took ${end - start}ms to score`);
 
 start = Date.now();
 let scores = rules.pointsToScores(
   points,
-  0,        // winning seat
-  0,        // east seat
+  0, // winning seat
+  0, // east seat
   undefined // discarding player's seat
 );
 end = Date.now();
 console.log(`run took ${end - start}ms to resolve points`);
 
-players.forEach((p,seat) => {
+players.forEach((p, seat) => {
   let pts = points[seat];
   console.log(p);
-  console.log(`evalution: `, pts.path)
+  console.log(`evalution: `, pts.path);
   console.log(`points: ${pts.total} (${pts.score}/${pts.doubles})`);
   console.log(`because:`, pts.log);
   console.log(`winnings:`, scores[seat]);
   console.log();
-})
-
+});
 
 // TODO: we could, technically, generate a full game prediction now,
 //       by taking a player's "current hand", and then iterating on

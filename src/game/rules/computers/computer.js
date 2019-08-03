@@ -1,5 +1,5 @@
 const { ChineseClassical, Cantonese } = require("../presets");
-const { FAAN_LAAK} = require("../utils/types.js");
+const { FAAN_LAAK } = require("../utils/types.js");
 
 const PointComputer = require("./point-computer.js");
 const FaakLaakTable = require("./faan-laak-table.js");
@@ -81,10 +81,10 @@ class Computer {
    * losers end up paying" calculations.
    */
   pointsToScores(points, winningSeat, eastSeat, discardingSeat) {
-    let adjustments = points.map(v=>0);
-    let eastWinFactor = (winningSeat === eastSeat) ? 2 : 1;
+    let adjustments = points.map(v => 0);
+    let eastWinFactor = winningSeat === eastSeat ? 2 : 1;
     let wscore = points[winningSeat].total;
-    let selfdraw = (discardingSeat === false);
+    let selfdraw = discardingSeat === false;
 
     for (let seat = 0; seat < points.length; seat++) {
       if (seat === winningSeat) continue;
@@ -93,10 +93,13 @@ class Computer {
       if (seat !== winningSeat) {
         let difference = wscore;
         if (this.east_doubles_up) {
-          let paysAsEast = (seat === eastSeat) ? 2 : 1;
+          let paysAsEast = seat === eastSeat ? 2 : 1;
           difference *= Math.max(eastWinFactor, paysAsEast);
         }
-        if ((this.discard_pays_double && seat === discardingSeat) || (this.selfdraw_pays_double && selfdraw)) {
+        if (
+          (this.discard_pays_double && seat === discardingSeat) ||
+          (this.selfdraw_pays_double && selfdraw)
+        ) {
           difference *= 2;
         }
         adjustments[winningSeat] += difference;
@@ -112,9 +115,9 @@ class Computer {
       for (let other = seat + 1; other < points.length; other++) {
         if (other === winningSeat) continue;
 
-        let difference = (points[seat].total - points[other].total);
+        let difference = points[seat].total - points[other].total;
         if (this.east_doubles_up) {
-          let paysAsEast = (seat === eastSeat) ? 2 : 1;
+          let paysAsEast = seat === eastSeat ? 2 : 1;
           difference *= paysAsEast;
         }
         // console.debug(`${seat} gets ${difference} from ${other}`);
@@ -125,14 +128,14 @@ class Computer {
     }
 
     if (this.east_doubles_up) {
-      if (winningSeat === eastSeat) points[eastSeat].log.push(`Player won as East: receive double`);
+      if (winningSeat === eastSeat)
+        points[eastSeat].log.push(`Player won as East: receive double`);
       else points[eastSeat].log.push(`Player lost as East: pay double`);
     }
 
     return adjustments;
   }
-};
-
+}
 
 Computer.ChineseClassical = new Computer(new ChineseClassical());
 Computer.Cantonese = new Computer(new Cantonese());
