@@ -153,7 +153,7 @@ export default class WebClientClass {
    * Render a score breakdown for all players, showing the tiles
    * they had, and how many points they received based on those.
    */
-  renderScoreBreakdown() {
+  renderScoreBreakdown(state) {
     let nextRoundButton;
     if (state.waiting) {
       const next = evt => {
@@ -220,7 +220,7 @@ export default class WebClientClass {
    * Basic game information like name, round, and wind.
    */
   renderGameHeader(state) {
-    const game = state.currentGame;
+    const game = state.currentGame;n
     const [adjective, ...animal] = game.name.split(" ");
 
     const heading = h1(
