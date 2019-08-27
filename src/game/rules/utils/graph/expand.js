@@ -1,6 +1,12 @@
 // helper function: is a partial path already entailed by
-// the full path we know?
-// E.g. [2,5] is entailed by [1,2,3,4,5,6].
+// the full path we know? E.g.:
+//
+//    [1,2,3]
+//
+// is entailed by
+//
+//   [[1,1,1], [4,4], [1,2,3], [32,32,32]]
+//
 function entailed(target, paths) {
   return paths.some(path =>
     target.every(tset => path.some(set => set.entails(tset)))
@@ -8,9 +14,11 @@ function entailed(target, paths) {
 }
 
 /**
- * Expand a graph starting at `root` into a set of unique paths
- * from the root to the end of the graph (signalled by not having
- * any outbound links).
+ * Expand a graph starting at  some node `root` into a set of unique
+ * paths through the graph. The end of the graph is simply any node
+ * that has no outbound links.
+ *
+ * This function is not very complicated... but it's super useful.
  */
 module.exports = function expand(
   root,

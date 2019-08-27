@@ -47,7 +47,7 @@ function legalClaim(claimtype, wintype, tilenumber, tiles, locked, maychow) {
   }
 
   // TODO: technically if this is a win, we need to also verify that the remaining
-  //       tiles constitute (a) set(s), but that's something we can do much later.
+  //       tiles form legal sets, but that's something we can do much later.
   return false;
 }
 

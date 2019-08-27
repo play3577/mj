@@ -9,7 +9,7 @@ const uuid = (function() {
 
 /**
  * A directed acyclic graph (DAG) node that either acts as root,
- * or as downstream node in the graph with the graph's node set
+ * or as downstream node in the graph with the graph's node-set
  * specified as a known quantity.
  */
 class Node {

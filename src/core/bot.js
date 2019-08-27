@@ -1,8 +1,8 @@
 const GameClient = require("./client.js");
 const findTilesNeeded = require("../game/rules/utils/find-tiles-needed.js");
 
-// As part of findTilesNeeded this is "ignoreChowPairs", assumed true,
-// so to include chow pairs, we need to pass "false".
+// As part of findTilesNeeded we want to issue calls where "ignoreChowPairs"
+// is supposed to be false, so we alias that value to a better name:
 const includeChowPairs = false;
 
 /**

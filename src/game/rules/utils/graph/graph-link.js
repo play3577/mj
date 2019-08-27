@@ -1,3 +1,9 @@
+/**
+ * A directed acyclic graph (DAG) link that encodes the transition
+ * from one node to the next node, encoding the transition value
+ * (i.e. the value that must be matched for this link to be
+ * traversed in DFA processing) as the `tiles` property.
+ */
 class Link {
   constructor(tiles, targetNode, forward = true) {
     this.tiles = tiles;

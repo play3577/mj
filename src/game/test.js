@@ -1,4 +1,4 @@
-require("../utils/array-updates.js");
+require("../utils/enhance-array.js");
 
 const Ruleset = require("./rules/ruleset.js");
 const rules = new Ruleset();
@@ -87,9 +87,10 @@ players.forEach((p, seat) => {
   console.log();
 });
 
-// TODO: we could, technically, generate a full game prediction now,
-//       by taking a player's "current hand", and then iterating on
-//       what they might need, simulating them getting that, and
-//       expanding a tree of possible plays. Of course, this would
-//       need to be recomputed each time a new tile is drawn from
-//       the wall, which makes this a weirdly useful AND futile thing.
+// IDEA:
+// we could, technically, generate a full game prediction now,
+// by taking a player's "current hand", and then iterating on
+// what they might need, simulating them getting that, and
+// expanding a tree of possible plays. Of course, this would
+// need to be recomputed each time a new tile is drawn from
+// the wall, which makes this a weirdly useful AND futile thing.

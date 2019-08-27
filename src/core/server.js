@@ -1,4 +1,4 @@
-require("../utils/array-updates.js");
+require("../utils/enhance-array.js");
 
 const Game = require("../game/game.js");
 const Player = require("./player.js");

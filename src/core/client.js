@@ -1,4 +1,4 @@
-require("../utils/array-updates.js");
+require("../utils/enhance-array.js");
 
 const lockTiles = require("../utils/lock-tiles.js");
 const sortTiles = (a, b) => a - b;
