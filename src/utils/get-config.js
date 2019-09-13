@@ -99,7 +99,7 @@ const getConfig = (function() {
 
   const bindings = {};
 
-  return function getConfig(game) {
+  return function getConfig(game={name:'test'}) {
     if (!bindings[game.name]) {
       bindings[game.name] = JSON.parse(JSON.stringify(CONFIG));
     }

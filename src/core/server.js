@@ -68,6 +68,25 @@ class GameServer {
   }
 
   /**
+   * Switch from player to bot, or back
+   */
+  async "user:switchTo"(from, mode) {
+    // TODO: FIX THIS
+
+    const player = this.getPlayer(from);
+    let status = false;
+    if (mode === `bot`) {
+      player.switchToBot();
+      status = `bot`;
+    }
+    if (mode === `player`) {
+      player.switchToClient();
+      status = `client`
+    }
+    return { status };
+  }
+
+  /**
    * Send clients the known games list on request.
    */
   async "game:getGameList"() {

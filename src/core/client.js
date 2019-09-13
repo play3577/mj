@@ -17,6 +17,10 @@ function getClaimTiles(claim) {
   return new Array(count).fill(tilenumber);
 }
 
+// We want to have access to the Bot class, but due to circular dependencies,
+// we can't immediately load that here. Instead, we'll load it in when needed.
+let Bot = false;
+
 class GameClient {
   constructor() {
     this.state = {
@@ -84,6 +88,26 @@ class GameClient {
     const { id, name } = game;
     let user = this.state.users.find(u => u.id === id);
     if (user) user.name = name;
+  }
+
+  // switch to full automation mode
+  async "user:switchToBot"() {
+    // TODO: FIX THIS
+    console.log(`${this.state.id} switching to bot`);
+    // late-require is pretty crucial here, to avoid circular requirements.
+    if (!Bot) Bot = require('./bot');
+    this.__proto__ = Bot.prototype;
+    this.debug();
+    this.updatePlayPolicy();
+    // Note that these functions only exist on the Bot prototype
+    console.log(`${this.state.id} debug/updatePlayPolicy`);
+  }
+
+  // switch to plain client mode
+  async "user:switchToClient"() {
+    // TODO: FIX THIS
+    console.log(`${this.state.id} switching to client`);
+    this.__proto__ = GameClient.prototype;
   }
 
   /**

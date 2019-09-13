@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+
 // First, bootstrap the ClientServer object:
 const { generateClientServer } = require("socketless");
 const ClientServer = generateClientServer(
@@ -15,40 +18,6 @@ server.listen(8080, () => {
 // browser, so they can click a "join" button and have that create
 // a client for them, and then redirect them to the client's url.
 const createWebClient = require("./create-web-client.js");
-const joinHTML = (clients) => `<doctype html>
-  <html>
-    <meta charset="utf-8">
-    <style>
-    #join {
-      display: block;
-      width: 5em;
-      height: 1.25em;
-      position: absolute;
-      top: calc(50vh - 1.25em);
-      left: calc(50vw - 2.5em);
-      background: #90d796;
-      border: 1px solid #418c33;
-      border-radius: 0.25em;
-      box-shadow: 4px 4px 10px -1px gray;
-      font-family: verdana;
-      font-size: 200%;
-      text-decoration: none;
-      text-align: center;
-      color: white;
-      text-shadow: 0 0 1px black;
-    }
-    </style>
-    <a id="join" target="_blank" href="/create">Join</a>
-    <h3>connected clients:</h3>
-    <ul>${
-      clients
-      .map(url =>
-        `<li><a target="_blank" href="${url}">${url}</a></li>`
-      )
-      .join('\n')
-    }</ul>
-  </html>
-`;
 
 // The web server only knows how to service two routes: the base
 // route, which serves the above HTML code, and the /create route,
@@ -56,14 +25,75 @@ const joinHTML = (clients) => `<doctype html>
 // associated web interface.
 const clients = [];
 const routeHandler = (request, response) => {
-  if (request.url === `/create`) {
+  const url = request.url;
+
+  if (request.method === 'POST') {
+    if (url === `/admin/score`) {
+      let body = [];
+      request.on('data', chunk => {
+        body.push(chunk.toString('utf-8'));
+      });
+      request.on('end', () => {
+        payload = JSON.parse(body.join(''));
+
+        // PERFORM SCORE COMPUTATION HERE
+        let Ruleset = require("./src/game/rules/ruleset.js");
+        let getConfig = require("./src/utils/get-config.js");
+        let rules = new Ruleset(getConfig().ruleset.value);
+        let score = rules.score({
+          tiles: payload.tiles,
+          locked: [],
+          bonus: [],
+          wind: 0
+        }, 0);
+
+        response.writeHead(200, { "Content-Type": "application/json"});
+        response.end(JSON.stringify(score));
+      });
+      return;
+    }
+    // do nothing, we'll end on 404
+  }
+
+  if (url.indexOf('/css/') === 0) {
+    let fpath = path.join(__dirname, 'public', url);
+    try {
+      const css = fs.readFileSync(fpath).toString('utf-8');
+      response.writeHead(200, { "Content-Type": "text/css" });
+      return response.end(css);
+    } catch (e) {
+      // do noting, we'll end on 404
+    }
+  }
+
+  if (url.indexOf('/images/') === 0) {
+    let fpath = path.join(__dirname, 'public', url);
+    try {
+      const img = fs.readFileSync(fpath);
+      response.writeHead(200, { "Content-Type": "image/jpeg" });
+      return response.end(img);
+    } catch (e) {
+      // do noting, we'll end on 404
+    }
+  }
+
+  if (url === `/create`) {
     return createWebClient(request, response, url =>
       clients.push(url)
     );
   }
-  if (request.url === `/`) {
+
+  if (url === `/`) {
     response.writeHead(200, { "Content-Type": "text/html" });
-    return response.end(joinHTML(clients));
+    let index = fs.readFileSync(`index.html`).toString('utf-8');
+    return response.end(
+      index.replace(
+        `{{ clientCode }}`,
+        clients
+          .map(url => `<li><a target="_blank" href="${url}">${url}</a></li>`)
+          .join('\n')
+      )
+    );
   }
   response.writeHead(404);
   response.end("not found");

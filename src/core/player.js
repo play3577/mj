@@ -66,6 +66,18 @@ class Player {
     this.client.user.left(user.id);
   }
 
+  // switch this player to full automation
+  async switchToBot() {
+    // TODO: FIX THIS
+    return await this.client.user.switchToBot()
+  }
+
+  // switch this player to plain client
+  async switchToClient() {
+    // TODO: FIX THIS
+    return await this.client.user.switchToClient();
+  }
+
   processScore(scores) {
     this.score = this.score + scores[this.seat];
     return this.score;

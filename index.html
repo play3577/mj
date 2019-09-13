@@ -1,0 +1,135 @@
+<!doctype html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <title>Mahjong game server</title>
+    <style>
+      #join {
+        display: block;
+        width: 5em;
+        height: 1.25em;
+        position: absolute;
+        top: calc(50vh - 1.25em);
+        left: calc(50vw - 2.5em);
+        background: #90d796;
+        border: 1px solid #418c33;
+        border-radius: 0.25em;
+        box-shadow: 4px 4px 10px -1px gray;
+        font-family: verdana;
+        font-size: 200%;
+        text-decoration: none;
+        text-align: center;
+        color: white;
+        text-shadow: 0 0 1px black;
+      }
+
+      :root {
+        --ph: 3em;
+        --tilegap: 5px;
+      }
+    </style>
+    <link href="css/tiles.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <header>
+      <!-- ... -->
+    </header>
+
+    <main>
+      <section id="ops">
+        <a id="join" target="_blank" href="/create">Join</a>
+      </section>
+
+      <section id="admin">
+        <h2> test scoring </h2>
+        <form id="admin-scoring">
+          <label>hand</label>
+          <button class="add" type="button">add</button>
+          <button>Test scoring</button>
+        </form>
+      </section>
+
+      <section id="clients">
+        <h3>connected clients:</h3>
+        <ul>{{ clientCode }}</ul>
+      </section>
+    </main>
+
+    <footer>
+      <!-- ... -->
+    </footer>
+
+  <script>
+    (function setupScoreTesting() {
+      let setnum = 0;
+
+      // ...
+      function map(suit,face) {
+        return suit === `h` ? faces.indexOf(face) + 18 : suits.indexOf(suit) * 9 + faces.indexOf(face);
+      }
+
+      function buildTile(tilenum, setnum) {
+        let el = document.createElement(`li`);
+        el.classList.add(`tile`);
+        el.textContent = el.dataset.tile = tilenum;
+        el.dataset.setnum = setnum;
+        el.addEventListener(`click`, evt => {
+          let parent = el.parentNode;
+          parent.querySelectorAll(`[data-setnum="${setnum}"]`).forEach(e => parent.removeChild(e));
+        });
+        add.parentNode.insertBefore(el, add);
+      }
+
+      // ...
+      function addTiles(evt) {
+        let type, suit, face;
+        
+        do { type = prompt(`${types.join(`, `)}?`); } while (types.indexOf(type) === -1);
+        do { suit = prompt(`${suits.join(`, `)}?`); } while (suits.indexOf(suit) === -1);
+        do { face = prompt(`${faces.join(`, `)}?`); } while (faces.indexOf(face) === -1);
+
+        let count = types.indexOf(type) + 1;
+        if (type === `c`) {
+          count = 3;
+          while(count--) {
+            let tilenum = map(suit, face);
+            buildTile(tilenum + 2 - count, setnum);
+          }
+        } else {
+          while (count--) {
+            buildTile(map(suit,face), setnum);
+          }
+        }
+
+        setnum++;
+      }
+
+      // ...
+      function testScoring(add) {
+        const payload = {
+          tiles: Array.from(add.parentNode.querySelectorAll('li')).map(e => parseInt(e.dataset.tile))
+        };
+
+        fetch(`/admin/score`, {
+          method: `post`,
+          body: JSON.stringify(payload)
+        })
+        .then(r => r.json())
+        .then(data => console.log(data))
+        .catch(e => console.error(e));
+      }
+
+      const types = [`s`,`c`,`p`,`k`];
+      const suits = [`b`,`c`,`d`,`h`];
+      const faces = [`1`,`2`,`3`,`4`,`5`,`6`,`7`,`8`,`9`,`e`,`s`,`w`,`n`,`f`,`c`,`p`]
+
+      const add = document.querySelector(`button.add`);
+      add.addEventListener(`click`, addTiles);
+
+      const form = document.getElementById('admin-scoring');
+      form.addEventListener(`submit`, evt => { evt.preventDefault(); testScoring(add); });
+    })();
+  </script>
+</html>
