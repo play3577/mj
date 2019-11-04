@@ -3,6 +3,10 @@ require("../utils/enhance-array.js");
 const Game = require("../game/game.js");
 const Player = require("./player.js");
 
+// FIXME: EXPERIMENTAL
+const Human = require("./human.js");
+// FIXME: EXPERIMENTAL
+
 class GameServer {
   constructor() {
     this.players = [];
@@ -25,6 +29,8 @@ class GameServer {
    * and assign the client a unique id.
    */
   async onConnect(client) {
+    // First, make this a human. If it's not, it'll call user:makeBot
+    Object.setPrototypeOf(client, new Human());
     const player = new Player(client);
     const others = this.players.slice();
     this.players.push(player);
@@ -48,6 +54,16 @@ class GameServer {
     // update all running games
     this.games.forEach(game => game.leave(player));
     this.games = this.games.filter(game => game.players.count === 0);
+  }
+
+  /**
+   * This user is downgrading to a bot
+   */
+  async "user:becomeBot"(from) {
+    const player = this.getPlayer(from);
+    console.log(`converting ${from.id} to bot`);
+    player.client.toBot();
+    this.players.forEach(p => p.userBecameBot(player));
   }
 
   /**

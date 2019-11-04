@@ -13,6 +13,21 @@ const includeChowPairs = false;
  * decide what to play for and what to get rid of.
  */
 class Bot extends GameClient {
+
+
+  // FIXME: EXPERIMENTAL TEST
+    toGameClient() {
+      let toBot = this.toBot.bind(this);
+      Object.setPrototypeOf(this, new GameClient());
+      this.toBot = toBot;
+    }
+  // FIXME: EXPERIMENTAL TEST
+    toBot() {
+      Object.setPrototypeOf(this, new Bot());
+    }
+  // FIXME: EXPERIMENTAL TEST
+
+
   // helper function for playing with face-up tiles.
   async debug() {
     const game = this.state.currentGame;

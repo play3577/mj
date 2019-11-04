@@ -888,6 +888,15 @@ export default class WebClientClass {
       );
     }
 
+    const devolve = () => {
+      this.server.user.becomeBot();
+    }
+
+    const becomeBot = p(
+      'Become a bot:',
+      button({ id: 'devolve', "on-click": devolve }, 'devolve' )
+    );
+
     const quit = () => {
       this.server.quit();
       window.location.port = 8000;
@@ -899,7 +908,7 @@ export default class WebClientClass {
     );
 
     // And the footer, which just wraps those two.
-    return footer(createGame, quitServer);
+    return footer(createGame, becomeBot, quitServer);
   }
 
   // ===========================================

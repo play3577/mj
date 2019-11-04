@@ -78,6 +78,14 @@ class GameClient {
   }
 
   /**
+   * When a user becomes a bot, that's important to know.
+   */
+  async "user:becameBot"(id) {
+    let user = this.state.users.find(u => u.id === id);
+    if (user) user.isBot = true;
+  }
+
+  /**
    * When a user changes name, record that.
    */
   async "user:changedName"(game) {

@@ -56,6 +56,10 @@ class Player {
     this.client.user.joined(user.id);
   }
 
+  userBecameBot(user) {
+    this.client.user.becameBot(user.id);
+  }
+
   // notify this user's client that someone changed their name
   userChangedName(id, name) {
     this.client.user.changedName({ id, name });

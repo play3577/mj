@@ -10,4 +10,10 @@ const ClientServer = generateClientServer(
 const gameName = process.argv[2];
 const bot = ClientServer.createClient(`http://localhost:8080`);
 
-bot.onConnect = () => bot.server.game.join(gameName);
+bot.onConnect = () => {
+  // Join the game we were built for.
+  bot.server.game.join(gameName);
+
+  // oh btw we're a bot player.
+  bot.server.user.becomeBot();
+}
