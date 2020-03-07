@@ -24,7 +24,8 @@
   "homepage": "https://github.com/Pomax/mj#readme",
   "dependencies": {
     "browserify": "^16.3.0",
-    "prettier": "^1.18.2",
-    "socketless": "^0.11.12"
+    "morphdom": "^2.5.12",
+    "prettier": "^1.18.22",
+    "socketless": "^0.12.4"
   }
 }
